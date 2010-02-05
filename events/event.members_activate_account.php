@@ -113,7 +113,7 @@
 				$db->query(sprintf(
 					"UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `entry_id` = %d LIMIT 1",
 					$Members->roleField(),
-					3,
+					Symphony::Configuration()->get('new_member_default_role', 'members'),
 					(int)$Members->Member->get('id')
 				));
 

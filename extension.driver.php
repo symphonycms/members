@@ -425,6 +425,7 @@
 				  UNIQUE KEY `field_id` (`field_id`)
 				);
 
+				DROP TABLE IF EXISTS `tbl_members_codes`;
 				CREATE TABLE `tbl_members_codes` (
 				  `member_id` int(11) unsigned NOT NULL,
 				  `code` varchar(8)  NOT NULL,
@@ -433,7 +434,8 @@
 				  KEY `code` (`code`)
 				) ;
 
-
+			
+				DROP TABLE IF EXISTS `tbl_members_roles`;
 				CREATE TABLE `tbl_members_roles` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `name` varchar(60)  NOT NULL,
@@ -441,7 +443,7 @@
 				  UNIQUE KEY `name` (`name`)
 				) ;
 
-
+				DROP TABLE IF EXISTS `tbl_members_roles_event_permissions`;
 				CREATE TABLE `tbl_members_roles_event_permissions` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `role_id` int(11) unsigned NOT NULL,
@@ -452,7 +454,7 @@
 				  KEY `role_id` (`role_id`,`event`,`action`)
 				) ;
 
-
+				DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
 				CREATE TABLE `tbl_members_roles_forbidden_pages` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `role_id` int(11) unsigned NOT NULL,
@@ -461,6 +463,7 @@
 				  KEY `role_id` (`role_id`,`page_id`)
 				);
 				
+				DROP TABLE IF EXISTS `tbl_members_email_templates`;
 				CREATE TABLE  `tbl_members_email_templates` (
 					`id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 					`subject` VARCHAR( 255 ) NOT NULL ,
@@ -469,6 +472,7 @@
 					INDEX (`type`)
 				);
 				
+				DROP TABLE IF EXISTS `tbl_members_email_templates_role_mapping`;
 				CREATE TABLE  `tbl_members_email_templates_role_mapping` (
 					`id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 					`email_template_id` INT( 11 ) UNSIGNED NOT NULL ,
@@ -476,8 +480,8 @@
 					INDEX (  `email_template_id` ,  `role_id` )
 				);
 				
-				INSERT INTO `tbl_members_roles` VALUES (1, 'Guest', NULL, NULL);
-				INSERT INTO `tbl_members_roles` VALUES (2, 'Inactive', NULL, NULL);
+				INSERT INTO `tbl_members_roles` VALUES (1, 'Guest');
+				INSERT INTO `tbl_members_roles` VALUES (2, 'Inactive');
 			");
 
 		}	
