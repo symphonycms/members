@@ -77,7 +77,7 @@
 &lt;/form&gt;</code></pre>
 				<h3>Example Response XML</h3>
 				<p>On failure...</p>
-				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' status="error"&gt;
+				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' result="error"&gt;
 	&lt;new-password type="missing" /&gt;
 	&lt;old-password type="{missing | invalid}" message="Password is incorrect."/&gt;
 &lt;/'.self::ROOTELEMENT.'&gt;</code></pre>
@@ -162,7 +162,7 @@
 				redirect($_REQUEST['redirect']);
 			}
 			
-			$result->setAttribute('status', ($success === true ? 'success' : 'error'));
+			$result->setAttribute('result', ($success === true ? 'success' : 'error'));
 
 			return $result;
 		}		

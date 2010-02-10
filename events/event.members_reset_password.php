@@ -121,7 +121,7 @@
 				$success = $Members->sendNewPasswordEmail($code_row->member_id);
 			}
 			
-			$result->setAttribute('status', ($success === true ? 'success' : 'error'));
+			$result->setAttribute('result', ($success === true ? 'success' : 'error'));
 			
 			if($success == false){
 				$result->appendChild(new XMLElement('error', 'Sending email containing new password failed.'));
@@ -213,7 +213,7 @@
 				redirect($_REQUEST['redirect']);
 			}			
 			
-			$result->setAttribute('status', ($success === true ? 'success' : 'error'));
+			$result->setAttribute('result', ($success === true ? 'success' : 'error'));
 
 			return $result;
 		}		

@@ -36,7 +36,7 @@
 	&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Resend Activation Email"/&gt;
 &lt;/form&gt;</code></pre>
 				<h3>Example Response XML</h3>
-				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' status="success" /&gt;</code></pre>
+				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' result="success" /&gt;</code></pre>
 			';
 		}
 
@@ -124,7 +124,7 @@
 				redirect($_REQUEST['redirect']);
 			}
 
-			$result->setAttribute('status', ($success === true ? 'success' : 'error'));
+			$result->setAttribute('result', ($success === true ? 'success' : 'error'));
 
 			return $result;
 

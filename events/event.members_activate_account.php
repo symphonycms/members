@@ -39,7 +39,7 @@
 &lt;/form&gt;</code></pre>
 				<h3>Example Response XML</h3>
 				<p>On failure...</p>
-				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' status="error"&gt;
+				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' result="error"&gt;
 	&lt;error&gt;Activation failed. Code was invalid.&lt;/error&gt;
 &lt;/'.self::ROOTELEMENT.'&gt;</code></pre>
 			';
@@ -157,7 +157,7 @@
 				redirect($_REQUEST['redirect']);
 			}
 
-			$result->setAttribute('status', ($success === true ? 'success' : 'error'));
+			$result->setAttribute('result', ($success === true ? 'success' : 'error'));
 			
 			
 			return $result;
