@@ -28,7 +28,16 @@
 		}
 
 		public static function documentation(){
-			return new XMLElement('p', 'resend activation email of an inactive member.');
+			return '
+				<p>This event will resend the activation email to an inactive member.</p>
+				<h3>Example Front-end Form Markup</h3>
+				<p>This is an example of the form markup you can use on your front end. All that&#39;s required is a submit button.</p>
+				<pre class="XML"><code>&lt;form action="" method="post"&gt;		
+	&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Resend Activation Email"/&gt;
+&lt;/form&gt;</code></pre>
+				<h3>Example Response XML</h3>
+				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' status="success" /&gt;</code></pre>
+			';
 		}
 
 		public static function findSectionID($handle){

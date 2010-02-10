@@ -65,7 +65,23 @@
 
 
 		public static function documentation(){
-			return '';
+			return '
+				<p>This event allows a member to change his/her password.</p>
+				<h3>Example Front-end Form Markup</h3>
+				<p>This is an example of the form markup you can use on your front end. Requires the old password and new password, and uses a hidden field to redirect when the password has been successfully changed.</p>
+				<pre class="XML"><code>&lt;form action="" method="post"&gt;
+	&lt;label&gt;Old Password: &lt;input name="fields[old-password]" type="password"/&gt;&lt;/label&gt;
+	&lt;label&gt;New Password: &lt;input name="fields[new-password]" type="password"/&gt;&lt;/label&gt;				
+	&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Change Password"/&gt;
+	&lt;input type="hidden" name="redirect" value="{$root}/change-password/success/"/&gt;
+&lt;/form&gt;</code></pre>
+				<h3>Example Response XML</h3>
+				<p>On failure...</p>
+				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' status="error"&gt;
+	&lt;new-password type="missing" /&gt;
+	&lt;old-password type="{missing | invalid}" message="Password is incorrect."/&gt;
+&lt;/'.self::ROOTELEMENT.'&gt;</code></pre>
+			';
 		}
 		
 		public function load(){			

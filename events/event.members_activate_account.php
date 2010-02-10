@@ -28,7 +28,21 @@
 		}
 
 		public static function documentation(){
-			return new XMLElement('p', 'Activates an inactive member account.');
+			return '
+				<p>This event uses a code to activate an inactive member account.</p>
+				<h3>Example Front-end Form Markup</h3>
+				<p>This is an example of the form markup you can use on your front end. A text field accepts the member&#39;s activation code, and a hidden field redirects the member when activation is successful.</p>
+				<pre class="XML"><code>&lt;form action="" method="post"&gt;
+	&lt;label&gt;Code: &lt;input name="fields[code]" type="text" value="{$code}"/&gt;&lt;/label&gt;			
+	&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Activate Account"/&gt;
+	&lt;input type="hidden" name="redirect" value="{$root}/activate/success/"/&gt;
+&lt;/form&gt;</code></pre>
+				<h3>Example Response XML</h3>
+				<p>On failure...</p>
+				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' status="error"&gt;
+	&lt;error&gt;Activation failed. Code was invalid.&lt;/error&gt;
+&lt;/'.self::ROOTELEMENT.'&gt;</code></pre>
+			';
 		}
 
 		public static function findSectionID($handle){
