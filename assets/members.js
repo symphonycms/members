@@ -22,6 +22,7 @@ jQuery(document).ready(function(){
 		slide: function(event, ui) {
 			$("." + $(this).parents("td").attr("class") + " .slider").slider('option', 'value', ui.value);
 			$("." + $(this).parents("td").attr("class") + " span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
+			$("." + $(this).parents("td").attr("class") + " input").val(ui.value);
 			$(this).siblings("span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
 		}
 	});
