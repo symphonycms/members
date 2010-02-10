@@ -16,7 +16,7 @@
 		}
 
 		public function view(){
-			
+
 			$sectionManager = new SectionManager(Administration::instance());
 			
 			$this->_Parent->Page->addStylesheetToHead(URL . '/extensions/members/assets/styles.css', 'screen', 70);
@@ -295,8 +295,8 @@
 					$email_field_id = $db->lastInsertID();
 			
 					$db->query(sprintf("INSERT INTO `tbl_fields_input` VALUES(
-						NULL, %d, NULL
-					)", $email_field_id));
+						NULL, %d, '%s'
+					)", $email_field_id, $db->escape('/^\w(?:\.?[\w%+-]+)*@\w(?:[\w-]*\.)+?[a-z]{2,}$/i')));
 			
 					// Email Field data table	
 					$db->query(sprintf(
