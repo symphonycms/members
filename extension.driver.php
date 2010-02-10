@@ -62,8 +62,7 @@
 				$email->body = $this->__replaceFieldsInString(
 					$this->__replaceVarsInString($this->body, $vars), $member
 				);
-			print_r($email); die();
-			
+
 				try{
 					return $email->send();
 				}
@@ -93,15 +92,16 @@
 				
 				foreach($fields as $element_name => $field_id){
 
-					if($field_id == NULL) continue;
+					if(is_null($field_id)) continue;
 					
 					$field_data = $entry->getData($field_id);
 					$fieldObj = $FieldManager->fetch($field_id);
 					$value = $fieldObj->prepareTableValue($field_data);
-					
+
 					$string = str_replace('{$'.$element_name.'}', $value, $string);
 					$string = str_replace('{$'.$element_name.'::handle}', Lang::createHandle($value), $string);
 				}
+
 			}
 			
 			return $string;
@@ -121,7 +121,7 @@
 			foreach($field_handles as $h){
 				$fields[$h] = ASDCLoader::instance()->query(
 					"SELECT `id` FROM `tbl_fields` WHERE `element_name` = '{$h}' AND `parent_section` = ".self::$_Members->memberSectionID()." LIMIT 1"
-				)->id;
+				)->current()->id;
 			}
 			
 			return $fields;
@@ -445,14 +445,14 @@
 
 				DROP TABLE IF EXISTS `tbl_members_roles_event_permissions`;
 				CREATE TABLE `tbl_members_roles_event_permissions` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
+				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 				  `role_id` int(11) unsigned NOT NULL,
-				  `event` varchar(50)  NOT NULL,
-				  `action` varchar(60)  NOT NULL,
-				  `allow` enum('yes','no')  NOT NULL default 'no',
-				  PRIMARY KEY  (`id`),
+				  `event` varchar(50) NOT NULL,
+				  `action` varchar(60) NOT NULL,
+				  `level` smallint(1) unsigned NOT NULL DEFAULT '0',
+				  PRIMARY KEY (`id`),
 				  KEY `role_id` (`role_id`,`event`,`action`)
-				) ;
+				);
 
 				DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
 				CREATE TABLE `tbl_members_roles_forbidden_pages` (
@@ -594,7 +594,7 @@
 				array(
 					'page' => '/publish/new/',
 					'delegate' => 'EntryPostCreate',
-					'callback' => 'emailNewMember'
+					'callback' => 'cbEmailNewMember'
 				),		
 						
 			);
@@ -710,6 +710,10 @@
 		}
 		
 		public function emailNewMember($context){
+			return $this->__sendNewRegistrationEmail($context['entry'], $context['fields']);
+		}
+		
+		public function cbEmailNewMember($context){
 			if($context['section']->get('handle') == $this->memberSectionHandle()){
 				return $this->__sendNewRegistrationEmail($context['entry'], $context['fields']);
 			}

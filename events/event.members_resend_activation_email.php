@@ -71,7 +71,7 @@
 		}
 
 		protected function __trigger(){
-			
+
 			$result = new XMLElement(self::ROOTELEMENT);
 			
 			$success = false;
@@ -101,7 +101,6 @@
 
 			$success = $Members->emailNewMember(
 				array(
-					'section' => $Members->memberSectionHandle(),
 					'entry' => $entry,
 					'fields' => array(
 						'username-and-password' => $entry->getData(self::findFieldID('username-and-password', 'members')),

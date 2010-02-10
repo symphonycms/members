@@ -40,19 +40,18 @@
 		public static function documentation(){
 			return '		
 				
-				<h3>Example Form</h3>
-				<p><pre><code>
-				  &lt;form action="" method="post">
-					&lt;p>Supply either username or email address&lt;/p>
-				    &lt;input name="member-email-address" type="text"/>
-					&lt;input name="member-username" type="text"/>
-				    &lt;input name="action['.self::ROOTELEMENT.']" value="go" type="submit"/>
-				  &lt;/form></code></pre>				
-				</p>
-				
-				<h3>Example Response</h3>
-				<p><code>&lt;'.self::ROOTELEMENT.' sent="true">Email sent&lt;/'.self::ROOTELEMENT.'></code></p>
-			
+<h3>Example Form</h3>
+<p><pre><code>&lt;form action="" method="post">
+	&lt;p>Supply either username or email address&lt;/p>
+	&lt;input name="fields[member-email-address]" type="text"/>
+	&lt;input name="fields[member-username]" type="text"/>
+	&lt;input name="action['.self::ROOTELEMENT.']" value="go" type="submit"/>
+&lt;/form></code></pre>				
+</p>
+
+<h3>Example Response</h3>
+<p><code>&lt;'.self::ROOTELEMENT.' sent="true">Email sent&lt;/'.self::ROOTELEMENT.'></code></p>
+
 			';
 		}
 		
