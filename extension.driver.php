@@ -375,25 +375,26 @@
 		}		
 		
 		public function roleExists($name){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_members_roles` WHERE `name` = '$name' LIMIT 1");
+			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_members_roles` WHERE `name` = '{$name}' LIMIT 1");
 		}
 		
 		public function about(){
 			return array(
-						'name' 			=> 'Members',
-						'type'			=> 'Other',
-						'repository'	=> 'http://github.com/symphony/members',
-						'version' 		=> '1.2beta',
-						'release-date'	=> '2010-02-11',
-						'author' => array(
-							'name'		=> 'Symphony Team',
-							'website'	=> 'http://www.symphony-cms.com',
-							'email'		=> 'team@symphony-cms.com'),
-						'description'	=> 'Frontend Membership extension for Symphony CMS',
-						'compatibility'	=> array(
-							'2.0.7'		=> true
-						)
-				 		);
+				'name' 			=> 'Members',
+				'type'			=> 'Other',
+				'repository'	=> 'http://github.com/symphony/members',
+				'version' 		=> '1.2beta',
+				'release-date'	=> '2010-02-12',
+				'author' => array(
+					'name'		=> 'Symphony Team',
+					'website'	=> 'http://www.symphony-cms.com',
+					'email'		=> 'team@symphony-cms.com'
+				),
+				'description'	=> 'Frontend Membership extension for Symphony CMS',
+				'compatibility'	=> array(
+					'2.0.7'		=> true
+				),
+			);
 		}
 		
 		public function update($previous_version){
