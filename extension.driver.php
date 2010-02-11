@@ -997,10 +997,28 @@
 				
 				$forbidden_pages = $role->forbiddenPages();
 				if(is_array($forbidden_pages) && !empty($forbidden_pages)){
+					
+					$rows = ASDCLoader::instance()->query(sprintf(
+						"SELECT * FROM `tbl_pages` WHERE `id` IN (%s)", 
+						@implode(',', $forbidden_pages)
+					));
+					
 					$pages = new XMLElement('forbidden-pages');
-					foreach($forbidden_pages as $page_id) 
-						$pages->appendChild(new XMLElement('page', NULL, array('id' => $page_id)));
+					foreach($rows as $r){
 						
+						$attr = array(
+							'id' => $r->id, 
+							'handle' => General::sanitize($r->handle)
+						);
+						
+						if(!is_null($r->path)) $attr['parent-path'] = General::sanitize($r->path);
+						
+						$pages->appendChild(new XMLElement('page', 
+							General::sanitize($r->title), 
+							$attr
+						));
+					}
+					
 					$permission->appendChild($pages);
 				}
 
