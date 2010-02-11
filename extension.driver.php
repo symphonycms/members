@@ -662,7 +662,8 @@
 			return $email_template->send($entry->get('id'), array(
 				'root' => URL,
 				"{$member_field_handle}::username" => $entry->getData($this->usernameAndPasswordField(), true)->username,
-				'new-password' => $new_password
+				'new-password' => $new_password,
+				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			));
 			
 		}
@@ -684,7 +685,8 @@
 			return $email_template->send($entry->get('id'), array(
 				'root' => URL,
 				"{$member_field_handle}::username" => $entry->getData($this->usernameAndPasswordField(), true)->username,
-				'code' => $this->generateCode($entry->get('id'))
+				'code' => $this->generateCode($entry->get('id')),
+				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			));
 			
 		}
@@ -704,7 +706,8 @@
 				'root' => URL,
 				"{$member_field_handle}::plaintext-password" => $fields[$member_field_handle]['password'],
 				"{$member_field_handle}::username" => $fields[$member_field_handle]['username'],
-				'code' => $this->generateCode($entry->get('id'))
+				'code' => $this->generateCode($entry->get('id')),
+				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			));
 						
 		}
