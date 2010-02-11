@@ -72,7 +72,7 @@
 			if(isset($this->_errors['body'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['body']));
 			else $fieldset->appendChild($label);
 
-			$fieldset->appendChild(new XMLElement('p', 'Dynamic fields and parameters can be included in the subject or body of the email using the <code>{$param}</code> syntax. Available fields and parameters: member-name, member-email, username, root, site-name, etc, etc.', array('class' => 'help')));
+			$fieldset->appendChild(new XMLElement('p', 'Dynamic fields and parameters can be included in the subject or body of the email using the <code>{$param}</code> syntax. Please see the <a href="http://github.com/symphony/members/blob/master/README.markdown">readme</a> for a complete list of available parameters.', array('class' => 'help')));
 						
 			$this->Form->appendChild($fieldset);			
 			
