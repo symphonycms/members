@@ -107,7 +107,7 @@
 				return self::__MISSING_FIELDS__;
 			}
 
-			if(preg_match('/[^a-z0-9_-]/i', $data['username'])){
+			if(!General::validateString($data['username'], '/^[\pL\s-_0-9]{1,}+$/iu')){
 				$message = 'Username contains invalid characters.';
 				return self::__INVALID_FIELDS__;				
 			}
