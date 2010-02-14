@@ -105,7 +105,7 @@
 			elseif(is_null(extension_members::memberSectionID())){
 				$aTableBody = array(
 					Widget::TableRow(
-						array(Widget::TableData(__('No Member section has been specified in <a href="'.URL.'/symphony/extension/members/preferences/">Member Preferences</a>. Please do this first.'), 'inactive', NULL, count($aTableHead)))
+						array(Widget::TableData(__('No Member section has been specified in <a href="'.URL.'/symphony/extension/members/setup/">Member Setup</a>. Please do this first.'), 'inactive', NULL, count($aTableHead)))
 					)
 				);
 			}
