@@ -351,21 +351,21 @@
 			return array(
 				array(
 					'location' => 330,
-					'name' => 'Members',
+					'name' => __('Members'),
 					'children' => array(
 						
 						array(
-							'name' => 'Roles',
+							'name' => __('Roles'),
 							'link' => '/roles/'
 						),
 						
 						array(
-							'name' => 'Email Templates',
+							'name' => __('Email Templates'),
 							'link' => '/email_templates/'
 						),	
 											
 						array(
-							'name' => 'Setup',
+							'name' => __('Setup'),
 							'link' => '/setup/'
 						),						
 					)

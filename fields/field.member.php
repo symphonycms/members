@@ -6,7 +6,7 @@
 				
 		function __construct(&$parent){
 			parent::__construct($parent);
-			$this->_name = 'Member: Username &amp; Password';
+			$this->_name = __('Member: Username &amp; Password');
 			$this->_required = true;
 			$this->set('required', 'yes');
 			
@@ -83,14 +83,14 @@
 			$div = new XMLElement('div', NULL, array('class' => 'group'));
 			
 			$username = $data['username'];		
-			$label = Widget::Label('Username');
-			if($this->get('required') != 'yes') $label->appendChild(new XMLElement('i', 'Optional'));
+			$label = Widget::Label(__('Username'));
+			if($this->get('required') != 'yes') $label->appendChild(new XMLElement('i', __('Optional')));
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][username]'.$fieldnamePostfix, (strlen($username) != 0 ? $username : NULL)));
 			$div->appendChild($label);
 			
 			$password = $data['password'];		
-			$label = Widget::Label('Password');
-			if($this->get('required') != 'yes') $label->appendChild(new XMLElement('i', 'Optional'));
+			$label = Widget::Label(__('Password'));
+			if($this->get('required') != 'yes') $label->appendChild(new XMLElement('i', __('Optional')));
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][password]'.$fieldnamePostfix, (strlen($password) != 0 ? $password : NULL)));
 			$div->appendChild($label);
 			
@@ -103,19 +103,19 @@
 			$message = NULL;
 
 			if($this->get('required') == 'yes' && (strlen($data['username']) == 0 || strlen($data['password']) == 0)){
-				$message = "Username and Password are required fields.";
+				$message = __('Username and Password are required fields.');
 				return self::__MISSING_FIELDS__;
 			}
 
 			if(!General::validateString($data['username'], '/^[\pL\s-_0-9]{1,}+$/iu')){
-				$message = 'Username contains invalid characters.';
+				$message = __('Username contains invalid characters.');
 				return self::__INVALID_FIELDS__;				
 			}
 			
 			$existing_member = $this->fetchMemberFromUsername($data['username']);
 			
 			if($this->get('required') == 'yes' && (is_object($existing_member) && $existing_member->get('id') != $entry_id)){
-				$message = "That username is already taken";
+				$message = __('That username is already taken.');
 				return self::__INVALID_FIELDS__;				
 			}
 
