@@ -102,7 +102,7 @@
 
 			$this->setPageType('form');	
 			
-			$this->setTitle('Symphony &ndash; Member Roles &ndash; ' . $existing->subject);
+			$this->setTitle(__('Symphony &ndash; Member Roles &ndash; ') . $existing->subject);
 			$this->appendSubheading($existing->subject);
 
 			$fields = array();
@@ -129,32 +129,33 @@
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'primary');
 
-			$label = Widget::Label('Subject');
+			$label = Widget::Label(__('Subject'));
 			$label->appendChild(Widget::Input('fields[subject]', General::sanitize($fields['subject'])));
 
 			if(isset($this->_errors['subject'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['subject']));
 			else $fieldset->appendChild($label);
 
-			$label = Widget::Label('Body');
+			$label = Widget::Label(__('Body'));
 			$label->appendChild(Widget::Textarea('fields[body]', 15, 75, General::sanitize($fields['body'])));
 
 			if(isset($this->_errors['body'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['body']));
 			else $fieldset->appendChild($label);
 
-			$fieldset->appendChild(new XMLElement('p', 'Dynamic fields and parameters can be included in the subject or body of the email using the <code>{$param}</code> syntax. Please see the <a href="http://github.com/symphony/members/blob/master/README.markdown">readme</a> for a complete list of available parameters.', array('class' => 'help')));
+			$fieldset->appendChild(new XMLElement('p', __('Dynamic fields and parameters can be included in the subject or body of the email using the <code>{$param}</code> syntax. Please see the <a
+href="http://github.com/symphony/members/blob/master/README.markdown">readme</a> for a complete list of available parameters.'), array('class' => 'help')));
 			
 			$this->Form->appendChild($fieldset);			
 			
 			$sidebar = new XMLElement('fieldset');
 			$sidebar->setAttribute('class', 'secondary');
 	
-			$label = Widget::Label('Type');
+			$label = Widget::Label(__('Type'));
 			$options = array(
 				array(NULL, false, NULL),
-				array('reset-password', $fields['type'] == 'reset-password', 'Reset Password'),
-				array('new-password', $fields['type'] == 'new-password', 'New Password'),						
-				array('activate-account', $fields['type'] == 'activate-account', 'Activate Account'),
-				array('welcome', $fields['type'] == 'welcome', 'Welcome Email'),
+				array('reset-password', $fields['type'] == 'reset-password', __('Reset Password')),
+				array('new-password', $fields['type'] == 'new-password', __('New Password')),
+				array('activate-account', $fields['type'] == 'activate-account', __('Activate Account')),
+				array('welcome', $fields['type'] == 'welcome', __('Welcome Email')),
 			);
 			$label->appendChild(Widget::Select('fields[type]', $options));
 
@@ -162,7 +163,7 @@
 			else $sidebar->appendChild($label);
 				
 			
-			$label = Widget::Label('Roles');
+			$label = Widget::Label(__('Roles'));
 			
 			$label->appendChild(Widget::Input('fields[roles]', $fields['roles']));
 		
@@ -187,7 +188,7 @@
 			
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', 'Save Changes', 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
 			
 			
 			$button = new XMLElement('button', __('Delete'));

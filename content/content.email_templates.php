@@ -8,7 +8,7 @@
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->setTitle('Symphony &ndash; Email Templates');
+			$this->setTitle(__('Symphony &ndash; Email Templates'));
 			
 			$this->_driver = Administration::instance()->ExtensionManager->create('members');
 			
@@ -34,16 +34,16 @@
 			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/styles.css', 'screen', 9126341);
 			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/scripts.js', 9126342);
 			
-			$create_button = Widget::Anchor('Create a new email template', extension_members::baseURL() . 'email_templates_new/', 'Create a new email template', 'create button');
+			$create_button = Widget::Anchor(__('Create a new email template'), extension_members::baseURL() . 'email_templates_new/', __('Create a new email template'), 'create button');
 
 			$this->setPageType('table');
-			$this->appendSubheading('Email Templates ' . $create_button->generate(false));
+			$this->appendSubheading(__('Email Templates ') . $create_button->generate(false));
 
 
 			$aTableHead = array(
-				array('Subject', 'col'),
-				array('Type', 'col'),				
-				array('Roles', 'col')
+				array(__('Subject'), 'col'),
+				array(__('Type'), 'col'),				
+				array(__('Roles'), 'col')
 			);	
 		
 			$iterator = new EmailTemplateIterator;
@@ -75,13 +75,13 @@
 							$links[] = Widget::Anchor(
 								$r->name(), 
 								extension_members::baseURL() . 'roles_edit/' . $r->id() . '/', 
-								'Edit this role.'
+								__('Edit this role.')
 							)->generate();
 						}
 						$td3 = Widget::TableData(implode(', ', $links));
 					}
 					else{
-						$td3 = Widget::TableData('None', 'inactive');
+						$td3 = Widget::TableData(__('None'), 'inactive');
 					}
 					
 					$td3->appendChild(Widget::Input("items[{$e->id}]", null, 'checkbox'));
