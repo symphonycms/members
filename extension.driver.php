@@ -871,8 +871,12 @@
 
 			## Cookies only show up on page refresh. This flag helps in making sure the correct XML is being set
 			$loggedin = false;
-			
-			$action = $_REQUEST['member-action'];
+
+			if(is_array($_REQUEST['member-action'])){
+				list($action) = array_keys($_REQUEST['member-action']);
+			} else {
+				$action = $_REQUEST['member-action'];
+			}
 
 			if(trim($action) == 'logout'){
 				$this->logout();
