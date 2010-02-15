@@ -18,8 +18,8 @@
 					
 			if(!$existing = $this->_driver->fetchRole($role_id, true)){
 				throw new SymphonyErrorPage(
-					'The role you requested to edit does not exist.', 
-					'Role not found', 
+					__('The role you requested to edit does not exist.'), 
+					__('Role not found'), 
 					'error', 
 					array('header' => 'HTTP/1.0 404 Not Found')
 				);
@@ -30,8 +30,8 @@
 				
 				if(!$replacement = $this->_driver->fetchRole($_POST['fields']['replacement_role'])) {
 					throw new SymphonyErrorPage(
-						'The replacement role does not exist.', 
-						'Role not found', 
+						__('The replacement role does not exist.'), 
+						__('Role not found'), 
 						'error', 
 						array('header' => 'HTTP/1.0 404 Not Found')
 					);
@@ -58,12 +58,12 @@
 				$page_access = $fields['page_access'];
 
 				if(strlen($name) == 0){
-					$this->_errors['name'] = 'This is a required field';
+					$this->_errors['name'] = __('This is a required field');
 					return;
 				}
 
 				elseif(strtolower($existing->name()) != strtolower($name) && $this->_driver->roleExists($name)){
-					$this->_errors['name'] = 'A role with the name <code>' . $name . '</code> already exists.';
+					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', $name);
 					return;
 				}
 
@@ -154,7 +154,7 @@
 
 			$this->setPageType('form');	
 			
-			$this->setTitle('Symphony &ndash; Member Roles &ndash; ' . $existing->name());
+			$this->setTitle(__('Symphony &ndash; Member Roles &ndash; ') . $existing->name());
 			$this->appendSubheading($existing->name());
 
 			$fields = array();
@@ -174,10 +174,10 @@
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
-			$fieldset->appendChild(new XMLElement('legend', 'Essentials'));
+			$fieldset->appendChild(new XMLElement('legend', __('Essentials')));
 
 
-			$label = Widget::Label('Name');
+			$label = Widget::Label(__('Name'));
 			$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
 
 			if(isset($this->_errors['name'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['name']));
@@ -203,12 +203,12 @@
 			
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
-			$fieldset->appendChild(new XMLElement('legend', 'Event Level Permissions'));			
+			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));			
 			
 			$aTableHead = array(
-				array('Event', 'col'),
-				array('Create', 'col'),
-				array('Edit', 'col'),			
+				array(__('Event'), 'col'),
+				array(__('Create'), 'col'),
+				array(__('Edit'), 'col'),			
 			//	array('Delete', 'col'),					
 			);	
 
@@ -233,7 +233,7 @@
 			*/
 			
 			## Setup each cell
-			$td1 = Widget::TableData('Global Permissions');
+			$td1 = Widget::TableData(__('Global Permissions'));
 			
 			$td2 = Widget::TableData(Widget::Input(
 				'global-add', 
@@ -342,14 +342,14 @@
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
-			$fieldset->appendChild(new XMLElement('legend', 'Page Level Permissions'));
+			$fieldset->appendChild(new XMLElement('legend', __('Page Level Permissions')));
 
 			$pages = ASDCLoader::instance()->query(sprintf(
 				"SELECT * FROM `tbl_pages` %s ORDER BY `title` ASC",
 				($this->_context[0] == 'edit' ? "WHERE `id` != '{$page_id}' " : NULL)
 			));
 
-			$label = Widget::Label('Deny Access');
+			$label = Widget::Label(__('Deny Access'));
 
 			$options = array();
 			if($pages->length() > 0){
@@ -368,7 +368,7 @@
 			
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', 'Save Changes', 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
 			$this->Form->appendChild($div);			
 
 		}
