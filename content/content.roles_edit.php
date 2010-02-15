@@ -63,7 +63,7 @@
 				}
 
 				elseif(strtolower($existing->name()) != strtolower($name) && $this->_driver->roleExists($name)){
-					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', $name);
+					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
 					return;
 				}
 
@@ -356,7 +356,7 @@
 				foreach($pages as $page){
 					$options[] = array(
 						$page->id, 
-						in_array($page->id, $fields['page_access']), 
+						@in_array($page->id, $fields['page_access']), 
 						'/' . Administration::instance()->resolvePagePath($page->id)
 					);
 				}

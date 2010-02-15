@@ -10,7 +10,7 @@
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->setTitle('Symphony &ndash; Member Roles &ndash; Untitled');
+			$this->setTitle(__('Symphony &ndash; Member Roles &ndash; Untitled'));
 			$this->_driver = Administration::instance()->ExtensionManager->create('members');
 		}
 		
@@ -25,12 +25,12 @@
 				$page_access = $fields['page_access'];
 				
 				if(strlen($name) == 0){
-					$this->_errors['name'] = 'This is a required field';
+					$this->_errors['name'] = __('This is a required field');
 					return;
 				}
 				
 				elseif($this->_driver->roleExists($name)){
-					$this->_errors['name'] = 'A role with the name <code>' . $name . '</code> already exists.';
+					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
 					return;
 				}
 			
