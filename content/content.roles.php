@@ -75,16 +75,16 @@
 			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/styles.css', 'screen', 9126341);
 			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/scripts.js', 9126342);
 			
-			$create_button = Widget::Anchor('Create a new role', extension_members::baseURL() . 'roles_new/', 'Create a new role', 'create button');
+			$create_button = Widget::Anchor(__('Create a new role'), extension_members::baseURL() . 'roles_new/', __('Create a new role'), 'create button');
 
 			$this->setPageType('table');
-			$this->appendSubheading('Member Roles ' . $create_button->generate(false));
+			$this->appendSubheading(__('Member Roles ') . $create_button->generate(false));
 
 
 			$aTableHead = array(
 
-				array('Name', 'col'),
-				array('Members', 'col'),		
+				array(__('Name'), 'col'),
+				array(__('Members'), 'col'),		
 
 			);	
 		
@@ -131,7 +131,7 @@
 					$td1 = Widget::TableData(Widget::Anchor($role->name(), extension_members::baseURL() . 'roles_edit/' . $role->id() . '/', NULL, 'content'));
 					
 					if(extension_Members::GUEST_ROLE_ID == $role->id()){
-						$td2 = Widget::TableData('N/A', 'inactive');
+						$td2 = Widget::TableData(__('N/A'), 'inactive');
 					}
 					else{
 						$td2 = Widget::TableData(Widget::Anchor(
