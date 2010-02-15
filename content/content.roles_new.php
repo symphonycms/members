@@ -71,11 +71,11 @@
 
 			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
 			
-			if($formHasErrors) $this->pageAlert('An error occurred while processing this form. <a href="#error">See below for details.</a>', AdministrationPage::PAGE_ALERT_ERROR);
+			if($formHasErrors) $this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AdministrationPage::PAGE_ALERT_ERROR);
 			
 			$this->setPageType('form');	
 
-			$this->appendSubheading('Untitled');
+			$this->appendSubheading(__('Untitled'));
 		
 			$fields = array();
 			
@@ -85,9 +85,9 @@
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
-			$fieldset->appendChild(new XMLElement('legend', 'Essentials'));
+			$fieldset->appendChild(new XMLElement('legend', __('Essentials')));
 
-			$label = Widget::Label('Name');
+			$label = Widget::Label(__('Name'));
 			$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
 
 			if(isset($this->_errors['name'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['name']));
@@ -113,12 +113,12 @@
 			
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
-			$fieldset->appendChild(new XMLElement('legend', 'Event Level Permissions'));			
+			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));			
 			
 			$aTableHead = array(
-				array('Event', 'col'),
-				array('Create', 'col'),
-				array('Edit', 'col'),			
+				array(__('Event'), 'col'),
+				array(__('Create'), 'col'),
+				array(__('Edit'), 'col'),			
 			//	array('Delete', 'col'),					
 			);	
 
@@ -143,7 +143,7 @@
 			*/
 				
 			## Setup each cell
-			$td1 = Widget::TableData('Global Permissions');
+			$td1 = Widget::TableData(__('Global Permissions'));
 			
 			$td2 = Widget::TableData(Widget::Input(
 				'global-add', 
@@ -253,14 +253,14 @@
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
-			$fieldset->appendChild(new XMLElement('legend', 'Page Level Permissions'));
+			$fieldset->appendChild(new XMLElement('legend', __('Page Level Permissions')));
 
 			$pages = ASDCLoader::instance()->query(sprintf(
 				"SELECT * FROM `tbl_pages` %s ORDER BY `title` ASC",
 				($this->_context[0] == 'edit' ? "WHERE `id` != '{$page_id}' " : NULL)
 			));
 
-			$label = Widget::Label('Deny Access');
+			$label = Widget::Label(__('Deny Access'));
 
 			$options = array();
 			if($pages->length() > 0){
@@ -280,7 +280,7 @@
 			
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', 'Create', 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', __('Create'), 'submit', array('accesskey' => 's')));
 	
 			$this->Form->appendChild($div);			
 
