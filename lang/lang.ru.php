@@ -17,6 +17,7 @@
 	 */
 
 	$dictionary = array(
+	
 		'Members' =>
 		'Пользователи',
 		
@@ -29,8 +30,14 @@
 		'Setup' =>
 		'Установки',
 		
-		'' =>
-		'',
+		'Symphony &ndash; Members &ndash; Setup' =>
+		'Symphony &ndash; Пользователи &ndash; Установки',
+		
+		'Username and Password are required fields.' =>
+		'Имя пользователя и пароль — обязательные для заполнения поля',
+		
+		'Username contains invalid characters.' =>
+		'Имя пользователя содержит недопустимые символы',
 
 		'Member: Username &amp; Password' =>
 		'Пользователь: имя пользователя и пароль',

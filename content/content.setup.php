@@ -8,7 +8,7 @@
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->setTitle('Symphony &ndash; Member Roles &ndash; Setup');
+			$this->setTitle(__('Symphony &ndash; Members &ndash; Setup'));
 			$this->setPageType('form');
 			
 			$this->_driver = $parent->ExtensionManager->create('members');
@@ -21,17 +21,18 @@
 			
 			$this->_Parent->Page->addStylesheetToHead(URL . '/extensions/members/assets/styles.css', 'screen', 70);
 
-			$this->appendSubheading('Setup');
+			$this->appendSubheading(__('Setup'));
 
 		    $bIsWritable = true;
 			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
 
 		    if(!is_writable(CONFIG)){
-		        $this->pageAlert('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.', AdministrationPage::PAGE_ALERT_ERROR);
+		        $this->pageAlert(__('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'),
+AdministrationPage::PAGE_ALERT_ERROR);
 		        $bIsWritable = false;
 		    }
 
-			elseif($formHasErrors) $this->pageAlert('An error occurred while processing this form. <a href="#error">See below for details.</a>', AdministrationPage::PAGE_ALERT_ERROR);
+			elseif($formHasErrors) $this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AdministrationPage::PAGE_ALERT_ERROR);
 			
 			if(!is_null(extension_members::memberSectionID())){
 				$member_section = $sectionManager->fetch(extension_members::memberSectionID());
@@ -39,16 +40,17 @@
 			
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
-			$group->appendChild(new XMLElement('legend', 'Instructions'));
+			$group->appendChild(new XMLElement('legend', __('Instructions')));
 			
-			$p = new XMLElement('p', 'A section is required for storing member details. Use the button below to automatically create a compatible section (you can always edit or add fields later), or use the dropdowns to link to an existing section containing the required fields.');
+			$p = new XMLElement('p', __('A section is required for storing member details. Use the button below to automatically create a compatible section (you can always edit or add fields later), or use
+the dropdowns to link to an existing section containing the required fields.'));
 			$group->appendChild($p);
 					
 			$this->Form->appendChild($group);
 						
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
-			$group->appendChild(new XMLElement('legend', 'Smart Setup'));			
+			$group->appendChild(new XMLElement('legend', __('Smart Setup')));			
 			
 			$attr = array('name' => 'action[smart-setup]', 'type' => 'submit');
 			if($member_section instanceof Section){
@@ -56,10 +58,11 @@
 			}
 			$div = new XMLElement('div', NULL, array('id' => 'file-actions', 'class' => 'label'));			
 			$span = new XMLElement('span');
-			$span->appendChild(new XMLElement('button', 'Create', $attr));	
+			$span->appendChild(new XMLElement('button', __('Create'), $attr));	
 			$div->appendChild($span);
 
-			$div->appendChild(new XMLElement('p', 'Automatically creates a new section, called Members, containing Username/Password, Role, Email Address, and Timezone Offset fields.', array('class' => 'help')));	
+			$div->appendChild(new XMLElement('p', __('Automatically creates a new section, called Members, containing Username/Password, Role, Email Address, and Timezone Offset fields.'), array('class' =>
+'help')));	
 
 			$group->appendChild($div);						
 			$this->Form->appendChild($group);
@@ -68,9 +71,9 @@
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
 			
-			$group->appendChild(new XMLElement('legend', 'Essentials'));
+			$group->appendChild(new XMLElement('legend', __('Essentials')));
 
-			$p = new XMLElement('p', 'Must contain a <code>Member</code> type field. Will be used to validate login details.');
+			$p = new XMLElement('p', __('Must contain a <code>Member</code> type field. Will be used to validate login details.'));
 			$p->setAttribute('class', 'help');
 			$group->appendChild($p);
 		
@@ -79,7 +82,7 @@
 			$section_list = Symphony::Database()->fetchCol('parent_section', "SELECT `parent_section` FROM `tbl_fields` WHERE `type` = 'member'");
 
 
-			$label = Widget::Label('Member Section');
+			$label = Widget::Label(__('Member Section'));
 					
 			$options = array();
 
@@ -94,7 +97,7 @@
 			$div->appendChild($label);
 			
 			
-			$label = Widget::Label('Email Address Field');
+			$label = Widget::Label(__('Email Address Field'));
 
 
 			if($member_section instanceof Section){
@@ -106,7 +109,7 @@
 				}
 			}
 			
-			else $options = array(array('', false, 'Must set Member section first'));
+			else $options = array(array('', false, __('Must set Member section first')));
 			
 			$label->appendChild(Widget::Select('fields[email_address_field_id]', $options, ($member_section instanceof Section ? NULL : array('disabled' => 'disabled'))));
 			$div->appendChild($label);			
@@ -116,7 +119,7 @@
 			
 			$div = new XMLElement('div', NULL, array('class' => 'group'));
 
-			$label = Widget::Label('Timezone Offset Field');
+			$label = Widget::Label(__('Timezone Offset Field'));
 
 			if($member_section instanceof Section){
 				
@@ -127,14 +130,14 @@
 				}
 			}
 			
-			else $options = array(array('', false, 'Must set Member section first'));
+			else $options = array(array('', false, __('Must set Member section first')));
 			
 			$label->appendChild(Widget::Select('fields[timezone_offset_field_id]', $options, ($member_section instanceof Section ? NULL : array('disabled' => 'disabled'))));
 			$div->appendChild($label);			
 			$group->appendChild($div);	
 	
 			
-			$group->appendChild(new XMLElement('p', 'Stores member timezones. Used to dynamically adjust date displays. Defaults to Symphony configuration offset.', array('class' => 'help')));
+			$group->appendChild(new XMLElement('p', __('Stores member timezones. Used to dynamically adjust date displays. Defaults to Symphony configuration offset.'), array('class' => 'help')));
 			
 			$this->Form->appendChild($group);		
 						
@@ -142,11 +145,11 @@
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
 			
-			$group->appendChild(new XMLElement('legend', 'Registration'));
+			$group->appendChild(new XMLElement('legend', __('Registration')));
 		
 			$div = new XMLElement('div', NULL, array('class' => 'group'));
 			
-			$label = Widget::Label('New Member Default Role');
+			$label = Widget::Label(__('New Member Default Role'));
 			
 			$options = array(array(NULL, false, NULL));
 			foreach($this->_driver->fetchRoles() as $r){
@@ -173,7 +176,7 @@
 
 			$attr = array('accesskey' => 's');
 			if(!$bIsWritable) $attr['disabled'] = 'disabled';
-			$div->appendChild(Widget::Input('action[save]', 'Save Changes', 'submit', $attr));
+			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', $attr));
 
 			$this->Form->appendChild($div);	
 
