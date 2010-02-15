@@ -1,8 +1,8 @@
 # Members
 
-- Version: 1.2 beta
+- Version: 1.2.1 beta
 - Author: Symphony Team
-- Build Date: 12th February 2010
+- Build Date: 15th February 2010
 - Requirements: Symphony 2.0.7 or higher
 
 Frontend Membership extension for Symphony CMS.
@@ -20,6 +20,12 @@ Frontend Membership extension for Symphony CMS.
 	- Either use the "Smart Setup" tool to autogenerate a compatible members section, or use the "Essentials" section to point to an existing section containing the required fields.
 	- _optional_ In the "Registration" section, specify whether to require activation for newly registered members.
 4. Go to System > Preferences and provide the SMTP Email Library with email credentials. This is necessary for activation emails and password resets.
+
+## Change Log
+
+1.2.1beta 	- EmailTemplate class incorrectly attempting to set Email->body, when it should be Email->message
+1.2beta 	- Initial Release
+
 
 ## Usage
 
