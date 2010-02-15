@@ -59,7 +59,7 @@
 					$this->__replaceVarsInString($this->subject, $vars), $member
 				);
 				
-				$email->body = $this->__replaceFieldsInString(
+				$email->message = $this->__replaceFieldsInString(
 					$this->__replaceVarsInString($this->body, $vars), $member
 				);
 
@@ -383,8 +383,8 @@
 				'name' 			=> 'Members',
 				'type'			=> 'Other',
 				'repository'	=> 'http://github.com/symphony/members',
-				'version' 		=> '1.2beta',
-				'release-date'	=> '2010-02-12',
+				'version' 		=> '1.2.1beta',
+				'release-date'	=> '2010-02-15',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
