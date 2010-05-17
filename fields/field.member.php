@@ -107,7 +107,7 @@
 				return self::__MISSING_FIELDS__;
 			}
 
-			if(!General::validateString($data['username'], '/^[\pL\s-_0-9]{1,}+$/iu')){
+			if(!General::validateString($data['username'], '/^[\pL\s-_0-9@.]{1,}+$/iu')){
 				$message = __('Username contains invalid characters.');
 				return self::__INVALID_FIELDS__;				
 			}
@@ -186,7 +186,7 @@
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `username` varchar(50) default NULL,
+				  `username` varchar(150) default NULL,
 				  `password` varchar(32) default NULL,				
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),

@@ -88,6 +88,8 @@
 		}
 		
 		protected function __trigger(){
+			//	Allow username to be email adddress
+			$_POST['fields']['username-and-password']['username'] = $_POST['fields']['email'];
 			
 			$role_field_handle = ASDCLoader::instance()->query(sprintf(
 				"SELECT `element_name` FROM `tbl_fields` WHERE `type` = 'memberrole' AND `parent_section` = %d LIMIT 1",
