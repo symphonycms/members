@@ -1,7 +1,7 @@
 <?php
 
 	require_once(TOOLKIT . '/class.event.php');
-	
+
 	Class eventmembers_Register extends Event{
 
 		const ROOTELEMENT = 'members-register';
@@ -12,11 +12,11 @@
 			parent::__construct($parent, $env);
 			$this->_driver = $this->_Parent->ExtensionManager->create('members');
 		}
-		
+
 		public static function showInRolePermissions(){
 			return true;
 		}
-		
+
 		public static function about(){
 			return array(
 					 'name' => 'Members: Register',
@@ -26,11 +26,11 @@
 							'email' => 'alistair@symphony-cms.com'),
 					 'version' => '1.0',
 					 'release-date' => '2010-02-05T02:35:13+00:00',
-					 'trigger-condition' => 'action[members-register]');	
+					 'trigger-condition' => 'action[members-register]');
 		}
 
 		public static function getSource(){
-			return extension_Members::memberSectionID();
+			return extension_Members::getConfigVar('member_section');
 		}
 
 		public static function allowEditorToParse(){
@@ -47,10 +47,10 @@
 		&lt;input name="fields[name]" type="text" /&gt;
 	&lt;/label&gt;
 	&lt;label&gt;Username
-		&lt;input name="fields[username-and-password][username]" type="text" /&gt;
+		&lt;input name="fields[username]" type="text" /&gt;
 	&lt;/label&gt;
 	&lt;label&gt;Password
-		&lt;input name="fields[username-and-password][password]" type="password" /&gt;
+		&lt;input name="fields[password]" type="password" /&gt;
 	&lt;/label&gt;
 	&lt;label&gt;Email Address
 		&lt;input name="fields[email-address]" type="text" /&gt;
@@ -82,27 +82,50 @@
 &lt;/'.self::ROOTELEMENT.'&gt;</code></pre>
 			';
 		}
-		
-		public function load(){			
+
+		public function load(){
 			if(isset($_POST['action']['members-register'])) return $this->__trigger();
 		}
-		
-		protected function __trigger(){	
-			$role_field_handle = ASDCLoader::instance()->query(sprintf(
+
+		protected function __trigger(){
+			$role_field_handle = Symphony::Database()->fetchVar('element_name', sprintf(
 				"SELECT `element_name` FROM `tbl_fields` WHERE `type` = 'memberrole' AND `parent_section` = %d LIMIT 1",
-				extension_Members::memberSectionID()
-			))->current()->element_name;
-			
-			$role_id = Symphony::Configuration()->get('new_member_default_role', 'members');
+				extension_Members::getConfigVar('member_section')
+			));
+
 			if(Symphony::Configuration()->get('require_activation', 'members') == 'yes'){
 				$role_id = extension_Members::INACTIVE_ROLE_ID;
 			}
-			
+			else {
+				$role_id = extension_Members::getConfigVar('new_member_default_role');
+			}
+
 			$_POST['fields'][$role_field_handle] = $role_id;
-			
+
+			$result = new XMLElement(self::ROOTELEMENT);
+			$error = false;
+
+			if(empty($_POST['fields']['username'])) {
+				$error = true;
+				$u = new XMLElement('username');
+				$u->setAttribute('type', 'missing');
+				$u->setAttribute('message', "Username is a required field.");
+
+				$result->appendChild($u);
+			}
+            
+            if(empty($_POST['fields']['password'])) {
+				$error = true;
+				$u = new XMLElement('password');
+				$u->setAttribute('type', 'missing');
+				$u->setAttribute('message', "Password is a required field.");
+
+				$result->appendChild($u);
+			}
+            
+           	if($error) return $result;
+
 			include(TOOLKIT . '/events/event.section.php');
 			return $result;
-		}		
-
+		}
 	}
-

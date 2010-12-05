@@ -1,32 +1,29 @@
 <?php
 
-Class EmailTemplate{
+	Class EmailTemplate{
 
-		private $_id;
-		private $_type;
-		private $_subject;
-		private $_body;
-		private $__roles;
+		private $_id = null;
+		private $_type = null;
+		private $_subject = null;
+		private $_body = null;
+		private $__roles = array();
 
 		private static $_Members;
-		private static $_Parent;
+		private static $symphony;
 
 		public function __construct(){
-			$this->id = $this->type = $this->subject = $this->body = NULL;
-			$this->__roles = array();
-
-			if(!(self::$_Parent instanceof Symphony)){
+			if(!(self::$symphony instanceof Symphony)){
 				if(class_exists('Frontend')){
-					self::$_Parent = Frontend::instance();
+					self::$symphony = Frontend::instance();
 				}
 
 				else{
-					self::$_Parent = Administration::instance();
+					self::$symphony = Administration::instance();
 				}
 			}
 
 			if(!(self::$_Members instanceof Extension)){
-				self::$_Members = self::$_Parent->ExtensionManager->create('members');
+				self::$_Members = self::$symphony->ExtensionManager->create('members');
 			}
 		}
 
@@ -34,16 +31,18 @@ Class EmailTemplate{
 			return $this->__roles;
 		}
 
-		public function send($members, array $vars=array()){
+		public function send($members, Array $vars = array()){
 
 			if(!is_array($members)) $members = array($members);
 
 			foreach($members as $member_id){
+			/*
+				TODO: Implement Core Email API
 				$email = new LibraryEmail;
 
-				$member = self::$_Members->fetchMemberFromID($member_id);
+				$member = self::$_Members->Member->fetchMemberFromID($member_id);
 
-				$email->to = $member->getData(extension_Members::memberEmailFieldID(), true)->value;
+				$email->to = $member->getData(extension_Members::getConfigVar('email_address_field_id'), true)->value;
 				$email->from = sprintf(
 					'%s <%s>',
 					Symphony::Configuration()->get('sitename', 'general'),
@@ -66,6 +65,7 @@ Class EmailTemplate{
 				}
 
 				unset($email);
+				*/
 			}
 
 		}
@@ -82,11 +82,9 @@ Class EmailTemplate{
 			$fields = $this->__findFieldsInString($string, true);
 
 			if(is_array($fields) && !empty($fields)){
+				$FieldManager = new FieldManager(self::$symphony);
 
-				$FieldManager = new FieldManager(self::$_Parent);
-
-				foreach($fields as $element_name => $field_id){
-
+				foreach($fields as $element_name => $field_id) {
 					if(is_null($field_id)) continue;
 
 					$field_data = $entry->getData($field_id);
@@ -96,7 +94,6 @@ Class EmailTemplate{
 					$string = str_replace('{$'.$element_name.'}', $value, $string);
 					$string = str_replace('{$'.$element_name.'::handle}', Lang::createHandle($value), $string);
 				}
-
 			}
 
 			return $string;
@@ -113,29 +110,31 @@ Class EmailTemplate{
 
 			$fields = array();
 
+			// This could be optimised so that it gets all the ID's in one query..
 			foreach($field_handles as $h){
-				$fields[$h] = ASDCLoader::instance()->query(
-					"SELECT `id` FROM `tbl_fields` WHERE `element_name` = '{$h}' AND `parent_section` = ".self::$_Members->memberSectionID()." LIMIT 1"
-				)->current()->id;
+				$fields[$h] = Symphony::Database()>query('id', 0, sprintf("
+						SELECT `id`
+						FROM `tbl_fields`
+						WHERE `element_name` = '%s'
+						AND `parent_section` = %d
+						LIMIT 1
+					", $h, extension_Members::getConfigVar('member_section')
+				));
 			}
 
 			return $fields;
 
 		}
 
-		public function addRole($role_id){
+		public function addRole($role_id = null){
+			if(is_null($role_id)) return;
+
 			$this->__roles[$role_id] = Role::loadFromID($role_id);
 		}
 
-		public function addRoleFromName($role_name){
-			$id = ASDCLoader::instance()->query(
-				"SELECT `id` FROM `tbl_members_roles` WHERE `name` = '{$role_name}' LIMIT 1"
-			)->current()->id;
-
-			$this->addRole($id);
-		}
-
 		public function removeRole($role_id){
+			if(is_null($role_id)) return;
+
 			unset($this->__roles[$role_id]);
 		}
 
@@ -152,53 +151,55 @@ Class EmailTemplate{
 		}
 
 		public static function find($type, $role_id=NULL){
-			$id = ASDCLoader::instance()->query(sprintf(
+			$id = Symphony::Database()->fetchVar('id', 0, sprintf(
 				"SELECT et.id FROM `tbl_members_email_templates` AS `et`
 				LEFT JOIN `tbl_members_email_templates_role_mapping` AS `r` ON et.id = r.email_template_id
 				WHERE et.type = '%s' %s",
-				ASDCLoader::instance()->escape($type),
+				Symphony::Database()->cleanValue($type),
 				(!is_null($role_id) ? "AND r.role_id = {$role_id}" : NULL)
-			))->current()->id;
+			));
 
 			return self::loadFromID($id);
 		}
 
-		public static function loadFromID($id){
+		public static function loadFromID($id = null){
+			if(is_null($id)) return;
 
-			$obj = new self;
+			$obj = new EmailTemplate();
 
-			$record = ASDCLoader::instance()->query(
+			$record = Symphony::Database()->fetchRow(0,
 				"SELECT * FROM `tbl_members_email_templates` WHERE `id` = {$id} LIMIT 1"
-			)->current();
-
-			$obj->id = $record->id;
-			$obj->subject = $record->subject;
-			$obj->body = $record->body;
-			$obj->type = $record->type;
-
-			$roles = ASDCLoader::instance()->query(
-				"SELECT et.role_id
-				FROM `tbl_members_email_templates_role_mapping` AS `et`
-				WHERE et.email_template_id = {$record->id}"
 			);
 
-			if($roles->length() > 0){
+			if(empty($record)) return;
+
+			$obj->id = $record['id'];
+			$obj->subject = $record['subject'];
+			$obj->body = $record['body'];
+			$obj->type = $record['type'];
+
+			$roles = Symphony::Database()->fetch(
+				"SELECT et.role_id
+				FROM `tbl_members_email_templates_role_mapping` AS `et`
+				WHERE et.email_template_id = {$record['id']}"
+			);
+
+			if(!empty($roles)) {
 				foreach($roles as $r){
-					$obj->addRole($r->role_id);
+					$obj->addRole($r['role_id']);
 				}
 			}
 
 			return $obj;
-
 		}
 
 		public static function delete($id){
-			ASDCLoader::instance()->delete('tbl_members_email_templates',  "`id` = {$id}");
-			ASDCLoader::instance()->delete('tbl_members_email_templates_role_mapping',  "`email_template_id` = {$id}");
+			Symphony::Database()->delete('tbl_members_email_templates',  "`id` = {$id}");
+			Symphony::Database()->delete('tbl_members_email_templates_role_mapping',  "`email_template_id` = {$id}");
 			return true;
 		}
 
-		public static function save(self &$obj){
+		public static function save(EmailTemplate &$obj){
 
 			$fields = array(
 				'type' => $obj->type,
@@ -207,61 +208,18 @@ Class EmailTemplate{
 			);
 
 			if(!is_null($obj->id)){
-				ASDCLoader::instance()->update($fields, 'tbl_members_email_templates', "`id` = {$obj->id}");
+				Symphony::Database()->update($fields, 'tbl_members_email_templates', "`id` = {$obj->id}");
 			}
 			else{
-				$obj->id = ASDCLoader::instance()->insert($fields, 'tbl_members_email_templates');
+				$obj->id = Symphony::Database()->insert($fields, 'tbl_members_email_templates');
 			}
 
-			ASDCLoader::instance()->delete('tbl_members_email_templates_role_mapping',  "`email_template_id` = {$obj->id}");
+			Symphony::Database()->delete('tbl_members_email_templates_role_mapping',  "`email_template_id` = {$obj->id}");
 			foreach($obj->roles() as $id => $role){
-				ASDCLoader::instance()->insert(
+				Symphony::Database()->insert(
 					array('id' => NULL, 'role_id' => $id, 'email_template_id' => $obj->id),
 					'tbl_members_email_templates_role_mapping'
 				);
 			}
 		}
-	}
-
-	Final Class EmailTemplateIterator implements Iterator{
-
-		private $_iterator;
-
-		public function __construct(){
-			$this->_iterator = ASDCLoader::instance()->query("SELECT `id` FROM `tbl_members_email_templates`");
-		}
-
-		public function current(){
-			$this->_current = EmailTemplate::loadFromID($this->_iterator->current()->id);
-			return $this->_current;
-		}
-
-		public function innerIterator(){
-			return $this->_iterator;
-		}
-
-		public function next(){
-			$this->_iterator->next();
-		}
-
-		public function key(){
-			return $this->_iterator->key();
-		}
-
-		public function valid(){
-			return $this->_iterator->valid();
-		}
-
-		public function rewind(){
-			$this->_iterator->rewind();
-		}
-
-		public function position(){
-			return $this->_iterator->position();
-		}
-
-		public function length(){
-			return $this->_iterator->length();
-		}
-
 	}

@@ -1,39 +1,34 @@
 <?php
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
-	
+
 	Class contentExtensionMembersEmail_Templates extends AdministrationPage{
-		
-		private $_driver;
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
 			$this->setTitle(__('Symphony &ndash; Email Templates'));
-			
-			$this->_driver = Administration::instance()->ExtensionManager->create('members');
-			
 		}
-		
+
 		public function action() {
 			$checked = @array_keys($_POST['items']);
-			
+
 			if (is_array($checked) && !empty($checked)) {
 				if($_POST['with-selected'] == 'delete'):
 					foreach($checked as $id){
 						EmailTemplate::delete($id);
 					}
 				endif;
-				
+
 			}
-			
+
 			redirect(extension_members::baseURL() . 'email_templates/');
-		}	
-	
+		}
+
 		public function view(){
 
 			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/styles.css', 'screen', 9126341);
 			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/scripts.js', 9126342);
-			
+
 			$create_button = Widget::Anchor(__('Create a new email template'), extension_members::baseURL() . 'email_templates_new/', __('Create a new email template'), 'create button');
 
 			$this->setPageType('table');
@@ -42,22 +37,24 @@
 
 			$aTableHead = array(
 				array(__('Subject'), 'col'),
-				array(__('Type'), 'col'),				
+				array(__('Type'), 'col'),
 				array(__('Roles'), 'col')
-			);	
-		
-			$iterator = new EmailTemplateIterator;
-								
+			);
+
+			$rows = Symphony::Database()->fetchCol('id', 'SELECT `id` FROM `tbl_members_email_templates` ORDER BY `id` ASC');
+            $iterator = array();
+            foreach($rows as $id) $iterator[] = EmailTemplate::loadFromID($id);
+
 			$aTableBody = array();
 
-			if($iterator->length() == 0){
+			if(empty($iterator)){
 				$aTableBody = array(
 					Widget::TableRow(
 						array(Widget::TableData(__('None Found.'), 'inactive', NULL, count($aTableHead)))
 					)
 				);
 			}
-			
+
 			else{
 
 				$bEven = true;
@@ -67,14 +64,13 @@
 					$td1 = Widget::TableData(Widget::Anchor($e->subject, extension_members::baseURL() . 'email_templates_edit/' . $e->id . '/', NULL, 'content'));
 
 					$td2 = Widget::TableData($e->type);
-					
-					if(count($e->roles()) > 0){
- 
+
+					if(count($e->roles()) >= 1){
 						$links = array();
-						foreach($e->roles() as $role_id => $r){
+							foreach($e->roles as $role_id => $r){
 							$links[] = Widget::Anchor(
-								$r->name(), 
-								extension_members::baseURL() . 'roles_edit/' . $r->id() . '/', 
+								$r->name(),
+								extension_members::baseURL() . 'roles_edit/' . $r->id() . '/',
 								__('Edit this role.')
 							)->generate();
 						}
@@ -83,39 +79,38 @@
 					else{
 						$td3 = Widget::TableData(__('None'), 'inactive');
 					}
-					
+
 					$td3->appendChild(Widget::Input("items[{$e->id}]", null, 'checkbox'));
-					
+
 					## Add a row to the body array, assigning each cell to the row
-					$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3), ($bEven ? 'odd' : NULL));		
+					$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3), ($bEven ? 'odd' : NULL));
 
 					$bEven = !$bEven;
-					
+
 				}
-			
+
 			}
-			
+
 			$table = Widget::Table(
-				Widget::TableHead($aTableHead), 
-				NULL, 
+				Widget::TableHead($aTableHead),
+				NULL,
 				Widget::TableBody($aTableBody)
 			);
-					
+
 			$this->Form->appendChild($table);
-			
+
 			$tableActions = new XMLElement('div');
 			$tableActions->setAttribute('class', 'actions');
-			
+
 			$options = array(
 				array(null, false, __('With Selected...')),
 				array('delete', false, __('Delete')),
 			);
-			
+
 			$tableActions->appendChild(Widget::Select('with-selected', $options, array('id' => 'with-selected')));
 			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
-			
-			$this->Form->appendChild($tableActions);			
+
+			$this->Form->appendChild($tableActions);
 
 		}
 	}
-	
