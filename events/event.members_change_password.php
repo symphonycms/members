@@ -3,8 +3,7 @@
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
 
 	require_once(TOOLKIT . '/class.event.php');
-	require_once(DOCROOT . '/extensions/asdc/lib/class.asdc.php');
-		
+
 	Class eventMembers_Change_Password extends Event{
 		
 		private static $_fields;
@@ -35,13 +34,15 @@
 		private static function __init(){
 			if(!is_array(self::$_fields)){
 				self::$_fields = array();
-
-				$rows = ASDCLoader::instance()->query("SELECT s.handle AS `section`, f.`element_name` AS `handle`, f.`id` 
+               
+				$rows = Symphony::Database()->fetch("
+                    SELECT s.handle AS `section`, f.`element_name` AS `handle`, f.`id` 
 					FROM `tbl_fields` AS `f` 
 					LEFT JOIN `tbl_sections` AS `s` ON f.parent_section = s.id 
-					ORDER BY `id` ASC");
+					ORDER BY `id` ASC
+                ");
 
-				if($rows->length() > 0){
+				if(!empty($rows)){
 					foreach($rows as $r){
 						self::$_fields[$r->section][$r->handle] = $r->id;
 					}							
@@ -51,11 +52,13 @@
 			if(!is_array(self::$_sections)){
 				self::$_sections = array();
 
-				$rows = ASDCLoader::instance()->query("SELECT s.handle, s.id 
+				$rows = Symphony::Database()->fetch("
+                    SELECT s.handle, s.id 
 					FROM `tbl_sections` AS `s`
-					ORDER BY s.id ASC");
+					ORDER BY s.id ASC
+                ");
 
-				if($rows->length() > 0){
+				if(!empty($rows)){
 					foreach($rows as $r){
 						self::$_sections[$r->handle] = $r->id;
 					}							
@@ -141,10 +144,9 @@
 			if($success === true){
 				
 				self::__init();
-				$db = ASDCLoader::instance();
 
 				// Attempt to update the password
-				$db->query(sprintf(
+                Symphony::Database()->query(sprintf(
 					"UPDATE `tbl_entries_data_%d` SET `password` = '%s' WHERE `entry_id` = %d LIMIT 1",
 					$Members->usernameAndPasswordField(),
 					md5($new_password),
