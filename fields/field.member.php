@@ -1,6 +1,8 @@
 <?php
 
-	Class fieldMember extends Field{
+    require_once(EXTENSIONS . '/members/lib/class.identity.php');
+    
+	Class fieldMember extends Identity {
 
 		static private $_driver;
 

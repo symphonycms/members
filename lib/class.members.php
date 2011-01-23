@@ -2,7 +2,7 @@
 
 	function __autoload($name) {
 		if(preg_match('/Member$/', $name)) {
-			require_once EXTENSIONS . '/members/lib/members/class.' . $name . '.php';
+			require_once EXTENSIONS . '/members/lib/member.' . strtolower(preg_replace('/Member$/', '', $name)) . '.php';
 		}
 	}
 

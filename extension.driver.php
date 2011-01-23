@@ -11,6 +11,7 @@
 
 		public $Member = null;
 		public static $_failed_login_attempt = false;
+		public static $members_section = null;
 
 		public static $debug = false;
 
@@ -18,9 +19,7 @@
 		const GUEST_ROLE_ID = 1;
 		const INACTIVE_ROLE_ID = 2;
 
-		public function __construct($args) {
-			parent::__construct($args);
-
+		public function __construct() {
 			if(class_exists('Frontend')) {
 				$this->Member = new SymphonyMember($this);
 			}
@@ -53,10 +52,6 @@
 						array(
 							'name' => __('Email Templates'),
 							'link' => '/email_templates/'
-						),
-						array(
-							'name' => __('Setup'),
-							'link' => '/setup/'
 						)
 					)
 				)
@@ -104,7 +99,7 @@
 					'page' => '/system/preferences/',
 					'delegate' => 'Save',
 					'callback' => '__SavePreferences'
-				)
+				),
 			);
 		}
 
@@ -112,7 +107,7 @@
 		Versioning:
 	-------------------------------------------------------------------------*/
 
-		public function update($previous_version){
+		public function update($previous_version=false) {
 			if($previous_version == '1.0'){
 				Symphony::Database()->query("ALTER TABLE `sym_fields_memberlink` ADD  `allow_multiple` ENUM(  'yes',  'no' ) NOT NULL DEFAULT  'no'");
 			}
@@ -235,11 +230,11 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Utilites:
+		Utilities:
 	-------------------------------------------------------------------------*/
 
 		public static function baseURL(){
-			return URL . '/symphony/extension/members/';
+			return SYMPHONY_URL . '/extension/members/';
 		}
 
 		public static function getConfigVar($handle) {
@@ -247,12 +242,25 @@
 			return ($id == 0 ? NULL : $id);
 		}
 
+        private static function getMembersSection() {
+            if(is_null(self::$members_section)) {
+                $fm = new FieldManager($this->_Parent);
+                $fields = $fm->fetch(NULL, NULL, 'ASC', 'sortorder', 'member');
+                $field = current($fields);
+                if($field instanceof Identity) {
+                    self::$members_section = $field->get('parent_section');
+                }
+            }
+
+            return self::$members_section;
+        }
+
 		public static function roleField(){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ".self::getConfigVar('member_section')." AND `type` = 'memberrole' LIMIT 1");
+			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ".self::getMembersSection()." AND `type` = 'memberrole' LIMIT 1");
 		}
 
 		public static function memberSectionHandle(){
-			return Symphony::Database()->fetchVar('handle', 0, "SELECT `handle` FROM `tbl_sections` WHERE `id` = " . self::getConfigVar('member_section'). " LIMIT 1");
+			return Symphony::Database()->fetchVar('handle', 0, "SELECT `handle` FROM `tbl_sections` WHERE `id` = " . self::getMembersSection(). " LIMIT 1");
 		}
 
 		public function __updateSystemTimezoneOffset() {
@@ -432,25 +440,26 @@
 
 		public function fetchEmailTemplates(){
 			$rows = Symphony::Database()->fetchCol('id', 'SELECT `id` FROM `tbl_members_email_templates` ORDER BY `id` ASC');
-            $result = array();
-            foreach($rows as $id) {
-                $result[] = EmailTemplate::loadFromID($id);
-            }
-            return $result;
-        }
+			$result = array();
+			foreach($rows as $id) {
+				$result[] = EmailTemplate::loadFromID($id);
+			}
+			return $result;
+		}
 
 		public function cbEmailNewMember($context){
 			if($context['section']->get('handle') == self::memberSectionHandle()) return $this->emailNewMember($context);
 		}
 
 		public function emailNewMember($context){
+			var_dump($context, __FUNCTION__);
 			return $this->sendNewRegistrationEmail($context['entry'], $context['fields']);
 		}
 
 		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){
 
 			if(!$role = self::fetchRole($entry->getData(self::roleField(), true)->role_id)) return;
-
+			var_dump(__FUNCTION__);
 			return $this->Member->sendNewRegistrationEmail($entry, $role, $fields);
 		}
 
