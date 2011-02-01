@@ -5,19 +5,11 @@
      * activation codes for new members, handles activation via normal events,
      * sends emails, and displays as a checkbox in the backend publish area.
      */
-	Class fieldMemberActivation extends Field {
+	Class fieldMemberTimezone extends Field {
 
 		function __construct(&$parent){
 			parent::__construct($parent);
-			$this->_name = 'Member: Activation';
-		}
-		
-		function canToggle(){
-			return true;
-		}
-		
-		function canFilter(){
-			return true;
+			$this->_name = 'Member: Timezone';
 		}
 		
 		public function createTable(){
@@ -25,11 +17,9 @@
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `activated` enum('yes','no') NOT NULL default 'no',
-				  `timestamp` int(11) default NULL,
-				  `code` varchar(32)  NOT NULL,
+				  `value` varchar(32) NOT NULL DEFAULT '',
 				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`)
+				  KEY `entry_id` (`entry_id`),
 				) ENGINE=MyISAM;"
 			);
 		}
