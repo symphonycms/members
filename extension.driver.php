@@ -29,7 +29,7 @@
 			return array(
 				'name' 			=> 'Members',
 				'version' 		=> '1.3 alpha',
-				'release-date'	=> '2010',
+				'release-date'	=> '2011',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
@@ -42,18 +42,14 @@
 		public function fetchNavigation(){
 			return array(
 				array(
-					'location' => 300,
-					'name' => __('Members'),
-					'children' => array(
-						array(
-							'name' => __('Roles'),
-							'link' => '/roles/'
-						),
-						array(
-							'name' => __('Email Templates'),
-							'link' => '/email_templates/'
-						)
-					)
+					'location' 	=> __('System'),
+					'name' 		=> __('Member Roles'),
+					'link' 		=> '/roles/'
+				),
+				array(
+					'location' 	=> __('System'),
+					'name' 		=> __('Member Email Templates'),
+					'link' 		=> '/email_templates/'
 				)
 			);
 		}
@@ -107,13 +103,14 @@
 		Versioning:
 	-------------------------------------------------------------------------*/
 
-		public function update($previous_version=false) {
-			if($previous_version == '1.0'){
-				Symphony::Database()->query("ALTER TABLE `sym_fields_memberlink` ADD  `allow_multiple` ENUM(  'yes',  'no' ) NOT NULL DEFAULT  'no'");
-			}
-
+		// Never mind trying to accommodate updating. There have been no
+		// official releases, there are too many differing versions, and
+		// the logic required would be nightmarish.
+		
+		/*public function update($previous_version=false) {
+			
 			// Holy hell there is going to need to be alot of logic here ;)
-		}
+		}*/
 
 		public function install(){
 
@@ -122,7 +119,7 @@
 
 			Symphony::Database()->import("
 
-				CREATE TABLE IF NOT EXISTS `tbl_fields_member` (
+				CREATE TABLE IF NOT EXISTS `tbl_fields_memberusername` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
 				  `validator` varchar(255) DEFAULT NULL,
@@ -140,10 +137,9 @@
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
 
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberlink` (
+				CREATE TABLE IF NOT EXISTS `tbl_fields_memberactivation` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
-				  `allow_multiple` enum('yes','no') NOT NULL default 'no',
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -153,15 +149,6 @@
 				  `field_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
-				DROP TABLE IF EXISTS `tbl_members_codes`;
-				CREATE TABLE `tbl_members_codes` (
-				  `member_id` int(11) unsigned NOT NULL,
-				  `code` varchar(32)  NOT NULL,
-				  `expiry` int(11) NOT NULL,
-				  PRIMARY KEY  (`member_id`),
-				  KEY `code` (`code`)
 				) ENGINE=MyISAM;
 
 				DROP TABLE IF EXISTS `tbl_members_roles`;
@@ -209,8 +196,6 @@
 					INDEX (  `email_template_id` ,  `role_id` )
 				) ENGINE=MyISAM;
 
-				INSERT INTO `tbl_members_roles` VALUES (1, 'Guest');
-				INSERT INTO `tbl_members_roles` VALUES (2, 'Inactive');
 			");
 
 		}
@@ -221,7 +206,6 @@
 			Symphony::Database()->query(
 				"DROP TABLE
 					`tbl_members_email_templates`,
-					`tbl_members_codes`,
 					`tbl_members_roles`,
 					`tbl_members_roles_event_permissions`,
 					`tbl_members_roles_forbidden_pages`,
