@@ -1,16 +1,23 @@
 <?php
     
     /**
-     * Activation field. If added to a Members section, it generates and stores
-     * activation codes for new members, handles activation via normal events,
-     * sends emails, and displays as a checkbox in the backend publish area.
+     * Timezone field.
+     * Not sure how much this field actually needs to do...
      */
 	Class fieldMemberTimezone extends Field {
+	
+	/*-------------------------------------------------------------------------
+		Definition:
+	-------------------------------------------------------------------------*/
 
 		function __construct(&$parent){
 			parent::__construct($parent);
 			$this->_name = 'Member: Timezone';
 		}
+		
+	/*-------------------------------------------------------------------------
+		Setup:
+	-------------------------------------------------------------------------*/
 		
 		public function createTable(){
 			return Symphony::Database()->query(
@@ -31,15 +38,40 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 			
-			// do stuff
-			
 			$this->appendShowColumnCheckbox($wrapper);
 		}
 		
 		public function commit(){
 			if(!parent::commit()) return false;
 
-			// do stuff
+		}
+	
+	/*-------------------------------------------------------------------------
+		Publish:
+	-------------------------------------------------------------------------*/
+	
+		public function displayPublishPanel(&$wrapper, $data=NULL, $error =NULL, $prefix =NULL, $postfix =NULL, $entry_id = null){
+		
+			/**
+			 * Displays a checkbox, along with some help text.
+			 *
+			 * If member is activated, help text shows datetime activated.
+			 * If code is still live, displays when the code was generated.
+			 * If the code is expired, displays 'Expired' w/the expiration timestamp.
+			 */
+		
+		}
+		
+	/*-------------------------------------------------------------------------
+		Output:
+	-------------------------------------------------------------------------*/
+
+		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+
+		}
+
+		public function prepareTableValue($data, XMLElement $link=NULL){
+			
 		}
 		
 	}

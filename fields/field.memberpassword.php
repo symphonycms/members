@@ -4,6 +4,10 @@
 
 		protected $_strengths = array();
 		protected $_strength_map = array();
+		
+	/*-------------------------------------------------------------------------
+		Definition:
+	-------------------------------------------------------------------------*/
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
@@ -29,6 +33,18 @@
 			$this->set('length', '6');
 			$this->set('strength', 'good');
 		}
+		
+		public function canFilter(){
+			return true;
+		}
+
+		public function mustBeUnique(){
+			return true;
+		}
+		
+	/*-------------------------------------------------------------------------
+		Setup:
+	-------------------------------------------------------------------------*/
 
 		public function createTable(){
 			return Symphony::Database()->query(
@@ -44,15 +60,7 @@
 				) ENGINE=MyISAM;"
 			);
 		}
-
-		public function canFilter(){
-			return true;
-		}
-
-		public function mustBeUnique(){
-			return true;
-		}
-
+		
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
@@ -61,7 +69,7 @@
 			$strength = 0;
 			$patterns = array(
 				'/[a-z]/', '/[A-Z]/', '/[0-9]/',
-				'/[¬!"£$%^&*()`{}\[\]:@~;\'#<>?,.\/\\-=_+\|]/'
+				'/[Â¬!"Â£$%^&*()`{}\[\]:@~;\'#<>?,.\/\\-=_+\|]/'
 			);
 
 			foreach ($patterns as $pattern) {
@@ -128,7 +136,7 @@
 
 			return $label;
 		}
-
+		
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -218,7 +226,7 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 
 		}
-
+	
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/

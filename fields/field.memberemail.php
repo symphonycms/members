@@ -2,7 +2,7 @@
 
     require_once(EXTENSIONS . '/members/lib/class.identity.php');
     
-	Class fieldMemberUsername extends Identity {
+	Class fieldMemberEmal extends Identity {
 
 		static private $_driver;
 		
@@ -12,7 +12,7 @@
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->_name = __('Member: Username');
+			$this->_name = __('Member: Email');
 			$this->_required = true;
 			$this->set('required', 'yes');
 
@@ -52,10 +52,10 @@
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `username` varchar(150) default NULL,
+				  `email` varchar(150) default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
-				  UNIQUE KEY `username` (`username`)
+				  UNIQUE KEY `email` (`email`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -70,9 +70,9 @@
 
 		// Does this need to get moved out to the Identity class?
 		
-		public function fetchMemberFromUsername($username){
+		public function fetchMemberFromEmail($email){
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0,
-				"SELECT `entry_id` FROM `tbl_entries_data_".$this->get('id')."` WHERE `username` = '{$username}' LIMIT 1"
+				"SELECT `entry_id` FROM `tbl_entries_data_".$this->get('id')."` WHERE `email` = '{$email}' LIMIT 1"
 			);
 			return ($member_id ? $this->fetchMemberFromID($member_id) : NULL);
 		}
@@ -85,7 +85,9 @@
 			parent::displaySettingsPanel($wrapper, $errors);
 			$order = $this->get('sortorder');
 
-			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
+			// We already know how we need to validate this, right?
+			// $this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
+			
 			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
 		}
@@ -103,7 +105,9 @@
 
 			$fields = array(
 				'field_id' => $id,
-				'validator' =>$this->get('validator')
+				
+				// Set this explicitly?
+				//'validator' =>$this->get('validator')
 			);
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
@@ -112,7 +116,9 @@
 
 		public function setFromPOST($postdata){
 			parent::setFromPOST($postdata);
-			if($this->get('validator') == '') $this->remove('validator');
+			
+			// Set this explicitly?
+			//if($this->get('validator') == '') $this->remove('validator');
 		}
 
 	/*-------------------------------------------------------------------------
@@ -128,11 +134,11 @@
 			$container->setAttribute('class', 'container');
 
 		//	Username
-			$label = Widget::Label(__('Username'));
+			$label = Widget::Label(__('Email Address'));
 			if(!$required) $label->appendChild(new XMLElement('i', __('Optional')));
 
 			$label->appendChild(Widget::Input(
-				"fields{$prefix}[{$handle}][username]{$postfix}", $data['username']
+				"fields{$prefix}[{$handle}][email]{$postfix}", $data['email']
 			));
 
 			$container->appendChild($label);
@@ -155,26 +161,28 @@
 			$message = null;
 			$required = ($this->get('required') == "yes");
 
-			$username = trim($data['username']);
+			$email = trim($data['email']);
 
 			//	If the field is required, we should have both a $username and $password.
-			if($required && empty($username)) {
-				$message = __('Username is a required field.');
+			if($required && empty($email)) {
+				$message = __('Email Address is a required field.');
 				return self::__MISSING_FIELDS__;
 			}
 
-			//	Check Username
-			if(!empty($username)) {
-				if($this->get('validator') && !General::validateString($username, $this->get('validator'))) {
-					$message = __('Username contains invalid characters.');
+			//	Check Email Address
+			if(!empty($email)) {
+			
+				// This should be explicitly validating the email address?
+				if($this->get('validator') && !General::validateString($email, $this->get('validator'))) {
+					$message = __('Email contains invalid characters.');
 					return self::__INVALID_FIELDS__;
 				}
 
-				$existing = $this->fetchMemberFromUsername($username);
+				$existing = $this->fetchMemberFromEmail($email);
 
-				//	If there is an existing username, and it's not the current object (editing), error.
+				//	If there is an existing email, and it's not the current object (editing), error.
 				if($existing instanceof Entry && $existing->get('id') !== $entry_id) {
-					$message = __('That username is already taken.');
+					$message = __('That email address is already registered.');
 					return self::__INVALID_FIELDS__;
 				}
 			}
@@ -187,10 +195,10 @@
 
 			if(empty($data)) return array();
 
-			$username = trim($data['username']);
+			$email = trim($data['email']);
 
 			return array(
-				'username' 	=> $username,
+				'email' 	=> $email,
 			);
 		}
 
@@ -203,16 +211,18 @@
 			$wrapper->appendChild(
 				new XMLElement(
 					$this->get('element_name'),
-					General::sanitize($data['username'])
+					
+					// Need to hash this?
+					General::sanitize($data['email'])
 			));
 		}
 
 		public function prepareTableValue($data, XMLElement $link=NULL){
 			if(empty($data)) return __('None');
 
-			return parent::prepareTableValue(array('value' => General::sanitize($data['username'])), $link);
+			return parent::prepareTableValue(array('value' => General::sanitize($data['email'])), $link);
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Sorting:
 	-------------------------------------------------------------------------*/
@@ -222,9 +232,9 @@
 			$sort_field = (!$useIDFieldForSorting ? 'ed' : 't' . $this->get('id'));
 
 			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `$sort_field` ON (`e`.`id` = `$sort_field`.`entry_id`) ";
-			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`$sort_field`.`username` $order");
+			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`$sort_field`.`email` $order");
 		}
-
+		
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
@@ -237,19 +247,19 @@
 
 				$pattern = str_replace('regexp:', '', $data[0]);
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND `t$field_id`.username REGEXP '$pattern' ";
+				$where .= " AND `t$field_id`.email REGEXP '$pattern' ";
 
 			elseif($andOperation):
 
 				foreach($data as $key => $bit){
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
-					$where .= " AND `t$field_id$key`.username = '$bit' ";
+					$where .= " AND `t$field_id$key`.email = '$bit' ";
 				}
 
 			else:
 
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND `t$field_id`.username IN ('".@implode("', '", $data)."') ";
+				$where .= " AND `t$field_id`.email IN ('".@implode("', '", $data)."') ";
 
 			endif;
 
@@ -260,11 +270,11 @@
 	/*-------------------------------------------------------------------------
 		Events:
 	-------------------------------------------------------------------------*/
-	
+
 		public function getExampleFormMarkup(){
 
-			$label = Widget::Label('Username');
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][username]'));
+			$label = Widget::Label('Email Address');
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][email]'));
 
 			return $label;
 		}
