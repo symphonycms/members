@@ -15,10 +15,6 @@
 
 		public static $debug = false;
 
-		const CODE_EXPIRY_TIME = 3600; // 1 hour
-		const GUEST_ROLE_ID = 1;
-		const INACTIVE_ROLE_ID = 2;
-
 		public function __construct() {
 			if(class_exists('Frontend')) {
 				$this->Member = new SymphonyMember($this);
@@ -48,7 +44,7 @@
 				),
 				array(
 					'location' 	=> __('System'),
-					'name' 		=> __('Member Email Templates'),
+					'name' 		=> __('Member Emails'),
 					'link' 		=> '/email_templates/'
 				)
 			);
@@ -103,12 +99,13 @@
 		Versioning:
 	-------------------------------------------------------------------------*/
 
-		// Never mind trying to accommodate updating. There have been no
-		// official releases, there are too many differing versions, and
-		// the logic required would be nightmarish.
+		/**
+		 * Never mind trying to accommodate updating. There have been no
+		 * official releases, there are too many differing versions, and
+		 * the logic required would be nightmarish.
+		 */
 		
 		/*public function update($previous_version=false) {
-			
 			// Holy hell there is going to need to be alot of logic here ;)
 		}*/
 
@@ -117,6 +114,14 @@
 			Symphony::Configuration()->set('cookie-prefix', 'sym-members', 'members');
 			Administration::instance()->saveConfig();
 
+			/**
+			 * Should all of this logic stay here?
+			 *
+			 * On the one hand, Members' fields aren't extensions, so they
+			 * don't have install() methods. On the other hand, some of
+			 * these fields are optional. I suppose the effect is the same,
+			 * though, of having these act like auto-enabled field extensions.
+			 */
 			Symphony::Database()->import("
 
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberusername` (
@@ -199,6 +204,13 @@
 			");
 
 		}
+		
+		/**
+		 * If the extension is responsible for creating the field tables
+		 * but doesn't delete them (so as not to destroy data), then there's
+		 * a gap here wherein a developer can't remove the field tables
+		 * unless they do so manually.
+		 */
 
 		public function uninstall(){
 			Symphony::Configuration()->remove('members');
@@ -211,6 +223,39 @@
 					`tbl_members_roles_forbidden_pages`,
 					`tbl_members_email_templates_role_mapping`;"
 			);
+		}
+		
+	/*-------------------------------------------------------------------------
+		Preferences:
+	-------------------------------------------------------------------------*/
+	
+		public function appendPreferences($context) {
+			
+			$fieldset = new XMLElement('fieldset');
+			$fieldset->setAttribute('class', 'settings');
+			$fieldset->appendChild(new XMLElement('legend', __('Members')));
+			
+			$membersection = Symphony::Configuration()->get('section', 'members');
+			$label = new XMLElement('label', __('Active Members Section'));	
+			
+			// Build list of sections with required members fields
+			$options = array();
+					
+			$label->appendChild(Widget::Select('settings[members][section]', $options));
+
+			$fieldset->appendChild($label);						
+			$context['wrapper']->appendChild($fieldset);
+		}
+		
+		public function __SavePreferences(){
+			$settings = $_POST['settings'];
+
+			$setting_group = 'members';
+			$setting_name = 'section';
+			$setting_value = $settings['members']['section'];
+
+			Symphony::Configuration()->set($setting_name, $setting_value, $setting_group);
+			Administration::instance()->saveConfig();
 		}
 
 	/*-------------------------------------------------------------------------
@@ -247,6 +292,9 @@
 			return Symphony::Database()->fetchVar('handle', 0, "SELECT `handle` FROM `tbl_sections` WHERE `id` = " . self::getMembersSection(). " LIMIT 1");
 		}
 
+		/**
+		 * This has to change to accommodate new Timezone field type
+		 */
 		public function __updateSystemTimezoneOffset() {
 			$offset = Symphony::Database()->fetchVar('value', 0, sprintf("
 					SELECT `value`
@@ -265,6 +313,13 @@
 	/*-------------------------------------------------------------------------
 		Roles:
 	-------------------------------------------------------------------------*/
+	
+	/**
+	 * How much does this need to change to accommodate the fact that
+	 * role is now optional? Although, technically, when no role field
+	 * is present, there is still a single default role which then governs
+	 * all permissions.
+	 */
 
 		public static function fetchRole($role_id, $include_permissions=false){
 			if(!$row = Symphony::Database()->fetchRow(0, "SELECT * FROM `tbl_members_roles` WHERE `id` = $role_id LIMIT 1")) return;
@@ -324,7 +379,6 @@
 		public function cbCheckFrontendPagePermissions($context) {
 			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 
-			## Cookies only show up on page refresh. This flag helps in making sure the correct XML is being set
 			$isLoggedIn = false;
 
 			if(is_array($_REQUEST['member-action'])){
@@ -392,35 +446,6 @@
 	/*-------------------------------------------------------------------------
 		Email Templates:
 	-------------------------------------------------------------------------*/
-
-		public static function generateCode($member_id){
-
-			## First check if a code already exists
-			$code = Symphony::Database()->fetchRow(0, "SELECT * FROM `tbl_members_codes` WHERE `member_id` = '$member_id' AND `expiry` > ".time()." LIMIT 1");
-
-			if(is_array($code) && !empty($code)) return $code['code'];
-
-			## Generate a code
-			do{
-				$code = md5(time().rand(0,100000));
-				$row = Symphony::Database()->fetchRow(0, "SELECT * FROM `tbl_members_codes` WHERE `code` = '{$code}'");
-			} while(is_array($row) && !empty($row));
-
-			Symphony::Database()->insert(
-				array(
-					'member_id' => $member_id,
-					'code' => $code,
-					'expiry' => (time() + self::CODE_EXPIRY_TIME)
-				),
-				'tbl_members_codes', true
-			);
-
-			return $code;
-		}
-
-		public static function purgeCodes($member_id=NULL){
-			Symphony::Database()->query("DELETE FROM `tbl_members_codes` WHERE `expiry` <= ".time().($member_id ? " OR `member_id` = '$member_id'" : NULL));
-		}
 
 		public function fetchEmailTemplates(){
 			$rows = Symphony::Database()->fetchCol('id', 'SELECT `id` FROM `tbl_members_email_templates` ORDER BY `id` ASC');
