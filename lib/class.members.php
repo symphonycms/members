@@ -73,6 +73,14 @@
 	/*-------------------------------------------------------------------------
 		Finding:
 	-------------------------------------------------------------------------*/
+		/**
+		 * TODO
+		 * Does this functionality get moved out to the field since username
+		 * can no longer be assumed?
+		 *
+		 * And why is this here while findMemberIDFromCredentials() and
+		 * findMemberIDFromUsername() are in member.symphony.php?
+		 */
 		public function findMemberIDFromEmail($email = null){
 			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 

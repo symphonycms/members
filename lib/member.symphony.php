@@ -158,6 +158,11 @@
 	/*-------------------------------------------------------------------------
 		Finding:
 	-------------------------------------------------------------------------*/
+		/**
+		 * TODO
+		 * Does this functionality get moved out to the field since username
+		 * can no longer be assumed?
+		 */
 		public function findMemberIDFromCredentials(Array $credentials) {
 			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 
@@ -181,6 +186,11 @@
 			return (is_null($entry_id) ? null : $entry_id);
 		}
 
+		/**
+		 * TODO
+		 * Does this functionality get moved out to the field since username
+		 * can no longer be assumed?
+		 */
 		public function findMemberIDFromUsername($username = null){
 			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 

@@ -1,48 +1,20 @@
 # Members
 
-- Version: 1.2.1 beta
+- Version: 1.0 alpha
 - Author: Symphony Team
-- Build Date: 15th February 2010
-- Requirements: Symphony 2.0.7 or higher
+- Build Date: 2011
+- Requirements: Symphony 2.2 or higher
 
 Frontend Membership extension for Symphony CMS.
 
-## Dependencies
-
-- [Advanced Symphony Database Connector](http://symphony-cms.com/download/extensions/view/20038/)
-- [SMTP Email Library](http://symphony-cms.com/download/extensions/view/37898/)
-
 ## Installation and Setup
-
-1. Place the 'members' folder in your Symphony 'extensions' directory.
-2. Go to System > Extensions, select "Members", choose "Enable" from the with-selected menu, then click Apply.
-3. Go to Members > Setup...
-	- Either use the "Smart Setup" tool to autogenerate a compatible members section, or use the "Essentials" section to point to an existing section containing the required fields.
-	- _optional_ In the "Registration" section, specify whether to require activation for newly registered members.
-4. Go to System > Preferences and provide the SMTP Email Library with email credentials. This is necessary for activation emails and password resets.
-
-## Change Log
-
-1.2.1beta 	- EmailTemplate class incorrectly attempting to set Email->body, when it should be Email->message
-1.2beta 	- Initial Release
 
 
 ## Usage
 
 ### Roles and Permissions
 
-Members are organized according to roles, each of which can have discrete permissions for accessing front-end pages and events. By default, the extension creates two roles: "Guest" and "Inactive". 
-
-- To add or edit roles, go to Members > Roles.
-- To specify the default role for new members, go to Members > Setup
-
 ### Email Templates
-
-Email templates are used to generate system emails that are sent to members on the following occasions: registration, password change, password reset request, and account activation. Email templates can be role specific.
-
-- To add or edit email templates, go to Members > Email Templates
-
-When creating email templates, certain dynamic values can be inserted using the attribute value template syntax: `{$value}`. The following values are available:
 
 ##### Global Values
 
@@ -60,15 +32,18 @@ When creating email templates, certain dynamic values can be inserted using the 
 
 ### Fields
 
-The extension provides three additional fields:
+The extension provides XX additional fields:
 
-- Member: Username and Password
-- Member: Role (select box of available roles)
-- Member Link (used to link entries in another section to a Member entry)
+- Member: Username
+- Member: Email Address
+- Member: Password
+- Member: Role (optional)
+- Member: Timezone
+- Member: Activation (optional)
 
 ### Events
 
-The extension provides five events:
+The extension provides XX events:
 
 - Members: Activate Account
 - Members: Change Password

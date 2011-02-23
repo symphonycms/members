@@ -2,7 +2,7 @@
 
     require_once(EXTENSIONS . '/members/lib/class.identity.php');
     
-	Class fieldMemberEmal extends Identity {
+	Class fieldMemberEmail extends Identity {
 
 		static private $_driver;
 		

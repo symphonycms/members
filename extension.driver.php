@@ -24,7 +24,7 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.3 alpha',
+				'version' 		=> '1.0 alpha',
 				'release-date'	=> '2011',
 				'author' => array(
 					'name'		=> 'Symphony Team',
@@ -115,6 +115,7 @@
 			Administration::instance()->saveConfig();
 
 			/**
+			 * TODO
 			 * Should all of this logic stay here?
 			 *
 			 * On the one hand, Members' fields aren't extensions, so they
@@ -206,6 +207,7 @@
 		}
 		
 		/**
+		 * TODO
 		 * If the extension is responsible for creating the field tables
 		 * but doesn't delete them (so as not to destroy data), then there's
 		 * a gap here wherein a developer can't remove the field tables
@@ -238,7 +240,10 @@
 			$membersection = Symphony::Configuration()->get('section', 'members');
 			$label = new XMLElement('label', __('Active Members Section'));	
 			
-			// Build list of sections with required members fields
+			/**
+			 * TODO
+			 * Build list of sections with required members fields
+			 */
 			$options = array();
 					
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
@@ -293,6 +298,7 @@
 		}
 
 		/**
+		 * TODO
 		 * This has to change to accommodate new Timezone field type
 		 */
 		public function __updateSystemTimezoneOffset() {
@@ -315,6 +321,7 @@
 	-------------------------------------------------------------------------*/
 	
 	/**
+	 * TODO
 	 * How much does this need to change to accommodate the fact that
 	 * role is now optional? Although, technically, when no role field
 	 * is present, there is still a single default role which then governs
@@ -415,6 +422,13 @@
 				$this->__updateSystemTimezoneOffset();
 			}
 
+			/**
+			 * TODO
+			 * Roles are optional now so the logic here should be a little
+			 * more nuanced. If member is logged in AND there's a role field,
+			 * get the role id. If logged in but there's no role field, use
+			 * default role ID. If not logged in, use guest role?
+			 */
 			$role = self::fetchRole(($isLoggedIn ? $role_data['role_id'] : self::GUEST_ROLE_ID), true);
 
 			if(!$role->canAccessPage((int)$context['page_data']['id'])) {
@@ -519,6 +533,10 @@
 
 			$this->Member->initialiseMemberObject();
 
+			/**
+			 * TODO
+			 * Again, logic here in case roles aren't being used
+			 */
 			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
 				$role_data = $this->Member->Member->getData(self::roleField());
 			}
