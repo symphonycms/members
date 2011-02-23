@@ -127,6 +127,12 @@
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
+	
+		/**
+		 * TODO
+		 * Do we leave this as-is, or shift to a more 3-esque approach where
+		 * all the data goes into the XML?
+		 */
 		public function AddMemberDetailsToPageParams(Array $context = null) {
 			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 
