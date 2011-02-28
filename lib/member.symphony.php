@@ -38,8 +38,6 @@
 		Authentication:
 	-------------------------------------------------------------------------*/
 		public function login(Array $credentials){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			extract($credentials);
 
 			if($id = $this->findMemberIDFromCredentials(array(
@@ -47,7 +45,6 @@
 					'password' => sha1(self::getSalt() . $password)
 				))
 			) {
-
 				try{
 					self::$member_id = $id;
 					$this->initialiseCookie();
@@ -70,12 +67,9 @@
 			$this->logout();
 
 			return false;
-
 		}
 
 		public function isLoggedIn() {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(self::$isLoggedIn) return true;
 
 			$this->initialiseCookie();
@@ -164,8 +158,6 @@
 		 * can no longer be assumed?
 		 */
 		public function findMemberIDFromCredentials(Array $credentials) {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			extract($credentials);
 
 			// It's expected that $password is sha1'd and salted.
@@ -192,8 +184,6 @@
 		 * can no longer be assumed?
 		 */
 		public function findMemberIDFromUsername($username = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(is_null($username)) return null;
 
 			$entry_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("

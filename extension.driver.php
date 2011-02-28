@@ -9,14 +9,37 @@
 
 	Class extension_Members extends Extension {
 
+		/**
+		 * @param SymphonyMember $Member
+		 */
 		public $Member = null;
-		public static $_failed_login_attempt = false;
+
+		/**
+		 * @param integer $members_section
+		 */
 		public static $members_section = null;
 
-		public static $debug = false;
+		/**
+		 * @param array $member_fields
+		 */
+		public static $member_fields = array(
+			'memberusername', 'memberemail', 'memberpassword',
+			'memberrole', 'membertimezone', 'memberactivation'
+		);
 
+		/**
+		 * @param boolean $failed_login_attempt
+		 */
+		public static $_failed_login_attempt = false;
+
+		/**
+		 * Only create a Member object on the Frontend of the site.
+		 * There is no need to create this in the Administration context
+		 * as authenticated users are Authors and are handled by Symphony,
+		 * not this extension.
+		 */
 		public function __construct() {
-			if(class_exists('Frontend')) {
+			if(class_exists('Frontend') && Frontend::instance()->Page() instanceof FrontendPage) {
 				$this->Member = new SymphonyMember($this);
 			}
 		}
@@ -52,15 +75,18 @@
 
 		public function getSubscribedDelegates(){
 			return array(
+				/*
+					FRONTEND
+				*/
 				array(
 					'page' => '/frontend/',
-					'delegate' => 'FrontendPageResolved', //'FrontendProcessEvents',
-					'callback' => 'cbCheckFrontendPagePermissions'
+					'delegate' => 'FrontendPageResolved',
+					'callback' => 'checkFrontendPagePermissions'
 				),
 				array(
 					'page' => '/frontend/',
 					'delegate' => 'FrontendParamsResolve',
-					'callback' => 'cbAddMemberDetailsToPageParams'
+					'callback' => 'addMemberDetailsToPageParams'
 				),
 				array(
 					'page' => '/frontend/',
@@ -69,18 +95,21 @@
 				),
 				array(
 					'page' => '/frontend/',
-					'delegate' => 'EventPostSaveFilter',
-					'callback' => 'processEventData'
-				),
-				array(
-					'page' => '/frontend/',
 					'delegate' => 'EventPreSaveFilter',
 					'callback' => 'checkEventPermissions'
 				),
 				array(
+					'page' => '/frontend/',
+					'delegate' => 'EventPostSaveFilter',
+					'callback' => 'processEventData'
+				),
+				/*
+					BACKEND
+				*/
+				array(
 					'page' => '/publish/new/',
 					'delegate' => 'EntryPostCreate',
-					'callback' => 'cbEmailNewMember'
+					'callback' => 'cb_emailNewMember'
 				),
 				array(
 					'page' => '/system/preferences/',
@@ -90,8 +119,8 @@
 				array(
 					'page' => '/system/preferences/',
 					'delegate' => 'Save',
-					'callback' => '__SavePreferences'
-				),
+					'callback' => 'savePreferences'
+				)
 			);
 		}
 
@@ -100,31 +129,18 @@
 	-------------------------------------------------------------------------*/
 
 		/**
-		 * Never mind trying to accommodate updating. There have been no
-		 * official releases, there are too many differing versions, and
-		 * the logic required would be nightmarish.
+		 * Sets the `cookie-prefix` of `sym-members` in the Configuration
+		 * and creates all of the field's tables in the database
+		 *
+		 * @return boolean
+		 * @todo Missing the Email, Timezone fields
 		 */
-		
-		/*public function update($previous_version=false) {
-			// Holy hell there is going to need to be alot of logic here ;)
-		}*/
-
 		public function install(){
 
 			Symphony::Configuration()->set('cookie-prefix', 'sym-members', 'members');
 			Administration::instance()->saveConfig();
 
-			/**
-			 * TODO
-			 * Should all of this logic stay here?
-			 *
-			 * On the one hand, Members' fields aren't extensions, so they
-			 * don't have install() methods. On the other hand, some of
-			 * these fields are optional. I suppose the effect is the same,
-			 * though, of having these act like auto-enabled field extensions.
-			 */
-			Symphony::Database()->import("
-
+			return Symphony::Database()->import("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberusername` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
@@ -201,65 +217,81 @@
 					`role_id` INT( 11 ) UNSIGNED NOT NULL ,
 					INDEX (  `email_template_id` ,  `role_id` )
 				) ENGINE=MyISAM;
-
 			");
-
 		}
-		
-		/**
-		 * TODO
-		 * If the extension is responsible for creating the field tables
-		 * but doesn't delete them (so as not to destroy data), then there's
-		 * a gap here wherein a developer can't remove the field tables
-		 * unless they do so manually.
-		 */
 
+		/**
+		 * Remove's all `members` Configuration values and then drops all the
+		 * database tables created by the Members extension
+		 *
+		 * @return boolean
+		 * @todo Missing the Email, Timezone fields
+		 */
 		public function uninstall(){
 			Symphony::Configuration()->remove('members');
 			Administration::instance()->saveConfig();
-			Symphony::Database()->query(
-				"DROP TABLE
+
+			return Symphony::Database()->query("
+				DROP TABLE
+					`tbl_fields_memberusername`,
+					`tbl_fields_memberpassword`,
+					`tbl_fields_memberactivation`,
+					`tbl_fields_memberrole`,
 					`tbl_members_email_templates`,
 					`tbl_members_roles`,
 					`tbl_members_roles_event_permissions`,
 					`tbl_members_roles_forbidden_pages`,
-					`tbl_members_email_templates_role_mapping`;"
-			);
+					`tbl_members_email_templates_role_mapping`;
+			");
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Preferences:
 	-------------------------------------------------------------------------*/
-	
+
 		public function appendPreferences($context) {
-			
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild(new XMLElement('legend', __('Members')));
-			
+
 			$membersection = Symphony::Configuration()->get('section', 'members');
-			$label = new XMLElement('label', __('Active Members Section'));	
-			
-			/**
-			 * TODO
-			 * Build list of sections with required members fields
-			 */
+			$label = new XMLElement('label', __('Active Members Section'));
+
+			$sm = new SectionManager(Symphony::Engine());
+			$sections = $sm->fetch();
+			$member_sections = array();
+
+			if(is_array($sections) && !empty($sections)) {
+				foreach($sections as $section) {
+					$schema = $section->fetchFieldsSchema();
+
+					foreach($schema as $field) {
+						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
+
+						if(array_key_exists($section->get('id'), $member_sections)) continue;
+
+						$member_sections[$section->get('id')] = $section->get();
+					}
+				}
+			}
+
 			$options = array();
-					
+			foreach($member_sections as $section_id => $section) {
+				$options[] = array($section['id'], ($section->get['id'] == extension_Members::getMembersSection()), $section['name']);
+			}
+
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
 
-			$fieldset->appendChild($label);						
+			$fieldset->appendChild($label);
 			$context['wrapper']->appendChild($fieldset);
 		}
-		
-		public function __SavePreferences(){
+
+		public function savePreferences(){
 			$settings = $_POST['settings'];
 
 			$setting_group = 'members';
-			$setting_name = 'section';
-			$setting_value = $settings['members']['section'];
 
-			Symphony::Configuration()->set($setting_name, $setting_value, $setting_group);
+			Symphony::Configuration()->set('section', $settings['members']['section'], $setting_group);
 			Administration::instance()->saveConfig();
 		}
 
@@ -277,16 +309,11 @@
 		}
 
         private static function getMembersSection() {
-            if(is_null(self::$members_section)) {
-                $fm = new FieldManager($this->_Parent);
-                $fields = $fm->fetch(NULL, NULL, 'ASC', 'sortorder', 'member');
-                $field = current($fields);
-                if($field instanceof Identity) {
-                    self::$members_section = $field->get('parent_section');
-                }
-            }
+			if(is_null(extension_Members::$members_section)) {
+				extension_Members::$members_section = Symphony::Configuration()->get('section', 'members');
+			}
 
-            return self::$members_section;
+			return extension_Members::$members_section;
         }
 
 		public static function roleField(){
@@ -319,7 +346,7 @@
 	/*-------------------------------------------------------------------------
 		Roles:
 	-------------------------------------------------------------------------*/
-	
+
 	/**
 	 * TODO
 	 * How much does this need to change to accommodate the fact that
@@ -384,8 +411,6 @@
 		}
 
 		public function cbCheckFrontendPagePermissions($context) {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			$isLoggedIn = false;
 
 			if(is_array($_REQUEST['member-action'])){
@@ -470,24 +495,21 @@
 			return $result;
 		}
 
-		public function cbEmailNewMember($context){
-			if($context['section']->get('handle') == self::memberSectionHandle()) return $this->emailNewMember($context);
+		public function cb_emailNewMember($context){
+			if($context['section']->get('id') == self::getMembersSection()) return $this->emailNewMember($context);
 		}
 
 		public function emailNewMember($context){
-			var_dump($context, __FUNCTION__);
 			return $this->sendNewRegistrationEmail($context['entry'], $context['fields']);
 		}
 
 		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){
-
 			if(!$role = self::fetchRole($entry->getData(self::roleField(), true)->role_id)) return;
-			var_dump(__FUNCTION__);
+
 			return $this->Member->sendNewRegistrationEmail($entry, $role, $fields);
 		}
 
 		public function sendNewPasswordEmail($member_id){
-
 			$entry = $this->Member->Member->fetchMemberFromID($member_id);
 
 			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
@@ -498,7 +520,6 @@
 		}
 
 		public function sendResetPasswordEmail($member_id){
-
 			$entry = $this->Member->Member->fetchMemberFromID($member_id);
 
 			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
@@ -513,13 +534,12 @@
 	-------------------------------------------------------------------------*/
 
 		public function processEventData($context){
-			if($context['event']->getSource() == self::getConfigVar('member_section') && isset($_POST['action']['members-register'])){
+			if($context['event']->getSource() == self::getMembersSection() && isset($_POST['action']['members-register'])){
 				return $this->sendNewRegistrationEmail($context['entry'], $context['fields']);
 			}
 		}
 
 		public function checkEventPermissions($context){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 			$action = 'create';
 			$required_level = 1;
 			$entry_id = NULL;
@@ -578,18 +598,15 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function cbAddMemberDetailsToPageParams(Array $context = null) {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-			$this->Member->AddMemberDetailsToPageParams($context);
+		public function addMemberDetailsToPageParams(Array $context = null) {
+			$this->Member->addMemberDetailsToPageParams($context);
 		}
 
 		public function appendLoginStatusToEventXML(Array $context = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 			$this->Member->appendLoginStatusToEventXML($context);
 		}
 
 		public function buildXML(Array $context = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
 			$result = $this->Member->buildXML();
 
 			if(self::$_failed_login_attempt === true) $result->setAttribute('failed-login-attempt', 'true');

@@ -1,10 +1,10 @@
 <?php
-    require_once(TOOLKIT . '/class.field.php');
-    
-    Class Identity extends Field {
+	require_once(TOOLKIT . '/class.field.php');
 
-        public function mustBeUnique() {
-            return true;
-        }
+	Class Identity extends Field {
 
-    }
+		public function mustBeUnique() {
+			return true;
+		}
+
+	}

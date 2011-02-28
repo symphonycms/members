@@ -7,18 +7,21 @@
 	}
 
 	Interface Member {
-		#	Authentication
+		// Authentication
 		public function login(Array $credentials);
 		public function logout();
 		public function isLoggedIn();
-		#	Finding
+
+		// Finding
 		public function findMemberIDFromCredentials(Array $credentials);
-		#	Emails
+
+		// Emails
 		public function sendNewRegistrationEmail(Entry $entry, Role $role, Array $fields = array());
 		public function sendNewPasswordEmail(Entry $entry, Role $role);
 		public function sendResetPasswordEmail(Entry $entry, Role $role);
-		#	Output
-		public function AddMemberDetailsToPageParams(Array $context = null);
+
+		// Output
+		public function addMemberDetailsToPageParams(Array $context = null);
 		public function appendLoginStatusToEventXML(Array $context = null);
 		public function buildXML(Array $context = null);
 	}
@@ -29,8 +32,6 @@
 
 		public static $member_id = 0;
 		public static $isLoggedIn = false;
-
-		public static $debug = false;
 
 		public $Member = null;
 		public $cookie = null;
@@ -51,8 +52,6 @@
 		Initalise:
 	-------------------------------------------------------------------------*/
 		public function initialiseCookie() {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(is_null($this->cookie)) {
 				$this->cookie = new Cookie(
 					Symphony::Configuration()->get('cookie-prefix', 'members'),	TWO_WEEKS, __SYM_COOKIE_PATH__, true
@@ -61,8 +60,6 @@
 		}
 
 		public function initialiseMemberObject($member_id = null) {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(is_null($this->Member)) {
 				$this->Member = self::fetchMemberFromID($member_id);
 			}
@@ -82,8 +79,6 @@
 		 * findMemberIDFromUsername() are in member.symphony.php?
 		 */
 		public function findMemberIDFromEmail($email = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(is_null($email)) return null;
 
 			$entry_id = Symphony::Database()->fetchCol('entry_id', sprintf("
@@ -97,8 +92,6 @@
 		}
 
 		public function fetchMemberFromID($member_id = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			$entryManager = new EntryManager(Frontend::instance());
 
 			if(!is_null($member_id)) {
@@ -117,8 +110,6 @@
 		Authentication:
 	-------------------------------------------------------------------------*/
 		public function logout(){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(is_null($this->cookie)) $this->initialiseCookie();
 
 			$this->cookie->expire();
@@ -127,15 +118,13 @@
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
-	
+
 		/**
 		 * TODO
 		 * Do we leave this as-is, or shift to a more 3-esque approach where
 		 * all the data goes into the XML?
 		 */
-		public function AddMemberDetailsToPageParams(Array $context = null) {
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
+		public function addMemberDetailsToPageParams(Array $context = null) {
 			if(!$this->isLoggedIn()) return;
 
 			$this->initialiseMemberObject();
@@ -148,8 +137,6 @@
 		}
 
 		public function appendLoginStatusToEventXML(Array $context = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if($this->isLoggedIn()) self::$driver->__updateSystemTimezoneOffset();
 
 			$context['wrapper']->appendChild(
@@ -158,15 +145,12 @@
 		}
 
 		public function buildXML(Array $context = null){
-			if(self::$debug) var_dump(__CLASS__ . ":" . __FUNCTION__);
-
 			if(!self::$member_id == 0){
 				if(!$this->Member) $this->initialiseMemberObject();
 
 				$result = new XMLElement('member-login-info');
 				$result->setAttributeArray(array(
 					'logged-in' => 'true',
-					'type' => get_class($this),
 					'id' => $this->Member->get('id')
 				));
 			}
@@ -174,8 +158,7 @@
 			else{
 				$result = new XMLElement('member-login-info');
 				$result->setAttributeArray(array(
-					'logged-in' => 'false',
-					'type' => get_class($this)
+					'logged-in' => 'false'
 				));
 			}
 
