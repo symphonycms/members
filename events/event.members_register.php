@@ -30,7 +30,7 @@
 		}
 
 		public static function getSource(){
-			return extension_Members::getConfigVar('member_section');
+			return extension_Members::getMembersSection();
 		}
 
 		public static function allowEditorToParse(){
@@ -90,7 +90,7 @@
 		protected function __trigger(){
 			$role_field_handle = Symphony::Database()->fetchVar('element_name', sprintf(
 				"SELECT `element_name` FROM `tbl_fields` WHERE `type` = 'memberrole' AND `parent_section` = %d LIMIT 1",
-				extension_Members::getConfigVar('member_section')
+				extension_Members::getMembersSection()
 			));
 
 			if(Symphony::Configuration()->get('require_activation', 'members') == 'yes'){

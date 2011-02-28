@@ -94,7 +94,7 @@
 				);
 			}
 
-			elseif(is_null(extension_members::getConfigVar('member_section'))){
+			elseif(is_null(extension_Members::getMembersSection())){
 				$aTableBody = array(
 					Widget::TableRow(
 						array(Widget::TableData(__('No Member section has been specified in <a href="'.URL.'/symphony/extension/members/setup/">Member Setup</a>. Please do this first.'), 'inactive', NULL, count($aTableHead)))
@@ -105,7 +105,7 @@
 			else{
 
 			    $sectionManager = new SectionManager($this->_Parent);
-			    $section = $sectionManager->fetch(extension_members::getConfigVar('member_section'));
+			    $section = $sectionManager->fetch(extension_Members::getMembersSection());
 
 				$bEven = true;
 

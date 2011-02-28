@@ -27,6 +27,21 @@
 		);
 
 		/**
+		 * @param FieldManager $fm
+		 */
+		public $fm = null;
+
+		/**
+		 * @param SectionManager $sm
+		 */
+		public $sm = null;
+
+		/**
+		 * @param EntryManager $em
+		 */
+		public $em = null;
+
+		/**
 		 * @param boolean $failed_login_attempt
 		 */
 		public static $_failed_login_attempt = false;
@@ -41,6 +56,10 @@
 			if(class_exists('Frontend') && Frontend::instance()->Page() instanceof FrontendPage) {
 				$this->Member = new SymphonyMember($this);
 			}
+
+			$this->fm = new FieldManager(Symphony::Engine());
+			$this->sm = new SectionManager(Symphony::Engine());
+			$this->em = new EntryManager(Symphony::Engine());
 		}
 
 		public function about(){
@@ -258,8 +277,7 @@
 
 			$label = new XMLElement('label', __('Active Members Section'));
 
-			$sm = new SectionManager(Symphony::Engine());
-			$sections = $sm->fetch();
+			$sections = $this->sm->fetch();
 			$member_sections = array();
 
 			if(is_array($sections) && !empty($sections)) {
@@ -290,8 +308,7 @@
 
 				$options = array();
 
-				$fm = new FieldManager(Symphony::Engine());
-				$fields = $fm->fetch(null, extension_Members::getMembersSection());
+				$fields = $this->fm->fetch(null, extension_Members::getMembersSection());
 
 				foreach($fields as $field) {
 					// Possible @todo, check that each field's validator is set to that of the email validator..
@@ -336,7 +353,7 @@
 			return ($id == 0 ? NULL : $id);
 		}
 
-        private static function getMembersSection() {
+        public static function getMembersSection() {
 			if(is_null(extension_Members::$members_section)) {
 				extension_Members::$members_section = Symphony::Configuration()->get('section', 'members');
 			}
@@ -438,7 +455,7 @@
 			return Widget::TableRow(array($td1, $td2));
 		}
 
-		public function cbCheckFrontendPagePermissions($context) {
+		public function checkFrontendPagePermissions($context) {
 			$isLoggedIn = false;
 
 			if(is_array($_REQUEST['member-action'])){
@@ -454,11 +471,7 @@
 			}
 
 			else if(trim($action) == 'login') {
-				if($this->Member->login(array(
-					'username' => Symphony::Database()->cleanValue($_REQUEST['username']),
-					'password' => Symphony::Database()->cleanValue($_REQUEST['password'])
-					))
-				) {
+				if($this->Member->login($_REQUEST['fields'])) {
 					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 					redirect(URL);
 				}
@@ -471,9 +484,18 @@
 			$this->Member->initialiseMemberObject();
 
 			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
-				$role_data = $this->Member->Member->getData(self::roleField());
-				$this->__updateSystemTimezoneOffset();
+				if(!is_null(extension_Members::getConfigVar('timezone'))) {
+					$this->__updateSystemTimezoneOffset();
+				}
+				if(!is_null(extension_Members::getConfigVar('role'))) {
+					$role_data = $this->Member->Member->getData(self::roleField());
+				}
+				else {
+					return;
+				}
 			}
+
+			if(is_null(extension_Members::getConfigVar('role'))) return;
 
 			/**
 			 * TODO
@@ -502,7 +524,7 @@
 				}
 
 				throw new SymphonyErrorPage(
-					'Please <a href="'.URL.'/symphony/login/">login</a> to view this page.',
+					'Please <a href="'.SYMPHONY_URL.'/login/">login</a> to view this page.',
 					'Forbidden', 'error',
 					array('header' => 'HTTP/1.0 403 Forbidden')
 				);
@@ -640,6 +662,8 @@
 			if(self::$_failed_login_attempt === true) $result->setAttribute('failed-login-attempt', 'true');
 
 			if($this->Member->isLoggedIn()) {
+				if(is_null(extension_Members::getConfigVar('role'))) return $result;
+
 				$role_data = $this->Member->Member->getData(self::roleField());
 				$role = self::fetchRole($role_data['role_id'], true);
 

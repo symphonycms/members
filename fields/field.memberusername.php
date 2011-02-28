@@ -64,16 +64,38 @@
 		Utilities:
 	-------------------------------------------------------------------------*/
 
+		/**
+		 * Given a Member ID, return Member
+		 *
+		 * @param integer $member_id
+		 * @return Entry
+		 */
 		public function fetchMemberFromID($member_id){
 			return self::$_driver->Member->initialiseMemberObject($member_id);
 		}
 
-		// Does this need to get moved out to the Identity class?
-		public function fetchMemberFromUsername($username){
-			$member_id = Symphony::Database()->fetchVar('entry_id', 0,
-				"SELECT `entry_id` FROM `tbl_entries_data_".$this->get('id')."` WHERE `username` = '{$username}' LIMIT 1"
-			);
-			return ($member_id ? $this->fetchMemberFromID($member_id) : NULL);
+		/**
+		 * Given a `$needle`, this function will return the Member object.
+		 * If the `$needle` passed is an array, this function expects a
+		 * key of 'username'
+		 *
+		 * @param string|array $needle
+		 * @return Entry
+		 */
+		public function fetchMemberIDBy($needle){
+			if(is_array($needle)) {
+				extract($needle);
+			}
+			else {
+				$username = $needle;
+			}
+
+			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
+				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `username` = '%s' LIMIT 1",
+				$this->get('id'), Symphony::Database()->cleanValue($username)
+			));
+
+			return ($member_id ? $member_id : NULL);
 		}
 
 	/*-------------------------------------------------------------------------
@@ -104,6 +126,9 @@
 				'field_id' => $id,
 				'validator' =>$this->get('validator')
 			);
+
+			Symphony::Configuration()->set('identity', $id, 'members');
+			Administration::instance()->saveConfig();
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
@@ -169,10 +194,10 @@
 					return self::__INVALID_FIELDS__;
 				}
 
-				$existing = $this->fetchMemberFromUsername($username);
+				$existing = $this->fetchMemberIDBy($username);
 
 				//	If there is an existing username, and it's not the current object (editing), error.
-				if($existing instanceof Entry && $existing->get('id') !== $entry_id) {
+				if($existing !== $entry_id) {
 					$message = __('That username is already taken.');
 					return self::__INVALID_FIELDS__;
 				}

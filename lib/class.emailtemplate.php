@@ -42,7 +42,7 @@
 
 				$member = self::$_Members->Member->fetchMemberFromID($member_id);
 
-				$email->to = $member->getData(extension_Members::getConfigVar('email_address_field_id'), true)->value;
+				$email->to = $member->getData(extension_Members::getConfigVar('email'), true)->value;
 				$email->from = sprintf(
 					'%s <%s>',
 					Symphony::Configuration()->get('sitename', 'general'),
@@ -118,7 +118,7 @@
 						WHERE `element_name` = '%s'
 						AND `parent_section` = %d
 						LIMIT 1
-					", $h, extension_Members::getConfigVar('member_section')
+					", $h, extension_Members::getMembersSection()
 				));
 			}
 

@@ -64,6 +64,37 @@
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
+	
+		/**
+		 * Given an array or string as `$needle` and an existing `$member_id`
+		 * this function will return the `$member_id` if the given
+		 * password matches this `$member_id`, otherwise null.
+		 *
+		 * @param array|string $needle
+		 * @param integer $member_id
+		 * @return Entry|null
+		 */
+		public function fetchMemberIDBy($needle, $member_id) {
+			if(is_array($needle)) {
+				extract($needle);
+			}
+			else {
+				$password = $needle;
+			}
+
+			$entry_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
+					SELECT `entry_id`
+					FROM `tbl_entries_data_%d`
+					WHERE `password` = '%s'
+					LIMIT 1
+				",
+				$this->get('id'), $password
+			));
+			
+			if($entry_id == $member_id) return $member_id;
+			
+			return null;
+		}
 
 		protected function checkPassword($password) {
 			$strength = 0;
@@ -221,6 +252,9 @@
 				'strength' => $this->get('strength'),
 				'salt' => $this->get('salt')
 			);
+			
+			Symphony::Configuration()->set('authentication', $id, 'members');
+			Administration::instance()->saveConfig();
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
@@ -387,7 +421,7 @@
 			if(empty($data)) return __('None');
 
 			return parent::prepareTableValue(array(
-                'value' => ucwords($data['strength']) . '(' . $data['length'] . ')'
+                'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
             ), $link);
 		}
 

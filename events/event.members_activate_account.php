@@ -55,7 +55,7 @@
 						FROM `sym_fields` AS `f`
 						WHERE f.parent_section = %d
 						ORDER BY `id` ASC
-					", extension_Members::getConfigVar('member_section'))
+					", extension_Members::getMembersSection())
 				);
 
 				if(!empty($rows)){
@@ -118,7 +118,7 @@
 				extension_Members::purgeCodes((int)$Members->Member->get('id'));
 
 				$entry = $Members->Member->Member;
-				$email = $entry->getData(extension_Members::getConfigVar('email_address_field_id', 'members'));
+				$email = $entry->getData(extension_Members::getConfigVar('email'));
 				$name = $entry->getData(self::findFieldID('name'));
 
 				$Members->emailNewMember(

@@ -129,7 +129,7 @@
 				}
 
 				if(!is_null($username)){
-					$tmp = $Members->Member->findMemberIDFromUsername($username);
+					$tmp = $Members->Member->findMemberIDFromIdentity($username);
 					if(is_null($tmp)){
 						$result->appendChild(new XMLElement('member-username', NULL, array('type' => 'not-found')));
 					}

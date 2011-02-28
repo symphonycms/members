@@ -9,25 +9,25 @@
 		Utilities:
 	-------------------------------------------------------------------------*/
 		public static function usernameField(){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getConfigVar('member_section'). " AND `type` = 'member' LIMIT 1");
+			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection(). " AND `type` = 'memberusername' LIMIT 1");
 		}
 
 		public static function usernameFieldHandle(){
-			return Symphony::Database()->fetchVar('element_name', 0, "SELECT `element_name` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getConfigVar('member_section') ." AND `type` = 'member' LIMIT 1");
+			return Symphony::Database()->fetchVar('element_name', 0, "SELECT `element_name` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection() ." AND `type` = 'member' LIMIT 1");
 		}
 
 		public static function passwordField(){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getConfigVar('member_section'). " AND `type` = 'memberpassword' LIMIT 1");
+			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection(). " AND `type` = 'memberpassword' LIMIT 1");
 		}
 
 		public static function passwordFieldHandle(){
-			return Symphony::Database()->fetchVar('element_name', 0, "SELECT `element_name` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getConfigVar('member_section') ." AND `type` = 'memberpassword' LIMIT 1");
+			return Symphony::Database()->fetchVar('element_name', 0, "SELECT `element_name` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection() ." AND `type` = 'memberpassword' LIMIT 1");
 		}
 
 		public static function getSalt() {
 			return Symphony::Database()->fetchVar('salt', 0, sprintf("
 					SELECT `salt`
-					FROM `tbl_fields_member`
+					FROM `tbl_fields_memberpassword`
 					WHERE `field_id` = %d
 					LIMIT 1
 				", self::passwordField()
@@ -40,13 +40,16 @@
 		public function login(Array $credentials){
 			extract($credentials);
 
+			$username = Symphony::Database()->cleanValue($username);
+			$password = Symphony::Database()->cleanValue($password);
+
 			if($id = $this->findMemberIDFromCredentials(array(
 					'username' => $username,
 					'password' => sha1(self::getSalt() . $password)
 				))
 			) {
 				try{
-					self::$member_id = $id;
+					self::$member_id = $member->$id;
 					$this->initialiseCookie();
 					$this->initialiseMemberObject();
 
@@ -149,51 +152,4 @@
 
 		}
 
-	/*-------------------------------------------------------------------------
-		Finding:
-	-------------------------------------------------------------------------*/
-		/**
-		 * TODO
-		 * Does this functionality get moved out to the field since username
-		 * can no longer be assumed?
-		 */
-		public function findMemberIDFromCredentials(Array $credentials) {
-			extract($credentials);
-
-			// It's expected that $password is sha1'd and salted.
-			if(is_null($username) || is_null($password)) return null;
-
-			$entry_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
-					SELECT `entry_id`
-					FROM `tbl_entries_data_%d` AS `u`,
-					LEFT JOIN `tbl_entries_data_%d` AS `p`
-					ON (`u`.entry_id = `p`.entry_id)
-					WHERE u.`username` = '%s'
-					AND p.`password` = '%s'
-					LIMIT 1
-				",
-				$this->usernameField(), $this->passwordField(), Symphony::Database()->cleanValue($username), $password
-			));
-
-			return (is_null($entry_id) ? null : $entry_id);
-		}
-
-		/**
-		 * TODO
-		 * Does this functionality get moved out to the field since username
-		 * can no longer be assumed?
-		 */
-		public function findMemberIDFromUsername($username = null){
-			if(is_null($username)) return null;
-
-			$entry_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
-					SELECT `entry_id`
-					FROM `tbl_entries_data_%d`
-					WHERE `username` = '%s'
-					LIMIT 1
-				", $this->usernameField(), Symphony::Database()->cleanValue($username)
-			));
-
-			return (is_null($entry_id) ? null : $entry_id);
-		}
 	}

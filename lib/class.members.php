@@ -70,14 +70,7 @@
 	/*-------------------------------------------------------------------------
 		Finding:
 	-------------------------------------------------------------------------*/
-		/**
-		 * TODO
-		 * Does this functionality get moved out to the field since username
-		 * can no longer be assumed?
-		 *
-		 * And why is this here while findMemberIDFromCredentials() and
-		 * findMemberIDFromUsername() are in member.symphony.php?
-		 */
+
 		public function findMemberIDFromEmail($email = null){
 			if(is_null($email)) return null;
 
@@ -85,25 +78,67 @@
 					SELECT `entry_id`
 					FROM `tbl_entries_data_%d`
 					WHERE `value` = '%s'
-				", extension_Members::getConfigVar('email_address_field_id'), Symphony::Database()->cleanValue($email)
+				", extension_Members::getConfigVar('email'), Symphony::Database()->cleanValue($email)
 			));
 
 			return (is_null($entry_id) ? null : $entry_id);
 		}
 
-		public function fetchMemberFromID($member_id = null){
-			$entryManager = new EntryManager(Frontend::instance());
-
+		public function fetchMemberFromID($member_id = null) {
 			if(!is_null($member_id)) {
-				$Member = $entryManager->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = self::$driver->em->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
 			else if(self::$member_id !== 0) {
-				$Member = $entryManager->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = self::$driver->em->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
 
 			return null;
+		}
+
+		/**
+		 * Returns an Entry object given an array of credentials
+		 *
+		 * @param array $credentials
+		 * @return integer
+		 */
+		public function findMemberIDFromCredentials(Array $credentials) {
+			extract($credentials);
+
+			// It's expected that $password is sha1'd and salted.
+			if(is_null($username) || is_null($password)) return null;
+
+			$identity = self::$driver->fm->fetch(extension_Members::getConfigVar('identity'));
+
+			// Member from Username
+			$member = $identity->fetchMemberIDBy($credentials);
+
+			if(is_null($member)) return null;
+
+			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+
+			if(is_null($auth)) return $member;
+
+			$member = $auth->fetchMemberIDBy($credentials, $member);
+
+			return $member;
+		}
+
+		/**
+		 * Given `$needle` this function will call the active Identity field
+		 * to return the entry ID, aka. Member ID, of that entry matching the
+		 * `$needle`.
+		 *
+		 * @param string $needle
+		 * @return integer|null
+		 */
+		public function findMemberIDFromIdentity($needle = null){
+			if(is_null($needle)) return null;
+
+			$identity = self::$driver->$fm->fetch(extension_Members::getConfigVar('identity'));
+
+			return $identity->fetchMemberIDBy($needle);
 		}
 
 	/*-------------------------------------------------------------------------
@@ -130,14 +165,18 @@
 			$this->initialiseMemberObject();
 
 			$context['params']['member-id'] = $this->Member->get('id');
-			$context['params']['member-type'] = get_class($this);
+
+			if(is_null(extension_Members::getConfigVar('role'))) return;
+
 			$context['params']['member-role'] = extension_Members::fetchRole(
 				$this->Member->getData(extension_Members::roleField(), true)->role_id
 			)->name();
 		}
 
 		public function appendLoginStatusToEventXML(Array $context = null){
-			if($this->isLoggedIn()) self::$driver->__updateSystemTimezoneOffset();
+			if($this->isLoggedIn() && !is_null(extension_Members::getConfigVar('timezone'))) {
+				self::$driver->__updateSystemTimezoneOffset();
+			}
 
 			$context['wrapper']->appendChild(
 				self::$driver->buildXML($context)
