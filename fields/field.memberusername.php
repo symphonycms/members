@@ -1,11 +1,11 @@
 <?php
 
     require_once(EXTENSIONS . '/members/lib/class.identity.php');
-    
+
 	Class fieldMemberUsername extends Identity {
 
 		static private $_driver;
-		
+
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@
 				}
 			}
 		}
-		
+
 		function canFilter(){
 			return true;
 		}
@@ -42,22 +42,22 @@
 		public function mustBeUnique(){
 			return true;
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Setup:
 	-------------------------------------------------------------------------*/
 
 		public function createTable(){
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
+			return Symphony::Database()->query("
+				CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
 				  `username` varchar(150) default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  UNIQUE KEY `username` (`username`)
-				) ENGINE=MyISAM;"
-			);
+				) ENGINE=MyISAM;
+			");
 		}
 
 	/*-------------------------------------------------------------------------
@@ -69,7 +69,6 @@
 		}
 
 		// Does this need to get moved out to the Identity class?
-		
 		public function fetchMemberFromUsername($username){
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0,
 				"SELECT `entry_id` FROM `tbl_entries_data_".$this->get('id')."` WHERE `username` = '{$username}' LIMIT 1"
@@ -212,11 +211,11 @@
 
 			return parent::prepareTableValue(array('value' => General::sanitize($data['username'])), $link);
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Sorting:
 	-------------------------------------------------------------------------*/
-	
+
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC', $useIDFieldForSorting=false){
 
 			$sort_field = (!$useIDFieldForSorting ? 'ed' : 't' . $this->get('id'));
@@ -256,11 +255,11 @@
 			return true;
 
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Events:
 	-------------------------------------------------------------------------*/
-	
+
 		public function getExampleFormMarkup(){
 
 			$label = Widget::Label('Username');

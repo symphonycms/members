@@ -23,8 +23,7 @@
 		 * @param array $member_fields
 		 */
 		public static $member_fields = array(
-			'memberusername', 'memberemail', 'memberpassword',
-			'memberrole', 'membertimezone', 'memberactivation'
+			'memberusername'
 		);
 
 		/**
@@ -254,7 +253,9 @@
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild(new XMLElement('legend', __('Members')));
 
-			$membersection = Symphony::Configuration()->get('section', 'members');
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+
 			$label = new XMLElement('label', __('Active Members Section'));
 
 			$sm = new SectionManager(Symphony::Engine());
@@ -282,7 +283,33 @@
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
 
-			$fieldset->appendChild($label);
+			$group->appendChild($label);
+
+			if(!is_null(extension_Members::getMembersSection())) {
+				$div = new XMLElement('div');
+
+				$options = array();
+
+				$fm = new FieldManager(Symphony::Engine());
+				$fields = $fm->fetch(null, extension_Members::getMembersSection());
+
+				foreach($fields as $field) {
+					// Possible @todo, check that each field's validator is set to that of the email validator..
+					$options[] = array($field->get('id'), ($field->get('id') == extension_Members::getConfigVar('email')), $field->get('label'));
+				}
+
+				$label = new XMLElement('label', __('Email Field'));
+				$label->appendChild(Widget::Select('settings[members][email]', $options));
+				$div->appendChild($label);
+
+				$div->appendChild(
+					new XMLElement('p', __('Symphony will use this field\'s value to send emails to this Member'), array('class' => 'help'))
+				);
+
+				$group->appendChild($div);
+			}
+
+			$fieldset->appendChild($group);
 			$context['wrapper']->appendChild($fieldset);
 		}
 
@@ -292,6 +319,7 @@
 			$setting_group = 'members';
 
 			Symphony::Configuration()->set('section', $settings['members']['section'], $setting_group);
+			Symphony::Configuration()->set('email', $settings['members']['email'], $setting_group);
 			Administration::instance()->saveConfig();
 		}
 
