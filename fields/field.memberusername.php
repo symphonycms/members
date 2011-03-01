@@ -240,12 +240,9 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC', $useIDFieldForSorting=false){
-
-			$sort_field = (!$useIDFieldForSorting ? 'ed' : 't' . $this->get('id'));
-
-			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `$sort_field` ON (`e`.`id` = `$sort_field`.`entry_id`) ";
-			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`$sort_field`.`username` $order");
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
+			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `$sort_field` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`ed`.`username` $order");
 		}
 
 	/*-------------------------------------------------------------------------
@@ -256,28 +253,35 @@
 
 			$field_id = $this->get('id');
 
-			if(self::isFilterRegex($data[0])):
-
+			// Filter is an regexp.
+			if(self::isFilterRegex($data[0])) {
 				$pattern = str_replace('regexp:', '', $data[0]);
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND `t$field_id`.username REGEXP '$pattern' ";
+				$where .= " AND (`t$field_id`.username REGEXP '$pattern' OR `t$field_id`.entry_id REGEXP '$pattern') ";
+			}
 
-			elseif($andOperation):
-
+			// Filter has + in it.
+			else if($andOperation) {
 				foreach($data as $key => $bit){
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
-					$where .= " AND `t$field_id$key`.username = '$bit' ";
+					$where .= " AND (`t$field_id$key`.username = '$bit' OR `t$field_id`.entry_id = '$bit') ";
+				}
+			}
+
+			// Normal
+			else {
+				if(!is_array($data)) {
+					$data = array($data);
 				}
 
-			else:
-
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND `t$field_id`.username IN ('".@implode("', '", $data)."') ";
-
-			endif;
+				$where .= " AND (
+							`t$field_id`.username IN ('".implode("', '", $data)."')
+							OR `t$field_id`.entry_id IN ('".implode("', '", $data)."')
+							) ";
+			}
 
 			return true;
-
 		}
 
 	/*-------------------------------------------------------------------------
