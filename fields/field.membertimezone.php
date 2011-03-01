@@ -1,11 +1,6 @@
 <?php
 
-    /**
-     * Timezone field.
-     * Not sure how much this field actually needs to do...
-     */
 	require_once(TOOLKIT . '/fields/field.select.php');
-
 
 	Class fieldMemberTimezone extends fieldSelect {
 

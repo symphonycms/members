@@ -399,57 +399,8 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Roles:
+		Role Manager:
 	-------------------------------------------------------------------------*/
-
-	/**
-	 * TODO
-	 * How much does this need to change to accommodate the fact that
-	 * role is now optional? Although, technically, when no role field
-	 * is present, there is still a single default role which then governs
-	 * all permissions.
-	 */
-
-		public static function fetchRole($role_id, $include_permissions=false){
-			if(!$row = Symphony::Database()->fetchRow(0, "SELECT * FROM `tbl_members_roles` WHERE `id` = $role_id LIMIT 1")) return;
-
-			$forbidden_pages = array();
-			$event_permissions = array();
-
-			if($include_permissions) self::rolePermissions($role_id, $event_permissions, $forbidden_pages);
-
-			return new Role($row['id'], $row['name'], $event_permissions, $forbidden_pages);
-		}
-
-		public static function fetchRoles($include_permissions=false){
-			if(!$rows = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles` ORDER BY `id` ASC")) return;
-
-			$roles = array();
-
-			foreach($rows as $r){
-				$forbidden_pages = array();
-				$event_permissions = array();
-
-				if($include_permissions) self::rolePermissions($r['id'], $event_permissions, $forbidden_pages);
-
-				$roles[] = new Role($r['id'], $r['name'], $event_permissions, $forbidden_pages);
-			}
-
-			return $roles;
-		}
-
-		public static function rolePermissions($role_id, &$event_permissions, &$forbidden_pages) {
-			$forbidden_pages = Symphony::Database()->fetchCol('page_id', "SELECT `page_id` FROM `tbl_members_roles_forbidden_pages` WHERE `role_id` = " . $role_id);
-
-			$tmp = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles_event_permissions` WHERE `role_id` = " . $role_id);
-			if(is_array($tmp) && !empty($tmp)) foreach($tmp as $e) {
-				$event_permissions[$e['event']][$e['action']] = $e['level'];
-			}
-		}
-
-		public static function roleExists($name){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_members_roles` WHERE `name` = '{$name}' LIMIT 1");
-		}
 
 		public static function buildRolePermissionTableBody(Array $rows){
 			$array = array();
@@ -721,3 +672,5 @@
 			return $result;
 		}
 	}
+
+

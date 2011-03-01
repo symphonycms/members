@@ -1,52 +1,37 @@
 <?php
 
-	if(!defined('__IN_SYMPHONY__')) die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
+	require_once(TOOLKIT . '/fields/field.select.php');
 
-	Class fieldMemberRole extends Field{
-	
+	Class fieldMemberRole extends fieldSelect {
+
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		function __construct(&$parent){
+		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->_name = 'Member: Role';
-
-			// Set default
-			$this->set('show_column', 'no');
+			$this->_name = __('Member: Role');
+			$this->_showassociation = false;
 		}
 
-		function canToggle(){
+		public function canToggle(){
 			return true;
 		}
 
-		function allowDatasourceOutputGrouping(){
-			return true;
-		}
-
-		function canFilter(){
-			return true;
-		}
-
-		function canPrePopulate(){
-			return true;
-		}
-
-		function isSortable(){
+		public function allowDatasourceOutputGrouping(){
 			return true;
 		}
 
 		public function mustBeUnique(){
 			return true;
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Setup:
 	-------------------------------------------------------------------------*/
-	
-		function createTable(){
-			return Symphony::Database()->query(
 
+		public function createTable(){
+			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
@@ -54,30 +39,54 @@
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`, `role_id`)
 				)"
-
 			);
 		}
-		
+
+	/*-------------------------------------------------------------------------
+		Utilities:
+	-------------------------------------------------------------------------*/
+
+		public function getToggleStates(){
+			$roles = extension_Members::fetchRoles();
+
+			$states = array();
+			foreach($roles as $r){
+				if($r->id() == extension_Members::GUEST_ROLE_ID) continue;
+				$states[$r->id()] = $r->name();
+			}
+
+			return $states;
+		}
+
+		public function toggleFieldData($data, $newState){
+			$data['role_id'] = $newState;
+			return $data;
+		}
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
-	
-		function displaySettingsPanel(&$wrapper, $errors=NULL){
-			parent::displaySettingsPanel($wrapper, $errors);
+
+		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+			Field::displaySettingsPanel($wrapper, $errors);
+
 			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
 		}
-	
-		function commit(){
-			if(!parent::commit()) return false;
+
+		public function commit(){
+			if(!Field::commit()) return false;
 
 			$id = $this->get('id');
 
 			if($id === false) return false;
 
-			$fields = array();
+			$fields = array(
+				'field_id' => $id
+			);
 
-			$fields['field_id'] = $id;
+			Symphony::Configuration()->set('role', $id, 'members');
+			Administration::instance()->saveConfig();
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
@@ -86,8 +95,8 @@
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
-	
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+
+		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
 
 			$states = $this->getToggleStates();
 			$options = array();
@@ -112,7 +121,7 @@
 				$wrapper->appendChild($label);
 			}
 		}
-		
+
 		function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 			return array('role_id' => $data);
@@ -132,7 +141,7 @@
 			$wrapper->appendChild(new XMLElement($this->get('element_name'), General::sanitize($role->name()), array('id' => $role->id())));
 
 		}
-		
+
 		function prepareTableValue($data, XMLElement $link=NULL){
 			$role_id = $data['role_id'];
 
@@ -140,11 +149,11 @@
 
 			return parent::prepareTableValue(array('value' => (is_object($role) ? General::sanitize($role->name()) : NULL)), $link);
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Filtering:
-	-------------------------------------------------------------------------*/	
-		
+	-------------------------------------------------------------------------*/
+
 		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors, $fieldnamePrefix, $fieldnamePostfix);
@@ -166,7 +175,7 @@
 			}
 
 		}
-		
+
 		function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
 
 			$field_id = $this->get('id');
@@ -190,7 +199,7 @@
 			return true;
 
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Sorting:
 	-------------------------------------------------------------------------*/
@@ -202,11 +211,11 @@
 			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `$sort_field` ON (`e`.`id` = `$sort_field`.`entry_id`) ";
 			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`$sort_field`.`role_id` $order");
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Grouping:
 	-------------------------------------------------------------------------*/
-		
+
 		function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
@@ -230,46 +239,7 @@
 
 			return $groups;
 		}
-		
-	/*-------------------------------------------------------------------------
-		Helpers:
-	-------------------------------------------------------------------------*/
 
-		function fetchAssociatedEntrySearchValue($data){
-			if(!is_array($data)) return $data;
-
-			return $data['value'];
-		}
-
-		function getToggleStates(){
-
-			$roles = extension_Members::fetchRoles();
-
-			$states = array();
-			foreach($roles as $r){
-				if($r->id() == extension_Members::GUEST_ROLE_ID) continue;
-				$states[$r->id()] = $r->name();
-			}
-
-			return $states;
-		}
-
-		function toggleFieldData($data, $newState){
-			$data['role_id'] = $newState;
-			return $data;
-		}
-
-		/*function findAndAddDynamicOptions(&$values){
-
-			if(!is_array($values)) $values = array();
-
-			$sql = "SELECT DISTINCT `value` FROM `tbl_entries_data_".$this->get('dynamic_options')."`
-					ORDER BY `value` DESC";
-
-			if($results = $this->Database->fetchCol('value', $sql)) $values = array_merge($values, $results);
-
-		}*/
-		
 	/*-------------------------------------------------------------------------
 		Events:
 	-------------------------------------------------------------------------*/

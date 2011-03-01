@@ -2,13 +2,49 @@
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
 
-	Class contentExtensionMembersRoles extends AdministrationPage{
+	Class contentExtensionMembersRoles extends AdministrationPage {
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
-			$this->setTitle('Symphony &ndash; Member Roles');
+		public function __ViewIndex() {
+			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
+			$this->appendSubheading(__('Member Roles'), Widget::Anchor(
+				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', __('Create a Role'), 'create button', NULL, array('accesskey' => 'c')
+			));
 		}
 
+		public function __ViewEdit() {}
+		public function __ViewNew() {}
+
+		public function __actionIndex() {
+			$checked = (is_array($_POST['items'])) ? array_keys($_POST['items']) : null;
+
+			if(is_array($checked) && !empty($checked)) {
+				switch ($_POST['with-selected']) {
+					case 'delete':
+						foreach($checked as $role_id) {
+							RoleManager::delete($role_id);
+						}
+						redirect(extension_Members::baseURL() . '/roles/');
+
+						break;
+
+					case 'delete-members':
+						foreach($checked as $role_id) {
+							RoleManager::delete($role_id, true);
+						}
+						redirect(extension_Members::baseURL() . '/roles/');
+
+						break;
+						
+					case 'move':
+						// TODO
+				}
+			}
+		}
+
+		public function __ActionEdit() {}
+		public function __ActionNew() {}
+
+		/*
 		private function __deleteMembers($role_id){
 			$sql = "SELECT `entry_id` FROM `tbl_entries_data_". extension_members::roleField() ."` WHERE `role_id` = $role_id";
 			$members = Administration::Database()->fetchCol('entry_id', $sql);
@@ -182,5 +218,6 @@
 			$this->Form->appendChild($tableActions);
 
 		}
+		*/
 	}
 
