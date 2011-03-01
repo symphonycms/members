@@ -4,12 +4,61 @@
 
 		public static $_pool = array();
 
-		public function add() {
+		public function add(Array $data) {
+			Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
+			$role_id = Symphony::Database()->getInsertID();
 
+			$page_access = $data['roles_forbidden_pages']['page_access'];
+			if(is_array($page_access) && !empty($page_access)) {
+				foreach($page_access as $page_id){
+					Symphony::Database()->query("INSERT INTO `tbl_members_roles_forbidden_pages` VALUES (NULL, $role_id, $page_id)");
+				}
+			}
+
+			$permissions = $data['roles_event_permissions']['permissions'];
+			if(is_array($permissions) && !empty($permissions)){
+
+				$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
+
+				foreach($permissions as $event_handle => $p){
+					foreach($p as $action => $level)
+						$sql .= "(NULL,  {$role_id}, '{$event_handle}', '{$action}', '{$level}'),";
+				}
+
+				Symphony::Database()->query(trim($sql, ','));
+			}
+
+			return $role_id;
 		}
 
-		public function edit() {
+		public function edit($role_id, Array $data) {
+			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`role_id` = " . $role_id);
 
+			if(Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", "`role_id` = " . $role_id)) {
+				$page_access = $data['roles_forbidden_pages']['page_access'];
+				if(is_array($page_access) && !empty($page_access)) {
+					foreach($page_access as $page_id){
+						Symphony::Database()->query("INSERT INTO `tbl_members_roles_forbidden_pages` VALUES (NULL, $role_id, $page_id)");
+					}
+				}
+			}
+
+			if(Symphony::Database()->delete("`tbl_members_roles_event_permissions`", "`role_id` = " . $role_id)) {
+				$permissions = $data['roles_event_permissions']['permissions'];
+				if(is_array($permissions) && !empty($permissions)){
+
+					$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
+
+					foreach($permissions as $event_handle => $p){
+						foreach($p as $action => $level)
+							$sql .= "(NULL,  {$role_id}, '{$event_handle}', '{$action}', '{$level}'),";
+					}
+
+					$p = Symphony::Database()->query(trim($sql, ','));
+				}
+			}
+
+			return true;
 		}
 
 		/**
@@ -22,29 +71,69 @@
 		 * @return boolean
 		 */
 		public function delete($role_id, $purge_members = false) {
+			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", " WHERE `role_id` = " . $role_id);
+			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", " WHERE `role_id` = " . $role_id);
+			Symphony::Database()->delete("`tbl_members_roles`", " WHERE `id` = " . $role_id);
+
+			if($purge_members) {
+				$members = Symphony::Database()->fetchCol('entry_id', sprintf(
+					"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+					extension_Members::getConfigVar('role'), $role_id
+				));
+
+				/**
+				 * Prior to deletion of entries. Array of Entry ID's is provided.
+				 * The array can be manipulated
+				 *
+				 * @delegate Delete
+				 * @param string $context
+				 * '/publish/'
+				 * @param array $checked
+				 *  An array of Entry ID's passed by reference
+				 */
+				Symphony::ExtensionManager()->notifyMembers('Delete', '/publish/', array('entry_id' => &$checked));
+
+				$entryManager = new EntryManager(Symphony::Engine());
+				$entryManager->delete($members);
+			}
+
 			return true;
 		}
 
 		public static function fetch($role_id = null, $include_permissions = false) {
-			if(!in_array($role_id, array_keys(RoleManager::$_pool))) {
-				if(!$row = Symphony::Database()->fetchRow(0, sprintf("
+			$returnSingle = true;
+			$result = array();
+
+			if(is_null($role_id)) $returnSingle = false;
+
+			if($returnSingle && !in_array($role_id, array_keys(RoleManager::$_pool))) {
+				if(!$roles = Symphony::Database()->fetch(sprintf("
 						SELECT * FROM `tbl_members_roles` WHERE `id` = %d LIMIT 1",
 						$role_id
 					))
-				) return null;
+				) return array();
+			}
+			else {
+				$roles = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles`");
 			}
 
-			RoleManager::$_pool[$role_id] = new Role($settings);
+			foreach($roles as $role) {
+				RoleManager::$_pool[$role_id] = new Role($role);
 
-			if($include_permissions) RoleManager::$_pool[$role_id]->getPermissions();
+				if($include_permissions) RoleManager::$_pool[$role_id]->getPermissions();
 
-			return RoleManager::$_pool[$role_id];
+				if($returnSingle) return RoleManager::$_pool[$role_id];
+
+				$result[] = RoleManager::$_pool[$role_id];
+			}
+
+			return $result;
 		}
 
-		public static function fetchRoleIDByHandle($handle){
+		public static function fetchRoleIDByName($name){
 			return Symphony::Database()->fetchVar('id', 0, sprintf("
-				SELECT `id` FROM `tbl_members_roles` WHERE `handle` = '%s' LIMIT 1",
-				Symphony::Database()->cleanValue($handle)
+				SELECT `id` FROM `tbl_members_roles` WHERE `name` = '%s' LIMIT 1",
+				Symphony::Database()->cleanValue($name)
 			));
 		}
 	}

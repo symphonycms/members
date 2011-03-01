@@ -59,8 +59,16 @@ table.role-permissions .edit, table.role-permissions .delete {
 
 table.role-permissions td .slider, table.role-permissions td .global-slider {
 	float: left;
-	margin: 0 10px;
+	margin: 5px 10px 0;
 	width: 200px;
+}
+
+table.role-permissions .ui-slider .ui-slider-handle {
+	height: 0.4em;
+}
+
+table.role-permissions .ui-slider-horizontal .ui-slider-handle {
+	top: -.6em;
 }
 
 table.role-permissions td span {

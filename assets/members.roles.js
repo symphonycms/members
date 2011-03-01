@@ -1,7 +1,7 @@
 jQuery(document).ready(function(){
 
 	$ = jQuery;
-	
+
 	$.fn.setSliderValue = function() {
 		this.each(function(){
 			$(this).siblings(".slider").slider("option", "value", $(this).val());
@@ -12,7 +12,7 @@ jQuery(document).ready(function(){
 	permissions[0] = "No Privileges";
 	permissions[1] = "Own Entries";
 	permissions[2] = "All Entries";
-	
+
 	$(".global-slider").slider({
 		range: "min",
 		value: 0,
@@ -20,9 +20,12 @@ jQuery(document).ready(function(){
 		max: 2,
 		step: 1,
 		slide: function(event, ui) {
-			$("." + $(this).parents("td").attr("class") + " .slider").slider('option', 'value', ui.value);
-			$("." + $(this).parents("td").attr("class") + " span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
-			$("." + $(this).parents("td").attr("class") + " input").val(ui.value);
+			var $parent = $('.' + $(this).parents("td").attr("class"));
+
+			$parent.find('.slider').slider('option', 'value', ui.value);
+			$parent.find('span').text(permissions[ui.value]).attr("class", "perm-" + ui.value);
+			$parent.find('input').val(ui.value);
+
 			$(this).siblings("span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
 		}
 	});
@@ -39,13 +42,13 @@ jQuery(document).ready(function(){
 			$(".global ." + $(this).parents("td").attr("class") + " span").text('n/a').attr("class", "perm-0");
 		}
 	});
-	
+
 	$(".global .add input[type='checkbox']").change(function() {
 		$(".add input").attr("checked", $(this).attr('checked'));
 	});
-	
+
 	$(".edit input, .delete input").setSliderValue();
-	
+
 	$("td span").text(function() {
 		return permissions[$(this).siblings("input").val()];
 	}).attr("class", function() {

@@ -77,18 +77,25 @@
 		}
 
 		public function fetchNavigation(){
-			return array(
-				array(
+			$navigation = array();
+			
+			if(!is_null(extension_Members::getConfigVar('role'))) {
+				$navigation[] = array(
 					'location' 	=> __('System'),
 					'name' 		=> __('Member Roles'),
 					'link' 		=> '/roles/'
-				),
-				array(
+				);
+			}
+			
+			if(!is_null(extension_Members::getConfigVar('email'))) {
+				$navigation[] = array(
 					'location' 	=> __('System'),
 					'name' 		=> __('Member Emails'),
 					'link' 		=> '/email_templates/'
-				)
-			);
+				);
+			}
+			
+			return $navigation;
 		}
 
 		public function getSubscribedDelegates(){
@@ -201,8 +208,10 @@
 				DROP TABLE IF EXISTS `tbl_members_roles`;
 				CREATE TABLE `tbl_members_roles` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `name` varchar(60)  NOT NULL,
+				  `role_id` int(3) unsigned NOT NULL,
+				  `name` varchar(255)  NOT NULL,
 				  PRIMARY KEY  (`id`),
+				  KEY `role_id` (`role_id`)
 				  UNIQUE KEY `name` (`name`)
 				) ENGINE=MyISAM;
 
@@ -449,9 +458,6 @@
 
 				if(!is_null(extension_Members::getConfigVar('role'))) {
 					$role_data = $this->Member->Member->getData(self::roleField());
-				}
-				else {
-					return;
 				}
 			}
 
