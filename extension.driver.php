@@ -151,7 +151,7 @@
 		 * and creates all of the field's tables in the database
 		 *
 		 * @return boolean
-		 * @todo Missing the Email, Timezone fields
+		 * @todo Missing the Email fields
 		 */
 		public function install(){
 
@@ -185,6 +185,13 @@
 				) ENGINE=MyISAM;
 
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberrole` (
+				  `id` int(11) unsigned NOT NULL auto_increment,
+				  `field_id` int(11) unsigned NOT NULL,
+				  PRIMARY KEY  (`id`),
+				  UNIQUE KEY `field_id` (`field_id`)
+				) ENGINE=MyISAM;
+
+				CREATE TABLE IF NOT EXISTS `tbl_fields_membertimezone` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
@@ -243,7 +250,7 @@
 		 * database tables created by the Members extension
 		 *
 		 * @return boolean
-		 * @todo Missing the Email, Timezone fields
+		 * @todo Missing the Email fields
 		 */
 		public function uninstall(){
 			Symphony::Configuration()->remove('members');
@@ -255,6 +262,7 @@
 					`tbl_fields_memberpassword`,
 					`tbl_fields_memberactivation`,
 					`tbl_fields_memberrole`,
+					`tbl_fields_membertimezone`,
 					`tbl_members_email_templates`,
 					`tbl_members_roles`,
 					`tbl_members_roles_event_permissions`,
@@ -285,6 +293,7 @@
 					$schema = $section->fetchFieldsSchema();
 
 					foreach($schema as $field) {
+						// Possible @todo, check for the existance of the Identity field  instead of using this array
 						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
 
 						if(array_key_exists($section->get('id'), $member_sections)) continue;
@@ -361,31 +370,32 @@
 			return extension_Members::$members_section;
         }
 
-		public static function roleField(){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ".self::getMembersSection()." AND `type` = 'memberrole' LIMIT 1");
-		}
-
 		public static function memberSectionHandle(){
 			return Symphony::Database()->fetchVar('handle', 0, "SELECT `handle` FROM `tbl_sections` WHERE `id` = " . self::getMembersSection(). " LIMIT 1");
 		}
 
 		/**
-		 * TODO
-		 * This has to change to accommodate new Timezone field type
+		 * This function will adjust the locale for the currently logged in
+		 * user if the active Member section has a Member: Timezone field.
+		 *
+		 * @param integer $member_id
+		 * @return void
 		 */
-		public function __updateSystemTimezoneOffset() {
-			$offset = Symphony::Database()->fetchVar('value', 0, sprintf("
-					SELECT `value`
-					FROM `tbl_entries_data_%d`
-					WHERE `entry_id` = '%s'
-					LIMIT 1
-				", self::getConfigVar('timezone_offset_field_id'), Symphony::Database()->cleanValue($this->Member->Member->get('id'))
-			));
+		public function __updateSystemTimezoneOffset($member_id) {
+			if(is_null(extension_Members::getConfigVar('timezone'))) return;
 
-			if(strlen(trim($offset)) == 0) return;
+			$timezone = $this->fm->fetch(extension_Members::getConfigVar('timezone'));
 
-			//When using 'Etc/GMT...' the +/- signs are reversed. E.G. GMT+10 == Etc/GMT-10
-			DateTimeObj::setDefaultTimezone('Etc/GMT' . ($offset >= 0 ? '-' : '+') . abs($offset));
+			if(!$timezone instanceof fieldMemberTimezone) return;
+
+			$tz = $timezone->getMemberTimezone($member_id);
+
+			try {
+				DateTimeObj::setDefaultTimezone($tz);
+			}
+			catch(Exception $ex) {
+				Symphony::$Log->pushToLog(__('Members Timezone') . ': ' . $ex->getMessage(), $code, true);
+			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -484,9 +494,8 @@
 			$this->Member->initialiseMemberObject();
 
 			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
-				if(!is_null(extension_Members::getConfigVar('timezone'))) {
-					$this->__updateSystemTimezoneOffset();
-				}
+				$this->__updateSystemTimezoneOffset($this->Member->Member->get('id'));
+
 				if(!is_null(extension_Members::getConfigVar('role'))) {
 					$role_data = $this->Member->Member->getData(self::roleField());
 				}

@@ -174,8 +174,8 @@
 		}
 
 		public function appendLoginStatusToEventXML(Array $context = null){
-			if($this->isLoggedIn() && !is_null(extension_Members::getConfigVar('timezone'))) {
-				self::$driver->__updateSystemTimezoneOffset();
+			if($this->isLoggedIn()) {
+				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
 			}
 
 			$context['wrapper']->appendChild(

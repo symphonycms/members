@@ -270,9 +270,6 @@
 			$field_id = $this->get('id');
 			$handle = $this->get('element_name');
 
-			$label = new XMLElement('div', $this->get('label'));
-			$label->setAttribute('class', 'label');
-
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
 
@@ -316,14 +313,12 @@
 				);
 			}
 
-			$label->appendChild($group);
-
 		//	Error?
 			if(!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($group, $error);
+				$group = Widget::wrapFormElementWithError($group, $error);
 			}
 
-			$wrapper->appendChild($label);
+			$wrapper->appendChild($group);
 		}
 
 		public function displayPublishPassword($wrapper, $title, $name) {

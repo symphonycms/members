@@ -1,77 +1,138 @@
 <?php
-    
+
     /**
      * Timezone field.
      * Not sure how much this field actually needs to do...
      */
-	Class fieldMemberTimezone extends Field {
-	
+	require_once(TOOLKIT . '/fields/field.select.php');
+
+
+	Class fieldMemberTimezone extends fieldSelect {
+
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		function __construct(&$parent){
+		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->_name = 'Member: Timezone';
+			$this->_name = __('Member: Timezone');
+			$this->_showassociation = false;
 		}
-		
+
 	/*-------------------------------------------------------------------------
-		Setup:
+		Utilities:
 	-------------------------------------------------------------------------*/
-		
-		public function createTable(){
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `value` varchar(32) NOT NULL DEFAULT '',
-				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`),
-				) ENGINE=MyISAM;"
-			);
+
+		/**
+		 * This function will return the offset value for a particular `$member_id`
+		 * The offset is the number of hours +/- from GMT
+		 *
+		 * @param integer $member_id
+		 * @return string
+		 *  ie. Africa/Asmara
+		 */
+		public function getMemberTimezone($member_id) {
+			return Symphony::Database()->fetchVar('value', 0, sprintf("
+					SELECT `value`
+					FROM `tbl_entries_data_%d`
+					WHERE `entry_id` = '%s'
+					LIMIT 1
+				", $this->get('id'), $member_id
+			));
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
-	
+
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
-			parent::displaySettingsPanel($wrapper, $errors);
-			
+			Field::displaySettingsPanel($wrapper, $errors);
+
+			$label = new XMLElement('label', __('Available Zones'));
+
+			$zones = $this->get('available_zones') ? explode(",",$this->get('available_zones')) : array();
+
+			// Loop over the DateTimeZone class constants for Zones
+			$ref = new ReflectionClass('DateTimeZone');
+			foreach($ref->getConstants() as $zone => $value) {
+				if($value >= 1024) break;
+
+				$options[] = array($zone, in_array($zone, $zones), ucwords(strtolower($zone)));
+			}
+
+			$label->appendChild(Widget::Select(
+				"fields[{$this->get('sortorder')}][available_zones][]", $options, array('multiple' => 'multiple')
+			));
+
+			$wrapper->appendChild($label);
+
+			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
 		}
-		
-		public function commit(){
-			if(!parent::commit()) return false;
 
+		public function checkFields(&$errors, $checkForDuplicates=true) {
+			Field::checkFields(&$errors, $checkForDuplicates);
 		}
-	
+
+		public function commit(){
+			if(!Field::commit()) return false;
+
+			$id = $this->get('id');
+
+			if($id === false) return false;
+
+			$fields = array(
+				'field_id' => $id,
+				'available_zones' => implode(",", $this->get('available_zones'))
+			);
+
+			Symphony::Configuration()->set('timezone', $id, 'members');
+			Administration::instance()->saveConfig();
+
+			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
+			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
+		}
+
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
-	
+
 		public function displayPublishPanel(&$wrapper, $data=NULL, $error =NULL, $prefix =NULL, $postfix =NULL, $entry_id = null){
-		
-			/**
-			 * Displays a checkbox, along with some help text.
-			 *
-			 * If member is activated, help text shows datetime activated.
-			 * If code is still live, displays when the code was generated.
-			 * If the code is expired, displays 'Expired' w/the expiration timestamp.
-			 */
-		
+			$zones = explode(",", $this->get('available_zones'));
+
+			$groups = array();
+
+			if ($this->get('required') != 'yes') $groups[] = array(NULL, false, NULL);
+
+			foreach($zones as $zone) {
+				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
+
+				$options = array();
+				foreach($timezones as $timezone) {
+					$options[] = array($timezone, ($timezone == $data['value']), str_replace('_', ' ', substr(strrchr($timezone, '/'),1)));
+				}
+
+				$groups[] = array('label' => ucwords(strtolower($zone)), 'options' => $options);
+			}
+
+			$label = new XMLElement('label', __('Timezone'));
+			$label->appendChild(Widget::Select(
+				"fields{$prefix}[{$this->get('element_name')}]{$postfix}", $groups
+			));
+
+			if(!is_null($flagWithError)) {
+				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
+			}
+			else $wrapper->appendChild($label);
+
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-
+			parent::appendFormattedElement($wrapper, $data, $encode);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL){
-			
-		}
-		
 	}

@@ -104,7 +104,6 @@
 
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
-			$order = $this->get('sortorder');
 
 			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
 			$this->appendRequiredCheckbox($wrapper);
