@@ -2,6 +2,9 @@
 
 	require_once(TOOLKIT . '/fields/field.select.php');
 
+	/**
+	 * @todo Add default Role
+	 */
 	Class fieldMemberRole extends fieldSelect {
 
 	/*-------------------------------------------------------------------------
@@ -168,21 +171,20 @@
 				$forbidden_pages = $role->get('forbidden_pages');
 				if(is_array($forbidden_pages) & !empty($forbidden_pages)) {
 					$page_data = Symphony::Database()->fetch(sprintf(
-							"SELECT * FROM `tbl_pages` WHERE id IN (%s)"
-						), implode(',', $forbidden_pages)
-					);
+						"SELECT * FROM `tbl_pages` WHERE id IN (%s)",
+						implode(',', $forbidden_pages)
+					));
 
 					if(is_array($page_data) && !empty($page_data)) {
 						$pages = new XMLElement('forbidden-pages');
 
 						foreach($page_data as $key => $page) {
-							$item = $pages->appendChild(
+							$pages->appendChild(
 								new XMLElement('page', $page['title'], array(
 									'id' => $page['id'],
 									'handle' => $page['handle']
 								))
 							);
-							$pages->appendChild($item);
 						}
 
 						$element->appendChild($pages);
@@ -194,7 +196,7 @@
 					$events = new XMLElement('events');
 
 					foreach($event_permissions as $event => $event_data) {
-						$item = new XMLElement('event', $event);
+						$item = new XMLElement('event', null, array('handle' => $event));
 						foreach($event_data as $action => $level) {
 							$item->appendChild(
 								new XMLElement('action', EventPermissions::$permissionMap[$level], array(
