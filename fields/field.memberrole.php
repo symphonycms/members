@@ -37,7 +37,7 @@
 				  `entry_id` int(11) unsigned NOT NULL,
  				  `role_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`, `role_id`)
+				  UNIQUE KEY `entry_id` (`entry_id`)
 				)"
 			);
 		}
@@ -47,12 +47,11 @@
 	-------------------------------------------------------------------------*/
 
 		public function getToggleStates(){
-			$roles = extension_Members::fetchRoles();
+			$roles = RoleManager::fetch();
 
 			$states = array();
-			foreach($roles as $r){
-				if($r->id() == extension_Members::GUEST_ROLE_ID) continue;
-				$states[$r->id()] = $r->name();
+			if(is_array($roles) && !empty($roles)) foreach($roles as $r){
+				$states[$r->get('id')] = $r->get('name');
 			}
 
 			return $states;
@@ -67,11 +66,20 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
+		public function setFromPOST(Array $settings = array()) {
+			$settings['required'] = 'yes';
+
+			parent::setFromPOST($settings);
+		}
+
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
-			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
+		}
+
+		public function checkFields(&$errors, $checkForDuplicates=true) {
+			Field::checkFields(&$errors, $checkForDuplicates);
 		}
 
 		public function commit(){
@@ -122,7 +130,7 @@
 			}
 		}
 
-		function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
+		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 			return array('role_id' => $data);
 		}
@@ -131,30 +139,96 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		function appendFormattedElement(&$wrapper, $data, $encode=false){
+		public function fetchIncludableElements() {
+			return array(
+				$this->get('element_name'),
+				$this->get('element_name') . ': permissions'
+			);
+		}
 
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
 			if(!is_array($data) || empty($data)) return;
 
 			$role_id = $data['role_id'];
-			$role = extension_Members::fetchRole($role_id);
+			$role = RoleManager::fetch($role_id, true);
 
-			$wrapper->appendChild(new XMLElement($this->get('element_name'), General::sanitize($role->name()), array('id' => $role->id())));
+			$element = new XMLElement($this->get('element_name'), General::sanitize($role->get('name')), array(
+				'id' => $role->get('id'),
+				'mode' => ($mode == "permissions") ? $mode : 'normal'
+			));
 
+			if($mode == "permissions") {
+				// The more information that's provided here, the easier it will be for
+				// a developer to write XSLT that is dynamic and can work when the Roles
+				// are updated in the backend. For instance you could check if a page was
+				// denied access before creating a link to it. This check would then work
+				// for all roles, instead of writing logic for Role A, Role B. Consider it
+				// feature detection, rather than user agent detection.
+
+				$forbidden_pages = $role->get('forbidden_pages');
+				if(is_array($forbidden_pages) & !empty($forbidden_pages)) {
+					$page_data = Symphony::Database()->fetch(sprintf(
+							"SELECT * FROM `tbl_pages` WHERE id IN (%s)"
+						), implode(',', $forbidden_pages)
+					);
+
+					if(is_array($page_data) && !empty($page_data)) {
+						$pages = new XMLElement('forbidden-pages');
+
+						foreach($page_data as $key => $page) {
+							$item = $pages->appendChild(
+								new XMLElement('page', $page['title'], array(
+									'id' => $page['id'],
+									'handle' => $page['handle']
+								))
+							);
+							$pages->appendChild($item);
+						}
+
+						$element->appendChild($pages);
+					}
+				}
+
+				$event_permissions = $role->get('event_permissions');
+				if(is_array($event_permissions) & !empty($event_permissions)) {
+					$events = new XMLElement('events');
+
+					foreach($event_permissions as $event => $event_data) {
+						$item = new XMLElement('event', $event);
+						foreach($event_data as $action => $level) {
+							$item->appendChild(
+								new XMLElement('action', EventPermissions::$permissionMap[$level], array(
+									'type' => $action,
+									'handle' => Lang::createHandle(EventPermissions::$permissionMap[$level])
+								))
+							);
+						}
+
+						$events->appendChild($item);
+					}
+
+					$element->appendChild($events);
+				}
+			}
+
+			$wrapper->appendChild($element);
 		}
 
-		function prepareTableValue($data, XMLElement $link=NULL){
+		public function prepareTableValue($data, XMLElement $link=NULL){
 			$role_id = $data['role_id'];
 
-			$role = extension_Members::fetchRole($role_id);
+			$role = RoleManager::fetch($role_id);
 
-			return parent::prepareTableValue(array('value' => (is_object($role) ? General::sanitize($role->name()) : NULL)), $link);
+			return parent::prepareTableValue(array(
+				'value' => $role instanceof Role ? General::sanitize($role->get('name')) : null
+			), $link);
 		}
 
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		public function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors, $fieldnamePrefix, $fieldnamePostfix);
 
@@ -176,47 +250,50 @@
 
 		}
 
-		function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
 
 			$field_id = $this->get('id');
 
 			if($andOperation) {
-
 				foreach($data as $key => $bit){
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
 					$joins .= " LEFT JOIN `tbl_members_roles` AS `tg$field_id$key` ON (`t$field_id$key`.`role_id` = `tg$field_id$key`.id) ";
-					$where .= " AND (`t$field_id$key`.role_id = '$bit' OR `tg$field_id$key`.name = '$bit') ";
+					$where .= " AND (`t$field_id$key`.role_id = '$bit' OR (`tg$field_id$key`.name = '$bit' OR `tg$field_id$key`.handle = '$bit')) ";
 				}
 			}
 			else {
+				$data = !is_array($data) ? array($data) : $data;
+				$value = implode("', '", $data);
 
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
 				$joins .= " LEFT JOIN `tbl_members_roles` AS `tg$field_id` ON (`t$field_id`.`role_id` = `tg$field_id`.id) ";
-				$where .= " AND (`t$field_id`.role_id IN ('".@implode("', '", $data)."') OR `tg$field_id`.name IN ('".@implode("', '", $data)."')) ";
-
+				$where .= " AND (
+								`t$field_id`.role_id IN ('$value')
+								OR (
+									`tg$field_id`.name IN ('$value')
+									OR
+									`tg$field_id`.handle IN ('$value')
+								)
+							) ";
 			}
 
 			return true;
-
 		}
 
 	/*-------------------------------------------------------------------------
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC', $useIDFieldForSorting=false){
-
-			$sort_field = (!$useIDFieldForSorting ? 'ed' : 't' . $this->get('id'));
-
-			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `$sort_field` ON (`e`.`id` = `$sort_field`.`entry_id`) ";
-			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`$sort_field`.`role_id` $order");
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC') {
+			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`ed`.`role_id` $order");
 		}
 
 	/*-------------------------------------------------------------------------
 		Grouping:
 	-------------------------------------------------------------------------*/
 
-		function groupRecords($records){
+		public function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
 
@@ -226,11 +303,17 @@
 				$data = $r->getData($this->get('id'));
 
 				$role_id = $data['role_id'];
-				if(!$role = extension_Members::fetchRole($role_id)) continue;
+				if(!$role = RoleManager::fetch($role_id)) continue;
 
 				if(!isset($groups[$this->get('element_name')][$role_id])){
-					$groups[$this->get('element_name')][$role_id] = array('attr' => array('name' => General::sanitize($role->name()), 'id' => $role_id),
-																		 'records' => array(), 'groups' => array());
+					$groups[$this->get('element_name')][$role_id] = array(
+						'attr' => array(
+							'id' => $role_id,
+							'handle' => $role->get('handle'),
+							'name' => General::sanitize($role->get('name'))
+						),
+						'records' => array(), 'groups' => array()
+					);
 				}
 
 				$groups[$this->get('element_name')][$role_id]['records'][] = $r;
@@ -238,27 +321,6 @@
 			}
 
 			return $groups;
-		}
-
-	/*-------------------------------------------------------------------------
-		Events:
-	-------------------------------------------------------------------------*/
-
-		public function getExampleFormMarkup(){
-			$states = $this->getToggleStates();
-
-			$options = array();
-
-			foreach($states as $role_id => $name){
-				$options[] = array($role_id, NULL, $name);
-			}
-
-			$fieldname = 'fields['.$this->get('element_name').']';
-
-			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Select($fieldname, $options));
-
-			return $label;
 		}
 
 	}

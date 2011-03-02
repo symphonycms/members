@@ -44,8 +44,10 @@
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$label = new XMLElement('label', __('Available Zones'));
-
-			$zones = $this->get('available_zones') ? explode(",",$this->get('available_zones')) : array();
+			
+			$zones = is_array($this->get('available_zones')) 
+				? $this->get('available_zones') 
+				: explode(',', $this->get('available_zones'));
 
 			// Loop over the DateTimeZone class constants for Zones
 			$ref = new ReflectionClass('DateTimeZone');
@@ -129,5 +131,4 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 			parent::appendFormattedElement($wrapper, $data, $encode);
 		}
-
 	}

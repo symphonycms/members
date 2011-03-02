@@ -195,7 +195,6 @@
 	 * section has the Member: Role field.
 	 */
 	Class Role {
-
 		private $settings = array();
 
 		public function __construct(Array $settings){
@@ -258,4 +257,16 @@
 			// If the event wasn't in the array, then assume it's ok.
 			return true;
 		}
+	}
+
+	Class EventPermissions {
+		const NO_PERMISSIONS = 0;
+		const OWN_ENTRIES = 1;
+		const ALL_ENTRIES = 2;
+		
+		public static $permissionMap = array(
+			self::NO_PERMISSIONS => 'No Permission',
+			self::OWN_ENTRIES => 'Own Entries',
+			self::ALL_ENTRIES => 'All Entries'
+		);
 	}

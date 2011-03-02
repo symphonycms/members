@@ -302,7 +302,7 @@
 
 				$td3->appendChild(Widget::Input(
 					'fields[permissions][' . $event_handle .'][edit]',
-					(isset($permissions['edit']) ? $permissions['edit'] : '0'),
+					(isset($permissions['edit']) ? $permissions['edit'] : EventPermissions::NO_PERMISSIONS),
 					'hidden'
 				));
 
@@ -314,7 +314,7 @@
 
 				$td4->appendChild(Widget::Input(
 					'fields[permissions][' . $event_handle .'][delete]',
-					(isset($permissions['delete']) ? $permissions['delete'] : '0'),
+					(isset($permissions['delete']) ? $permissions['delete'] : EventPermissions::NO_PERMISSIONS),
 					'hidden'
 				));
 
