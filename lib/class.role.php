@@ -143,13 +143,13 @@
 
 			if($returnSingle && !in_array($role_id, array_keys(RoleManager::$_pool))) {
 				if(!$roles = Symphony::Database()->fetch(sprintf("
-						SELECT * FROM `tbl_members_roles` WHERE `id` = %d LIMIT 1",
+						SELECT * FROM `tbl_members_roles` WHERE `id` = %d ORDER BY `id` ASC LIMIT 1",
 						$role_id
 					))
 				) return array();
 			}
 			else {
-				$roles = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles`");
+				$roles = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles` ORDER BY `id` ASC");
 			}
 
 			foreach($roles as $role) {
@@ -197,6 +197,8 @@
 	 * section has the Member: Role field.
 	 */
 	Class Role {
+		const PUBLIC_ROLE = 1;
+
 		private $settings = array();
 
 		public function __construct(Array $settings){

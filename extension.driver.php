@@ -212,6 +212,8 @@
 				  UNIQUE KEY `handle` (`handle`)
 				) ENGINE=MyISAM;
 
+				INSERT INTO `tbl_members_roles` VALUES(1, 'Public', 'public');
+
 				DROP TABLE IF EXISTS `tbl_members_roles_event_permissions`;
 				CREATE TABLE `tbl_members_roles_event_permissions` (
 				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -460,10 +462,7 @@
 
 			if(is_null(extension_Members::getConfigVar('role'))) return;
 
-			// TODO: Handle a 'Guest' role, aka. users that are from the public should
-			// be able to be denied events and pages too. Possibly create an immutable
-			// Role on installation called Guest?
-			$role_id = ($isLoggedIn) ? $role_data['role_id'] : 0;
+			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
 			$role = RoleManager::fetch($role_id, true);
 
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
@@ -577,10 +576,8 @@
 			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
 				$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
 			}
-			// TODO: Handle a 'Guest' role, aka. users that are from the public should
-			// be able to be denied events and pages too. Possibly create an immutable
-			// Role on installation called Guest?
-			$role_id = ($isLoggedIn) ? $role_data['role_id'] : 0;
+
+			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
 			$role = RoleManager::fetch($role_id, true);
 
 			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));

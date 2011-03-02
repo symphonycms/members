@@ -55,7 +55,6 @@
 				));
 
 				$with_selected_roles = array();
-
 				$hasRoles = !is_null(extension_Members::getConfigVar('role'));
 
 				foreach($roles as $role){
@@ -63,9 +62,13 @@
 					$td1 = Widget::TableData(Widget::Anchor(
 						$role->get('name'), Administration::instance()->getCurrentPageURL().'edit/' . $role->get('id') . '/', null, 'content'
 					));
-					$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
 
-					if($hasRoles) {
+					if($role->get('id') == Role::PUBLIC_ROLE) {
+						$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
+					}
+
+					// Get the number of members for this role, as long as it's not the Public Role.
+					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
 							"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
 							extension_Members::getConfigVar('role'), $role->get('id')
@@ -80,6 +83,11 @@
 							Widget::Input("items[{$role->get('id')}]", null, 'checkbox')
 						);
 					}
+
+					else if($role->get('id') == Role::PUBLIC_ROLE) {
+						$td2 = Widget::TableData(__('This is the role assumed by the general public.'));
+					}
+
 					else {
 						$td2 = Widget::TableData(__('None'));
 					}
@@ -87,9 +95,11 @@
 					// Add cells to a row
 					$aTableBody[] = Widget::TableRow(array($td1, $td2));
 
-					$with_selected_roles[] = array(
-						"move::" . $role->get('id'), false,$role->get('name')
-					);
+					if($role->get('id') != Role::PUBLIC_ROLE) {
+						$with_selected_roles[] = array(
+							"move::" . $role->get('id'), false,$role->get('name')
+						);
+					}
 				}
 			}
 
@@ -250,10 +260,6 @@
 					<p class="global-slider"></p>
 					<span>n/a</span>
 				</td>
-				<!--<td class="delete">
-					<p class="global-slider"></p>
-					<span>n/a</span>
-				</td>-->
 			</tr>
 			*/
 
@@ -280,10 +286,10 @@
 			if(is_array($events) && !empty($events)) foreach($events as $event_handle => $event){
 
 				$permissions = $fields['permissions'][$event_handle];
-				
+
 				// Setup each cell
 				$td1 = Widget::TableData($event['name']);
-				
+
 				// @todo Look at how we can improve this so PHP is aware of more
 				// such as 'Edit'/'Create' and the actual values 'Own Entries/All Entries'
 				// instead of it just staying in the JS.
@@ -362,6 +368,13 @@
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
 			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+
+			if(!$isNew && $existing->get('id') != Role::PUBLIC_ROLE) {
+				$button = new XMLElement('button', __('Delete'));
+				$button->setAttributeArray(array('name' => 'action[delete]', 'class' => 'button confirm delete', 'title' => __('Delete this Role'), 'type' => 'submit', 'accesskey' => 'd'));
+				$div->appendChild($button);
+			}
+
 			$this->Form->appendChild($div);
 
 		}
@@ -392,8 +405,7 @@
 				switch ($_POST['with-selected']) {
 					case 'delete':
 						foreach($checked as $role_id) {
-							RoleManager::delete($role_id);
-							// @todo What should happen to any Members that had this Role?
+							$this->__actionDelete($role_id);
 						}
 						redirect(extension_Members::baseURL() . '/roles/');
 
@@ -401,7 +413,7 @@
 
 					case 'delete-members':
 						foreach($checked as $role_id) {
-							RoleManager::delete($role_id, true);
+							$this->__actionDelete($role_id, null, true);
 						}
 						redirect(extension_Members::baseURL() . '/roles/');
 
@@ -415,7 +427,10 @@
 		}
 
 		public function __actionEdit() {
-			if(array_key_exists('save', $_POST['action'])) {
+			if(array_key_exists('delete', $_POST['action'])) {
+				return $this->__actionDelete($this->_context[1], extension_Members::baseURL() . 'roles/');
+			}
+			else if(array_key_exists('save', $_POST['action'])) {
 				$isNew = ($this->_context[0] !== "edit");
 				$fields = $_POST['fields'];
 
@@ -475,6 +490,27 @@
 						redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/saved/');
 					}
 				}
+			}
+		}
+
+		public function __actionDelete($role_id = null, $redirect = null, $purge_members = false) {
+			if(array_key_exists('delete', $_POST['action'])) {
+				if(!$role_id) redirect(extension_Members::baseURL() . 'roles/');
+
+				if($role_id == Role::PUBLIC_ROLE) {
+					return $this->pageAlert(
+						__('The Public role cannot be removed'), Alert::ERROR
+					);
+				}
+
+				if(!$existing = RoleManager::fetch($role_id, true)){
+					throw new SymphonyErrorPage(__('The role you requested to delete does not exist.'), __('Role not found'), 'error');
+				}
+
+				// @todo What should happen to any Members that had this Role?
+				RoleManager::delete($role_id, $purge_members);
+
+				if(!is_null($redirect)) redirect($redirect);
 			}
 		}
 	}
