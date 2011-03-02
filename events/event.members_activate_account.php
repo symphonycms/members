@@ -121,16 +121,11 @@
 				$email = $entry->getData(extension_Members::getConfigVar('email'));
 				$name = $entry->getData(self::findFieldID('name'));
 
-				$Members->emailNewMember(
-					array(
-						'entry' => $entry,
-						'fields' => array(
-							'username-and-password' => $Members->Member->getData(self::findFieldID('username-and-password')),
-							'name' => $name['value'],
-							'email-address' => $email['value']
-						)
-					)
-				);
+				$Members->sendNewRegistrationEmail($entry, array(
+					'username-and-password' => $Members->Member->getData(self::findFieldID('username-and-password')),
+					'name' => $name['value'],
+					'email-address' => $email['value']
+				));
 
 				$success = true;
 			}

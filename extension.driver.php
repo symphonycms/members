@@ -132,7 +132,7 @@
 				array(
 					'page' => '/publish/new/',
 					'delegate' => 'EntryPostCreate',
-					'callback' => 'cb_emailNewMember'
+					'callback' => 'emailNewMember'
 				),
 				array(
 					'page' => '/system/preferences/',
@@ -509,12 +509,10 @@
 			return $result;
 		}
 
-		public function cb_emailNewMember($context){
-			if($context['section']->get('id') == self::getMembersSection()) return $this->emailNewMember($context);
-		}
-
 		public function emailNewMember($context){
-			return $this->sendNewRegistrationEmail($context['entry'], $context['fields']);
+			if($context['section']->get('id') == self::getMembersSection()) {
+				$this->sendNewRegistrationEmail($context['entry'], $context['fields']);
+			}
 		}
 
 		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){

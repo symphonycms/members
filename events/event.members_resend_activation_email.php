@@ -89,17 +89,13 @@
 			$entry = $Members->Member->Member;
 			$email = $entry->getData(extension_Members::getConfigVar('email'));
 			$name = $entry->getData(self::findFieldID('name'));
-
-			$success = $Members->emailNewMember(
-				array(
-					'entry' => $entry,
-					'fields' => array(
-						'username-and-password' => $entry->getData(self::findFieldID('username-and-password')),
-						'name' => $name['value'],
-						'email-address' => $email['value']
-					)
-				)
-			);
+			
+			
+			$success = $Members->sendNewRegistrationEmail($entry, array(
+				'username-and-password' => $Members->Member->getData(self::findFieldID('username-and-password')),
+				'name' => $name['value'],
+				'email-address' => $email['value']
+			));
 
 			if($success == true && isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
