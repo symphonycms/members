@@ -155,10 +155,15 @@
 			$role_id = $data['role_id'];
 			$role = RoleManager::fetch($role_id, true);
 
-			$element = new XMLElement($this->get('element_name'), General::sanitize($role->get('name')), array(
+			$element = new XMLElement($this->get('element_name'), null, array(
 				'id' => $role->get('id'),
 				'mode' => ($mode == "permissions") ? $mode : 'normal'
 			));
+			$element->appendChild(
+				new XMLElement('name', General::sanitize($role->get('name')), array(
+					'handle' => $role->get('handle')
+				))
+			);
 
 			if($mode == "permissions") {
 				// The more information that's provided here, the easier it will be for
@@ -179,11 +184,17 @@
 						$pages = new XMLElement('forbidden-pages');
 
 						foreach($page_data as $key => $page) {
+							$attributes = array(
+								'id' => $page['id'],
+								'handle' => $page['handle']
+							);
+
+							if(!is_null($page['path'])) {
+								$attributes['parent-path'] = General::sanitize($page['path']);
+							}
+
 							$pages->appendChild(
-								new XMLElement('page', $page['title'], array(
-									'id' => $page['id'],
-									'handle' => $page['handle']
-								))
+								new XMLElement('page', $page['title'], $attributes)
 							);
 						}
 

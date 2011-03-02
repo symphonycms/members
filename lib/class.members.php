@@ -23,7 +23,6 @@
 		// Output
 		public function addMemberDetailsToPageParams(Array $context = null);
 		public function appendLoginStatusToEventXML(Array $context = null);
-		public function buildXML(Array $context = null);
 	}
 
 	Abstract Class Members implements Member {
@@ -168,40 +167,30 @@
 
 			if(is_null(extension_Members::getConfigVar('role'))) return;
 
-			$context['params']['member-role'] = extension_Members::fetchRole(
-				$this->Member->getData(extension_Members::roleField(), true)->role_id
-			)->name();
+			$role_data = $this->Member->getData(extension_Members::getConfigVar('role'));
+			$role = RoleManager::fetch($role_data['role_id']);
+			if($role instanceof Role) {
+				$context['params']['member-role'] = $role->get('name');
+			}
 		}
 
 		public function appendLoginStatusToEventXML(Array $context = null){
+			$result = new XMLElement('member-login-info');
+
 			if($this->isLoggedIn()) {
 				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
-			}
-
-			$context['wrapper']->appendChild(
-				self::$driver->buildXML($context)
-			);
-		}
-
-		public function buildXML(Array $context = null){
-			if(!self::$member_id == 0){
-				if(!$this->Member) $this->initialiseMemberObject();
-
-				$result = new XMLElement('member-login-info');
 				$result->setAttributeArray(array(
 					'logged-in' => 'true',
 					'id' => $this->Member->get('id')
 				));
 			}
-
-			else{
-				$result = new XMLElement('member-login-info');
+			else {
 				$result->setAttributeArray(array(
 					'logged-in' => 'false'
 				));
 			}
 
-			return $result;
+			$context['wrapper']->appendChild($result);
 		}
 
 	}

@@ -207,7 +207,7 @@
 				CREATE TABLE `tbl_members_roles` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `name` varchar(255) NOT NULL,
-				  `handle` varchar(255) NOT NULL, 
+				  `handle` varchar(255) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `handle` (`handle`)
 				) ENGINE=MyISAM;
@@ -454,27 +454,27 @@
 				$this->__updateSystemTimezoneOffset($this->Member->Member->get('id'));
 
 				if(!is_null(extension_Members::getConfigVar('role'))) {
-					$role_data = $this->Member->Member->getData(self::roleField());
+					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
 				}
 			}
 
 			if(is_null(extension_Members::getConfigVar('role'))) return;
 
-			/**
-			 * TODO
-			 * Roles are optional now so the logic here should be a little
-			 * more nuanced. If member is logged in AND there's a role field,
-			 * get the role id. If logged in but there's no role field, use
-			 * default role ID. If not logged in, use guest role?
-			 */
-			$role = self::fetchRole(($isLoggedIn ? $role_data['role_id'] : self::GUEST_ROLE_ID), true);
+			// TODO: Handle a 'Guest' role, aka. users that are from the public should
+			// be able to be denied events and pages too. Possibly create an immutable
+			// Role on installation called Guest?
+			$role_id = ($isLoggedIn) ? $role_data['role_id'] : 0;
+			$role = RoleManager::fetch($role_id, true);
 
-			if(!$role->canAccessPage((int)$context['page_data']['id'])) {
+			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 
-				if($row = Symphony::Database()->fetchRow(0,
-					"SELECT `tbl_pages`.* FROM `tbl_pages`, `tbl_pages_types`
-					WHERE `tbl_pages_types`.page_id = `tbl_pages`.id AND tbl_pages_types.`type` = '403'
-					LIMIT 1")){
+				// User has no access to this page, so look for a custom 403 page
+				if($row = Symphony::Database()->fetchRow(0,"
+					SELECT `p`.*
+					FROM `tbl_pages` as `p`
+					LEFT JOIN `tbl_pages_types` AS `pt` ON(`p`.id = `pt`.page_id)
+					WHERE `pt`.type = '403'
+				")) {
 
 					$row['type'] = Symphony::Database()->fetchCol('type',
 						"SELECT `type` FROM `tbl_pages_types` WHERE `page_id` = ".$row['id']
@@ -486,12 +486,14 @@
 					return;
 				}
 
+				// No custom 403, just throw default 403
+				GenericExceptionHandler::$enabled = true;
 				throw new SymphonyErrorPage(
-					'Please <a href="'.SYMPHONY_URL.'/login/">login</a> to view this page.',
-					'Forbidden', 'error',
+					__('Please <a href="%s">login</a> to view this page.', array(SYMPHONY_URL . '/login/')),
+					__('Forbidden'),
+					'error',
 					array('header' => 'HTTP/1.0 403 Forbidden')
 				);
-
 			}
 		}
 
@@ -517,7 +519,7 @@
 		}
 
 		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){
-			if(!$role = self::fetchRole($entry->getData(self::roleField(), true)->role_id)) return;
+			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'), true)->role_id)) return;
 
 			return $this->Member->sendNewRegistrationEmail($entry, $role, $fields);
 		}
@@ -527,7 +529,7 @@
 
 			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
 
-			if(!$role = self::fetchRole($entry->getData(self::roleField(), true)->role_id)) return;
+			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'), true)->role_id)) return;
 
 			return $this->Member->sendNewPasswordEmail($entry, $role);
 		}
@@ -537,7 +539,7 @@
 
 			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
 
-			if(!$role = self::fetchRole($entry->getData(self::roleField(), true)->role_id)) return;
+			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'), true)->role_id)) return;
 
 			return $this->Member->sendResetPasswordEmail($entry, $role);
 		}
@@ -553,9 +555,16 @@
 		}
 
 		public function checkEventPermissions($context){
+			/**
+			 * If this system has no Roles, return immediately.
+			 * @todo Possibly look at dynamically subscribing to this delegate
+			 * when a Role field is added.
+			 */
+			if(is_null(extension_Members::getConfigVar('role'))) return;
+
 			$action = 'create';
-			$required_level = 1;
-			$entry_id = NULL;
+			$required_level = EventPermissions::OWN_ENTRIES;
+			$entry_id = 0;
 
 			if(isset($_POST['id'])){
 				$entry_id = (int)$_POST['id'];
@@ -566,16 +575,15 @@
 
 			$this->Member->initialiseMemberObject();
 
-			/**
-			 * TODO
-			 * Again, logic here in case roles aren't being used
-			 */
 			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
-				$role_data = $this->Member->Member->getData(self::roleField());
+				$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
 			}
-
-			$role = self::fetchRole(($isLoggedIn ? $role_data['role_id'] : self::GUEST_ROLE_ID), true);
-
+			// TODO: Handle a 'Guest' role, aka. users that are from the public should
+			// be able to be denied events and pages too. Possibly create an immutable
+			// Role on installation called Guest?
+			$role_id = ($isLoggedIn) ? $role_data['role_id'] : 0;
+			$role = RoleManager::fetch($role_id, true);
+			var_dump($context);exit;
 			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
 
 			$isOwner = false;
@@ -619,61 +627,5 @@
 			$this->Member->appendLoginStatusToEventXML($context);
 		}
 
-		public function buildXML(Array $context = null){
-			$result = $this->Member->buildXML();
-
-			if(self::$_failed_login_attempt === true) $result->setAttribute('failed-login-attempt', 'true');
-
-			if($this->Member->isLoggedIn()) {
-				if(is_null(extension_Members::getConfigVar('role'))) return $result;
-
-				$role_data = $this->Member->Member->getData(self::roleField());
-				$role = self::fetchRole($role_data['role_id'], true);
-
-				//	Page Permissions
-				$permission = new XMLElement('permissions');
-
-				$forbidden_pages = $role->forbiddenPages();
-				if(is_array($forbidden_pages) && !empty($forbidden_pages)){
-
-					$rows = Symphony::Database()->fetch(sprintf(
-						"SELECT id, title, handle, path FROM `tbl_pages` WHERE `id` IN (%s)",
-						implode(',', $forbidden_pages)
-					));
-
-					$pages = new XMLElement('forbidden-pages');
-					foreach($rows as $r) {
-						$attr = array(
-							'id' => $r['id'],
-							'handle' => General::sanitize($r['handle'])
-						);
-
-						if(!is_null($r['path'])) $attr['parent-path'] = General::sanitize($r['path']);
-
-						$pages->appendChild(new XMLElement('page',
-							General::sanitize($r['title']),
-							$attr
-						));
-					}
-
-					$permission->appendChild($pages);
-				}
-
-				//	Event Permissions
-				$event_permissions = $role->eventPermissions();
-				if(is_array($event_permissions) && !empty($event_permissions)) foreach($event_permissions as $event_handle => $e){
-					$obj = new XMLElement($event_handle);
-
-					foreach($e as $action => $level) $obj->setAttribute($action, (string)$level);
-
-					$permission->appendChild($obj);
-				}
-
-				$result->appendChild($permission);
-			}
-
-			return $result;
-		}
 	}
-
 
