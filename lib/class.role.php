@@ -54,7 +54,7 @@
 		public function edit($role_id, Array $data) {
 			if(is_null($role_id)) return false;
 
-			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`role_id` = " . $role_id);
+			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
 
 			if(Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", "`role_id` = " . $role_id)) {
 				$page_access = $data['roles_forbidden_pages']['page_access'];

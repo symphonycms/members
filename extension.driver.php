@@ -206,11 +206,9 @@
 				DROP TABLE IF EXISTS `tbl_members_roles`;
 				CREATE TABLE `tbl_members_roles` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `role_id` int(3) unsigned NOT NULL,
 				  `name` varchar(255) NOT NULL,
 				  `handle` varchar(255) NOT NULL, 
 				  PRIMARY KEY  (`id`),
-				  KEY `role_id` (`role_id`),
 				  UNIQUE KEY `handle` (`handle`)
 				) ENGINE=MyISAM;
 
