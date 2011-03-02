@@ -4,6 +4,18 @@
 
 		public static $_pool = array();
 
+		/**
+		 * Given an associative array of data with the keys being the
+		 * relevant table names, and the values being an associative array
+		 * of data to insert, add a new Role to the Database. Roles are spread
+		 * across three tables, `tbl_members_roles`, `tbl_members_roles_forbidden_pages`
+		 * and `tbl_members_roles_event_permissions`. This function will return
+		 * the ID of the Role after it has been added to the database.
+		 *
+		 * @param array $data
+		 * @return integer
+		 *  The newly created Role's ID
+		 */
 		public function add(Array $data) {
 			Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
 			$role_id = Symphony::Database()->getInsertID();
@@ -31,7 +43,17 @@
 			return $role_id;
 		}
 
+		/**
+		 * Given a `$role_id` and an associative array of data in the same fashion
+		 * as `RoleManager::add()`, this will update a Role record returning boolean
+		 *
+		 * @param integer $role_id
+		 * @param array $data
+		 * @return boolean
+		 */
 		public function edit($role_id, Array $data) {
+			if(is_null($role_id)) return false;
+
 			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`role_id` = " . $role_id);
 
 			if(Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", "`role_id` = " . $role_id)) {
@@ -71,9 +93,9 @@
 		 * @return boolean
 		 */
 		public function delete($role_id, $purge_members = false) {
-			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", " WHERE `role_id` = " . $role_id);
-			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", " WHERE `role_id` = " . $role_id);
-			Symphony::Database()->delete("`tbl_members_roles`", " WHERE `id` = " . $role_id);
+			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", " `role_id` = " . $role_id);
+			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", " `role_id` = " . $role_id);
+			Symphony::Database()->delete("`tbl_members_roles`", " `id` = " . $role_id);
 
 			if($purge_members) {
 				$members = Symphony::Database()->fetchCol('entry_id', sprintf(
@@ -100,6 +122,17 @@
 			return true;
 		}
 
+		/**
+		 * This function will return Roles from the database. If the `$role_id` is
+		 * given the function will return a Role object (should it be found) otherwise
+		 * an array of Role objects will be returned.
+		 * An optional `$include_permissions` parameter is provided, and when set to true
+		 * will add all the Permissions to the found Role.
+		 *
+		 * @param integer $role_id
+		 * @param boolean $include_permissions
+		 * @return Role|array
+		 */
 		public static function fetch($role_id = null, $include_permissions = false) {
 			$returnSingle = true;
 			$result = array();
@@ -130,11 +163,26 @@
 			return $result;
 		}
 
-		public static function fetchRoleIDByName($name){
-			return Symphony::Database()->fetchVar('id', 0, sprintf("
-				SELECT `id` FROM `tbl_members_roles` WHERE `name` = '%s' LIMIT 1",
-				Symphony::Database()->cleanValue($name)
+		/**
+		 * This function will find a Role by it's handle. Should `$asObject` be
+		 * passed as true, this function will return a Role object, otherwise just
+		 * the `$role_id`.
+		 *
+		 * @param string $handle
+		 * @param boolean $asObject
+		 * @return integer|Role|null
+		 */
+		public static function fetchRoleIDByHandle($handle, $asObject = false){
+			$role_id = Symphony::Database()->fetchVar('id', 0, sprintf("
+				SELECT `id` FROM `tbl_members_roles` WHERE `handle` = '%s' LIMIT 1",
+				Symphony::Database()->cleanValue($handle)
 			));
+
+			if(!$role_id) return null;
+
+			if(!$asObject) return $role_id;
+
+			return RoleManager::fetch($role_id);
 		}
 	}
 

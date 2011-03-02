@@ -8,16 +8,18 @@
 		public function __viewIndex() {
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
-/*
-	@todo Uncomment this, needs a UI review
-			if(is_null(extension_Members::getConfigVar('role'))) {
-				$this->appendSubheading(__('Member Roles'));
 
-				$this->Form->appendChild(new XMLElement('p', __('There is no Member: Role field in the active Members section')));
-
-				return true;
+			if(is_null(extension_Members::getConfigVar('role')) && !is_null(extension_Members::getMembersSection())) {
+				$this->pageAlert(
+					__('There is no Member: Role field in the active Members section. <a href="%s%d/">Add Member: Role field?</a>',
+					array(
+						SYMPHONY_URL . '/blueprints/sections/edit/',
+						extension_Members::getMembersSection()
+					)),
+					Alert::NOTICE
+				);
 			}
-*/
+
 			$this->appendSubheading(__('Member Roles'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', __('Create a Role'), 'create button', NULL, array('accesskey' => 'c')
 			));
@@ -33,7 +35,7 @@
 
 			if(!is_array($roles) || empty($roles)){
 				$aTableBody = array(Widget::TableRow(
-					array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead))), 'odd'
+					array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead)))
 				));
 			}
 
@@ -54,25 +56,33 @@
 
 				$with_selected_roles = array();
 
-				foreach($roles as $role){
-					$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
-						"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-						extension_Members::getConfigVar('role'), $role->get('id')
-					));
+				$hasRoles = !is_null(extension_Members::getConfigVar('role'));
 
+				foreach($roles as $role){
 					// Setup each cell
 					$td1 = Widget::TableData(Widget::Anchor(
 						$role->get('name'), Administration::instance()->getCurrentPageURL().'edit/' . $role->get('id') . '/', null, 'content'
 					));
+					$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
 
-					$td2 = Widget::TableData(Widget::Anchor(
-						"$member_count",
-						SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . $role_field_name . ':' . $role->get('id')
-					));
+					if($hasRoles) {
+						$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
+							"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+							extension_Members::getConfigVar('role'), $role->get('id')
+						));
 
-					$td2->appendChild(
-						Widget::Input("items[{$role->get('id')}]", null, 'checkbox')
-					);
+						$td2 = Widget::TableData(Widget::Anchor(
+							"$member_count",
+							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . $role_field_name . ':' . $role->get('id')
+						));
+
+						$td2->appendChild(
+							Widget::Input("items[{$role->get('id')}]", null, 'checkbox')
+						);
+					}
+					else {
+						$td2 = Widget::TableData(__('None'));
+					}
 
 					// Add cells to a row
 					$aTableBody[] = Widget::TableRow(array($td1, $td2));
@@ -101,7 +111,6 @@
 				3 => array('delete-members', false, __('Delete Members'), 'confirm')
 			);
 
-			$with_selected_roles[] = array('move::1', false, 'Move');
 			if(count($with_selected_roles) > 0){
 				$options[1] = array('label' => __('Move Members To'), 'options' => $with_selected_roles);
 			}
@@ -271,10 +280,13 @@
 			if(is_array($events) && !empty($events)) foreach($events as $event_handle => $event){
 
 				$permissions = $fields['permissions'][$event_handle];
-
-				## Setup each cell
+				
+				// Setup each cell
 				$td1 = Widget::TableData($event['name']);
-
+				
+				// @todo Look at how we can improve this so PHP is aware of more
+				// such as 'Edit'/'Create' and the actual values 'Own Entries/All Entries'
+				// instead of it just staying in the JS.
 				$td2 = Widget::TableData(Widget::Input(
 					"fields[permissions][{$event_handle}][create]",
 					'1',
@@ -415,49 +427,23 @@
 			}
 		}
 
-		public function __actionEdit() {
-			if($this->_context[0] == "edit" && array_key_exists('save', $_POST['action'])) {
-				
-				if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
-
-				if(!$existing = RoleManager::fetch($role_id, true)){
-					throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'), 'error');
-				}
-				
-				$fields = $_POST['fields'];
-
-				$name = trim($fields['name']);
-
-				if(strlen($name) == 0){
-					$this->_errors['name'] = __('This is a required field');
-					return false;
-				}
-
-				else if(strtolower($name) != $existing->get('name') && RoleManager::fetchRoleIDByName($name)){
-					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
-					return false;
-				}
-
-				$data['roles'] = array(
-					'name' => $name
-				);
-
-				$data['roles_forbidden_pages'] = array(
-					'page_access' => $fields['page_access']
-				);
-
-				$data['roles_event_permissions'] = array(
-					'permissions' => $fields['permissions']
-				);
-
-				if(RoleManager::edit($role_id, $data)) {
-					redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/saved/');
-				}
-			}
-		}
 		public function __actionNew() {
-			if($this->_context[0] == "new" && array_key_exists('save', $_POST['action'])) {
+			return $this->__actionEdit();
+		}
+
+		public function __actionEdit() {
+			if(array_key_exists('save', $_POST['action'])) {
+				$isNew = ($this->_context[0] !== "edit");
 				$fields = $_POST['fields'];
+
+				// If we are editing, we need to make sure the current `$role_id` exists
+				if(!$isNew) {
+					if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
+
+					if(!$existing = RoleManager::fetch($role_id, true)){
+						throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'), 'error');
+					}
+				}
 
 				$name = trim($fields['name']);
 
@@ -466,13 +452,26 @@
 					return false;
 				}
 
-				else if(RoleManager::fetchRoleIDByName($name)){
-					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
-					return false;
+				$handle = Lang::createHandle($name);
+
+				// Make sure there isn't already a Role with the same name.
+				if($isNew) {
+					if(RoleManager::fetchRoleIDByHandle($handle)){
+						$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
+						return false;
+					}
+				}
+				// If we are editing, we need to only run this check if the Role name has been altered
+				else {
+					if($handle != $existing->get('handle') && RoleManager::fetchRoleIDByHandle($handle)){
+						$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
+						return false;
+					}
 				}
 
 				$data['roles'] = array(
-					'name' => $name
+					'name' => $name,
+					'handle' => $handle
 				);
 
 				$data['roles_forbidden_pages'] = array(
@@ -483,11 +482,16 @@
 					'permissions' => $fields['permissions']
 				);
 
-				if($role_id = RoleManager::add($data)) {
-					redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/created/');
+				if($isNew) {
+					if($role_id = RoleManager::add($data)) {
+						redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/created/');
+					}
+				}
+				else {
+					if(RoleManager::edit($role_id, $data)) {
+						redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/saved/');
+					}
 				}
 			}
 		}
-
 	}
-
