@@ -563,7 +563,6 @@
 			if(is_null(extension_Members::getConfigVar('role'))) return;
 
 			$action = 'create';
-			$required_level = EventPermissions::OWN_ENTRIES;
 			$entry_id = 0;
 
 			if(isset($_POST['id'])){
@@ -583,36 +582,59 @@
 			// Role on installation called Guest?
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : 0;
 			$role = RoleManager::fetch($role_id, true);
-			var_dump($context);exit;
+
 			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
 
 			$isOwner = false;
+			$field_id = false;
+			$required_level = ($isLoggedIn) ? EventPermissions::OWN_ENTRIES : EventPermissions::ALL_ENTRIES;
 
-			if($action == 'edit'){
+			if($action == 'edit' && $isLoggedIn) {
 				$section_id = $context['event']->getSource();
+				$member_id = false;
 
-				$member_field = Symphony::Database()->fetchRow(0,
-					"SELECT * FROM `tbl_fields` WHERE `parent_section` = {$section_id} AND `type` IN ('memberlink', 'member') LIMIT 1"
-				);
+				// If the $section_id = members_section
+				if($section_id == extension_Members::getMembersSection()) {
+					$field_id = extension_Members::getConfigVar('authentication');
+				}
+				// Or a SBL/RL field links to the identity field
+				else {
+					$field_id = Symphony::Database()->fetchVar('child_section_field_id', 0, sprintf("
+							SELECT `child_section_field_id`
+							FROM `tbl_sections_association`
+							WHERE `parent_section_id` = %d
+							AND `parent_section_field_id` = %d
+							AND `child_section_id` = %d
+						",
+						extension_Members::getMembersSection(),
+						extension_Members::getConfigVar('authentication'),
+						$section_id
+					));
+				}
 
-				$member_id = Symphony::Database()->fetchVar(
-					($member_field['type'] == 'memberlink') ? 'member_id' : 'entry_id', 0,
-					sprintf("SELECT * FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1", $member_field['id'], $entry_id)
-				);
+				// check that logged in member id == $entry_id
+				if($field_id) {
+					$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
+						"SELECT * FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1",
+						$field_id, $entry_id
+					));
+				}
 
-				$isOwner = ($isLoggedIn) ? ((int)$this->Member->Member->get('id') == $member_id) : false;
+				// if logged in member is the same as the member id for the Entry we are editing
+				// then this user is the Owner, and can modify EventPermissions::OWN_ENTRIES
+				$isOwner = ($this->Member->Member->get('id') == $member_id);
 
-				if($isOwner != true) $required_level = 2;
+				// User is not the owner, so they can edit EventPermissions::ALL_ENTRIES
+				if($isOwner === false) $required_level = EventPermissions::ALL_ENTRIES;
 			}
 
-			$success = $role->canPerformEventAction($event_handle, $action, $required_level) ? true : false;
+			$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 
 			$context['messages'][] = array(
 				'permission',
 				$success,
-				($success === false) ? 'not authorised to perform this action' : null
+				($success === false) ? __('You are not authorised to perform this action') : null
 			);
-
 		}
 
 	/*-------------------------------------------------------------------------

@@ -306,18 +306,6 @@
 					'hidden'
 				));
 
-				$td4 = Widget::TableData(NULL, 'delete');
-				$td4->appendChild(new XMLElement('p', NULL, array('class' => 'slider')));
-				$span = new XMLElement('span');
-				$span->setSelfClosingTag(false);
-				$td4->appendChild($span);
-
-				$td4->appendChild(Widget::Input(
-					'fields[permissions][' . $event_handle .'][delete]',
-					(isset($permissions['delete']) ? $permissions['delete'] : EventPermissions::NO_PERMISSIONS),
-					'hidden'
-				));
-
 				/*
 				<tr>
 					<td>{EVENT-NAME}</td>
@@ -329,11 +317,6 @@
 						<span></span>
 						<input type="hidden" name="{ANY NAME}" value="{EXISTING-VALUE:1}"/>
 					</td>
-					<!--<td class="delete">
-						<p class="slider"></p>
-						<span></span>
-						<input type="hidden" name="{ANY NAME}" value="{EXISTING-VALUE:1}"/>
-					</td>-->
 				</tr>
 				*/
 

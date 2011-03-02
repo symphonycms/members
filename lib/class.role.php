@@ -29,12 +29,12 @@
 
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
-
 				$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
 
 				foreach($permissions as $event_handle => $p){
-					foreach($p as $action => $level)
-						$sql .= "(NULL,  {$role_id}, '{$event_handle}', '{$action}', '{$level}'),";
+					foreach($p as $action => $level) {
+						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+					}
 				}
 
 				Symphony::Database()->query(trim($sql, ','));
@@ -56,28 +56,30 @@
 
 			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
 
-			if(Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", "`role_id` = " . $role_id)) {
-				$page_access = $data['roles_forbidden_pages']['page_access'];
-				if(is_array($page_access) && !empty($page_access)) {
-					foreach($page_access as $page_id){
-						Symphony::Database()->query("INSERT INTO `tbl_members_roles_forbidden_pages` VALUES (NULL, $role_id, $page_id)");
-					}
+			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", "`role_id` = " . $role_id);
+			$page_access = $data['roles_forbidden_pages']['page_access'];
+			if(is_array($page_access) && !empty($page_access)) {
+				foreach($page_access as $page_id){
+					Symphony::Database()->query("INSERT INTO `tbl_members_roles_forbidden_pages` VALUES (NULL, $role_id, $page_id)");
 				}
 			}
 
-			if(Symphony::Database()->delete("`tbl_members_roles_event_permissions`", "`role_id` = " . $role_id)) {
-				$permissions = $data['roles_event_permissions']['permissions'];
-				if(is_array($permissions) && !empty($permissions)){
+			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", "`role_id` = " . $role_id);
+			$permissions = $data['roles_event_permissions']['permissions'];
+			if(is_array($permissions) && !empty($permissions)){
+				$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
 
-					$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
-
-					foreach($permissions as $event_handle => $p){
-						foreach($p as $action => $level)
-							$sql .= "(NULL,  {$role_id}, '{$event_handle}', '{$action}', '{$level}'),";
+				foreach($permissions as $event_handle => $p){
+					if(!array_key_exists('create', $p)) {
+						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
 					}
 
-					$p = Symphony::Database()->query(trim($sql, ','));
+					foreach($p as $action => $level) {
+						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+					}
 				}
+
+				$p = Symphony::Database()->query(trim($sql, ','));
 			}
 
 			return true;
@@ -250,7 +252,7 @@
 		public function canProcessEvent($event_handle, $action, $required_level){
 			$event_permissions = $this->get('event_permissions');
 
-			if(in_array($event_handle, $event_permissions)) {
+			if(array_key_exists($event_handle, $event_permissions)) {
 				return ($event_permissions[$event_handle][$action] >= $required_level);
 			}
 
@@ -263,7 +265,7 @@
 		const NO_PERMISSIONS = 0;
 		const OWN_ENTRIES = 1;
 		const ALL_ENTRIES = 2;
-		
+
 		public static $permissionMap = array(
 			self::NO_PERMISSIONS => 'No Permission',
 			self::OWN_ENTRIES => 'Own Entries',
