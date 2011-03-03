@@ -78,6 +78,26 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+
+			// Get Role in system
+			$roles = RoleManager::fetch();
+			$options = array();
+			if(is_array($roles) && !empty($roles)) {
+				foreach($roles as $role) {
+					$options[] = array($role->get('id'), ($this->get('default_role') == $role->get('id')), $role->get('name'));
+				}
+			}
+
+			$label = new XMlElement('label', __('Default Member Role'));
+			$label->appendChild(Widget::Select(
+				"fields[{$this->get('sortorder')}][default_role]", $options
+			));
+
+			$group->appendChild($label);
+			$wrapper->appendChild($group);
+
 			$this->appendShowColumnCheckbox($wrapper);
 		}
 
@@ -93,7 +113,8 @@
 			if($id === false) return false;
 
 			$fields = array(
-				'field_id' => $id
+				'field_id' => $id,
+				'default_role' => $this->get('default_role')
 			);
 
 			Symphony::Configuration()->set('role', $id, 'members');
@@ -107,10 +128,13 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
-
+		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
 			$states = $this->getToggleStates();
 			$options = array();
+
+			if(is_null($entry_id)) {
+				$data['role_id'] = $this->get('default_role');
+			}
 
 			foreach($states as $role_id => $role_name){
 				$options[] = array(

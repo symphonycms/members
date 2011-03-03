@@ -192,7 +192,8 @@
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberrole` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
-				  PRIMARY KEY  (`id`),
+				  `default_role` int(11) unsigned NOT NULL,
+				  PRIMARY KEY (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
 
