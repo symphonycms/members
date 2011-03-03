@@ -44,9 +44,9 @@
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$label = new XMLElement('label', __('Available Zones'));
-			
-			$zones = is_array($this->get('available_zones')) 
-				? $this->get('available_zones') 
+
+			$zones = is_array($this->get('available_zones'))
+				? $this->get('available_zones')
 				: explode(',', $this->get('available_zones'));
 
 			// Loop over the DateTimeZone class constants for Zones
@@ -106,7 +106,12 @@
 
 				$options = array();
 				foreach($timezones as $timezone) {
-					$options[] = array($timezone, ($timezone == $data['value']), str_replace('_', ' ', substr(strrchr($timezone, '/'),1)));
+					$tz = new DateTime('now', new DateTimeZone($timezone));
+
+					$options[] = array($timezone, ($timezone == $data['value']), sprintf("%s %s",
+						str_replace('_', ' ', substr(strrchr($timezone, '/'),1)),
+						$tz->format('P')
+					));
 				}
 
 				$groups[] = array('label' => ucwords(strtolower($zone)), 'options' => $options);
@@ -129,6 +134,21 @@
 	-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-			parent::appendFormattedElement($wrapper, $data, $encode);
+			if (!is_array($data) or is_null($data['value'])) return;
+
+			$el = new XMLElement($this->get('element_name'));
+			$el->appendChild(
+				new XMLElement('name', $data['value'], array(
+					'handle'	=> $data['handle']
+				))
+			);
+
+			// Calculate Timezone Offset
+			$tz = new DateTime('now', new DateTimeZone($data['value']));
+			$el->appendChild(
+				new XMLElement('offset', $tz->format('P'))
+			);
+
+			$wrapper->appendChild($el);
 		}
 	}
