@@ -128,20 +128,23 @@
 		 * This function will return Roles from the database. If the `$role_id` is
 		 * given the function will return a Role object (should it be found) otherwise
 		 * an array of Role objects will be returned.
-		 * An optional `$include_permissions` parameter is provided, and when set to true
-		 * will add all the Permissions to the found Role.
 		 *
 		 * @param integer $role_id
-		 * @param boolean $include_permissions
 		 * @return Role|array
 		 */
-		public static function fetch($role_id = null, $include_permissions = false) {
-			$returnSingle = true;
+		public static function fetch($role_id = null) {
 			$result = array();
+			$return_single = true;
+			
+			if(is_null($role_id)) $return_single = false;
 
-			if(is_null($role_id)) $returnSingle = false;
+			if($return_single) {
+				// Check static cache for object
+				if(in_array($role_id, array_keys(RoleManager::$_pool))) {
+					return RoleManager::$_pool[$role_id];
+				}
 
-			if($returnSingle && !in_array($role_id, array_keys(RoleManager::$_pool))) {
+				// No cache object found
 				if(!$roles = Symphony::Database()->fetch(sprintf("
 						SELECT * FROM `tbl_members_roles` WHERE `id` = %d ORDER BY `id` ASC LIMIT 1",
 						$role_id
@@ -153,16 +156,15 @@
 			}
 
 			foreach($roles as $role) {
-				RoleManager::$_pool[$role_id] = new Role($role);
+				if(!in_array($role['id'], array_keys(RoleManager::$_pool))) {
+					RoleManager::$_pool[$role['id']] = new Role($role);
+					RoleManager::$_pool[$role['id']]->getPermissions();
+				}
 
-				if($include_permissions) RoleManager::$_pool[$role_id]->getPermissions();
-
-				if($returnSingle) return RoleManager::$_pool[$role_id];
-
-				$result[] = RoleManager::$_pool[$role_id];
+				$result[] = RoleManager::$_pool[$role['id']];
 			}
 
-			return $result;
+			return $return_single ? current($result) : $result;
 		}
 
 		/**

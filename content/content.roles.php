@@ -143,7 +143,7 @@
 
 				if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
 
-				if(!$existing = RoleManager::fetch($role_id, true)){
+				if(!$existing = RoleManager::fetch($role_id)){
 					throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'), 'error');
 				}
 			}
@@ -438,7 +438,7 @@
 				if(!$isNew) {
 					if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
 
-					if(!$existing = RoleManager::fetch($role_id, true)){
+					if(!$existing = RoleManager::fetch($role_id)){
 						throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'), 'error');
 					}
 				}
@@ -503,7 +503,7 @@
 					);
 				}
 
-				if(!$existing = RoleManager::fetch($role_id, true)){
+				if(!$existing = RoleManager::fetch($role_id)){
 					throw new SymphonyErrorPage(__('The role you requested to delete does not exist.'), __('Role not found'), 'error');
 				}
 

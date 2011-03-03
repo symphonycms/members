@@ -177,7 +177,7 @@
 			if(!is_array($data) || empty($data)) return;
 
 			$role_id = $data['role_id'];
-			$role = RoleManager::fetch($role_id, true);
+			$role = RoleManager::fetch($role_id);
 
 			$element = new XMLElement($this->get('element_name'), null, array(
 				'id' => $role->get('id'),

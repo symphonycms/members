@@ -464,7 +464,7 @@
 			if(is_null(extension_Members::getConfigVar('role'))) return;
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
-			$role = RoleManager::fetch($role_id, true);
+			$role = RoleManager::fetch($role_id);
 
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 
@@ -517,7 +517,7 @@
 		}
 
 		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){
-			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'), true)->role_id)) return;
+			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
 
 			return $this->Member->sendNewRegistrationEmail($entry, $role, $fields);
 		}
@@ -527,7 +527,7 @@
 
 			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
 
-			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'), true)->role_id)) return;
+			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
 
 			return $this->Member->sendNewPasswordEmail($entry, $role);
 		}
@@ -537,7 +537,7 @@
 
 			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
 
-			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'), true)->role_id)) return;
+			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
 
 			return $this->Member->sendResetPasswordEmail($entry, $role);
 		}
@@ -577,7 +577,7 @@
 			}
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
-			$role = RoleManager::fetch($role_id, true);
+			$role = RoleManager::fetch($role_id);
 
 			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
 
