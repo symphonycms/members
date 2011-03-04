@@ -23,7 +23,12 @@
 			$page_access = $data['roles_forbidden_pages']['page_access'];
 			if(is_array($page_access) && !empty($page_access)) {
 				foreach($page_access as $page_id){
-					Symphony::Database()->query("INSERT INTO `tbl_members_roles_forbidden_pages` VALUES (NULL, $role_id, $page_id)");
+					Symphony::Database()->insert(array(
+							'page_id' => $page_id,
+							'role_id' => $role_id
+						),
+						'`tbl_members_roles_forbidden_pages`'
+					);
 				}
 			}
 
@@ -60,7 +65,12 @@
 			$page_access = $data['roles_forbidden_pages']['page_access'];
 			if(is_array($page_access) && !empty($page_access)) {
 				foreach($page_access as $page_id){
-					Symphony::Database()->query("INSERT INTO `tbl_members_roles_forbidden_pages` VALUES (NULL, $role_id, $page_id)");
+					Symphony::Database()->insert(array(
+							'page_id' => $page_id,
+							'role_id' => $role_id
+						),
+						'`tbl_members_roles_forbidden_pages`'
+					);
 				}
 			}
 
@@ -135,7 +145,7 @@
 		public static function fetch($role_id = null) {
 			$result = array();
 			$return_single = true;
-			
+
 			if(is_null($role_id)) $return_single = false;
 
 			if($return_single) {

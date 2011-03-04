@@ -446,17 +446,8 @@
 		Email Templates:
 	-------------------------------------------------------------------------*/
 
-		public function fetchEmailTemplates(){
-			$rows = Symphony::Database()->fetchCol('id', 'SELECT `id` FROM `tbl_members_email_templates` ORDER BY `id` ASC');
-			$result = array();
-			foreach($rows as $id) {
-				$result[] = EmailTemplate::loadFromID($id);
-			}
-			return $result;
-		}
-
 		public function emailNewMember($context){
-			if($context['section']->get('id') == self::getMembersSection()) {
+			if($context['section']->get('id') == extension_Members::getMembersSection()) {
 				$this->sendNewRegistrationEmail($context['entry'], $context['fields']);
 			}
 		}
@@ -470,7 +461,7 @@
 		public function sendNewPasswordEmail($member_id){
 			$entry = $this->Member->Member->fetchMemberFromID($member_id);
 
-			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
+			if(!$entry instanceof Entry) throw new Exception('Invalid member ID specified');
 
 			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
 
@@ -480,7 +471,7 @@
 		public function sendResetPasswordEmail($member_id){
 			$entry = $this->Member->Member->fetchMemberFromID($member_id);
 
-			if(!$entry instanceof Entry) throw new UserException('Invalid member ID specified');
+			if(!$entry instanceof Entry) throw new Exception('Invalid member ID specified');
 
 			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
 
@@ -492,7 +483,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function processEventData($context){
-			if($context['event']->getSource() == self::getMembersSection() && isset($_POST['action']['members-register'])){
+			if($context['event']->getSource() == extension_Members::getMembersSection() && isset($_POST['action']['members-register'])){
 				return $this->sendNewRegistrationEmail($context['entry'], $context['fields']);
 			}
 		}
