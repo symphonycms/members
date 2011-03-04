@@ -60,12 +60,10 @@
 			);
 
 			if(isset($username)) {
-				$username = Symphony::Database()->cleanValue($username);
-				$data['username'] = $username;
+				$data['username'] = Symphony::Database()->cleanValue($username);
 			}
-			else if(isset($email)) {
-				$email = Symphony::Database()->cleanValue($email);
-				$data['email'] = $email;
+			else if(isset($email) && !is_null(extension_Members::getConfigVar('email'))) {
+				$data['email'] = Symphony::Database()->cleanValue($email);
 			}
 
 			if($id = $this->findMemberIDFromCredentials($data)) {
