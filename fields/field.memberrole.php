@@ -120,7 +120,7 @@
 			$id = $this->get('id');
 
 			if($id === false) return false;
-			
+
 			fieldMemberRole::createSettingsTable();
 
 			$fields = array(
@@ -155,10 +155,10 @@
 				);
 			}
 
-			$fieldname = 'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix;
-
 			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Select($fieldname, $options));
+			$label->appendChild(Widget::Select(
+				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
+			);
 
 			if($flagWithError != NULL) {
 				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));

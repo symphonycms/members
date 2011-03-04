@@ -24,6 +24,7 @@
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
 				  `validator` varchar(255) DEFAULT NULL,
+				  `options` ENUM('unique', 'unique-and-identify') DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -78,7 +79,16 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
+			$group = new XMLElement('div', null, array('class' => 'group'));
+
+			$div = new XMLElement('div');
+			$this->buildValidationSelect($div, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
+			$group->appendChild($div);
+
+			$this->buildIdentitySelect($group);
+
+			$wrapper->appendChild($group);
+
 			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
 		}
@@ -94,7 +104,8 @@
 
 			$fields = array(
 				'field_id' => $id,
-				'validator' =>$this->get('validator')
+				'validator' => $this->get('validator'),
+				'options' => $this->get('options')
 			);
 
 			Symphony::Configuration()->set('identity', $id, 'members');
@@ -131,13 +142,16 @@
 					return self::__INVALID_FIELDS__;
 				}
 
-				$existing = $this->fetchMemberIDBy($username);
+				// If this field has any options (unique or unique & identify), we need to make sure the
+				// value doesn't already exist in the Section.
+				if(!is_null($this->get('options'))) {
+					$existing = $this->fetchMemberIDBy($username);
 
-				// If there is an existing username, and it's not the current object (editing), error.
-				// @todo This isn't working as expected.
-				if($existing !== $entry_id) {
-					$message = __('That username is already taken.');
-					return self::__INVALID_FIELDS__;
+					// If there is an existing username, and it's not the current object (editing), error.
+					if(!is_null($existing) && $existing != $entry_id) {
+						$message = __('That %s is already taken.', array($this->get('label')));
+						return self::__INVALID_FIELDS__;
+					}
 				}
 			}
 

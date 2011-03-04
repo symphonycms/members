@@ -72,6 +72,19 @@
 			parent::checkFields($errors, $checkForDuplicates);
 		}
 
+		public function buildIdentitySelect(XMLElement &$wrapper) {
+			$label = Widget::Label(__('Options'));
+			$label->appendChild(Widget::Select(
+				'fields'.$fieldnamePrefix.'['.$this->get('sortorder').'][options]'.$fieldnamePostfix, array(
+					array(null, false, null),
+					array('unique', ($this->get('options') == 'unique'), __('Unique')),
+					array('unique-and-identify', ($this->get('options') == 'unique-and-identify'), __('Unique and Allow Login with Member: Password'))
+				)
+			));
+
+			$wrapper->appendChild($label);
+		}
+
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
