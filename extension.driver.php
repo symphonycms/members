@@ -370,20 +370,6 @@
 		Role Manager:
 	-------------------------------------------------------------------------*/
 
-		public static function buildRolePermissionTableBody(Array $rows){
-			$array = array();
-			foreach($rows as $r){
-				$array[] = self::buildRolePermissionTableRow($r[0], $r[1], $r[2], $r[3]);
-			}
-			return $array;
-		}
-
-		public static function buildRolePermissionTableRow($label, $event, $handle, $checked=false){
-			$td1 = Widget::TableData($label);
-			$td2 = Widget::TableData(Widget::Input('fields[permissions]['.$event.']['.$handle.']', 'yes', 'checkbox', ($checked === true ? array('checked' => 'checked') : NULL)));
-			return Widget::TableRow(array($td1, $td2));
-		}
-
 		public function checkFrontendPagePermissions($context) {
 			$isLoggedIn = false;
 
@@ -553,6 +539,7 @@
 					$field_id = extension_Members::getConfigVar('authentication');
 				}
 				// Or a SBL/RL field links to the identity field
+				// @todo check this is working as expected
 				else {
 					$field_id = Symphony::Database()->fetchVar('child_section_field_id', 0, sprintf("
 							SELECT `child_section_field_id`

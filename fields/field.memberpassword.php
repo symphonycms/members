@@ -2,8 +2,22 @@
 
 	Class fieldMemberPassword extends Field{
 
-		protected $_strengths = array();
-		protected $_strength_map = array();
+		protected static $_strengths = array(
+			array('weak', false, 'Weak'),
+			array('good', false, 'Good'),
+			array('strong', false, 'Strong')
+		);
+
+		protected static $_strength_map = array(
+			0			=> 1,
+			1			=> 1,
+			2			=> 2,
+			3			=> 3,
+			4			=> 3,
+			'weak'		=> 1,
+			'good'		=> 2,
+			'strong'	=> 3
+		);
 
 	/*-------------------------------------------------------------------------
 		Definition:
@@ -13,23 +27,8 @@
 			parent::__construct($parent);
 			$this->_name = __('Member: Password');
 			$this->_required = true;
-			$this->set('required', 'yes');
 
-			$this->_strengths = array(
-				array('weak', false, 'Weak'),
-				array('good', false, 'Good'),
-				array('strong', false, 'Strong')
-			);
-			$this->_strength_map = array(
-				0			=> 1,
-				1			=> 1,
-				2			=> 2,
-				3			=> 3,
-				4			=> 3,
-				'weak'		=> 1,
-				'good'		=> 2,
-				'strong'	=> 3
-			);
+			$this->set('required', 'yes');
 			$this->set('length', '6');
 			$this->set('strength', 'good');
 		}
@@ -110,7 +109,18 @@
 			return null;
 		}
 
-		protected function checkPassword($password) {
+		/**
+		 * Given a string, this function will encode it using the
+		 * field's salt and the sha1 algorithm
+		 *
+		 * @param string $password
+		 * @return string
+		 */
+		public function encodePassword($password) {
+			return sha1($this->get('salt') . $password);
+		}
+
+		protected static function checkPassword($password) {
 			$strength = 0;
 			$patterns = array(
 				'/[a-z]/', '/[A-Z]/', '/[0-9]/',
@@ -126,20 +136,10 @@
 			return $strength;
 		}
 
-		protected function compareStrength($a, $b) {
-			if ($this->_strength_map[$a] >= $this->_strength_map[$b]) return true;
+		protected static function compareStrength($a, $b) {
+			if (fieldMemberPassword::$_strength_map[$a] >= fieldMemberPassword::$_strength_map[$b]) return true;
 
 			return false;
-		}
-
-		protected function encodePassword($password) {
-			return sha1($this->get('salt') . $password);
-		}
-
-		protected function getStrengthName($strength) {
-			$map = array_flip($this->_strength_map);
-
-			return $map[$strength];
 		}
 
 		protected function rememberSalt() {
@@ -172,14 +172,6 @@
 					f.entry_id = '{$entry_id}'
 				LIMIT 1
 			");
-		}
-
-		public function getExampleFormMarkup(){
-
-			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][password]', NULL, 'password'));
-
-			return $label;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -257,7 +249,7 @@
 			$id = $this->get('id');
 
 			if($id === false) return false;
-			
+
 			fieldMemberPassword::createSettingsTable();
 
 			$this->rememberSalt();
@@ -378,7 +370,7 @@
 					return self::__INVALID_FIELDS__;
 				}
 
-				if (!$this->compareStrength($this->checkPassword($password), $this->get('strength'))) {
+				if (!fieldMemberPassword::compareStrength(fieldMemberPassword::checkPassword($password), $this->get('strength'))) {
 					$message = __('Password is not strong enough.');
 					return self::__INVALID_FIELDS__;
 				}
@@ -405,7 +397,7 @@
 			if(!empty($password) || is_null($entry_id)) {
 				return array(
 					'password'	=> $this->encodePassword($password),
-					'strength'	=> $this->checkPassword($password),
+					'strength'	=> fieldMemberPassword::checkPassword($password),
 					'length'	=> strlen($password)
 				);
 			}
@@ -434,7 +426,6 @@
 				'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
 			), $link);
 		}
-
 
 	/*-------------------------------------------------------------------------
 		Filtering:
@@ -472,6 +463,18 @@
 
 			return true;
 
+		}
+
+	/*-------------------------------------------------------------------------
+		Events:
+	-------------------------------------------------------------------------*/
+
+		public function getExampleFormMarkup(){
+
+			$label = Widget::Label($this->get('label'));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][password]', NULL, 'password'));
+
+			return $label;
 		}
 
 	}
