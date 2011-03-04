@@ -363,6 +363,8 @@
 
 			$tz = $timezone->getMemberTimezone($member_id);
 
+			if(is_null($tz)) return;
+
 			try {
 				DateTimeObj::setDefaultTimezone($tz);
 			}

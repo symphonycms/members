@@ -134,11 +134,11 @@
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
-		
+
 		public function fieldCleanup(){
 			Symphony::Configuration()->set('role', null, 'members');
 			Administration::instance()->saveConfig();
-			
+
 			return true;
 		}
 
@@ -177,7 +177,13 @@
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
-			return array('role_id' => $data);
+
+			if(is_null($data)) {
+				return array(
+					'role_id' => $this->get('default_role')
+				);
+			}
+			else return array('role_id' => $data);
 		}
 
 	/*-------------------------------------------------------------------------

@@ -155,7 +155,7 @@
 			// If there is an activiation field, we'll need to the send the Activate Account template
 			// not the Welcome template to the user.
 			if(is_null(extension_Members::getConfigVar('activation'))) {
-				$email_template = current(EmailTemplateManager::fetch(null, 'activate-account', $role->get('id')));
+				$email_template = current(EmailTemplateManager::fetch(null, 'activate-account', array($role->get('id'))));
 
 				// Add activiation code to the `$vars`
 				$act_field = self::$driver->fm->fetch(extension_Members::getConfigVar('activation'));
@@ -165,7 +165,7 @@
 
 			// No activation required, just send a Welcome email template.
 			else {
-				$email_template = current(EmailTemplateManager::fetch(null, 'welcome', $role->get('id')));
+				$email_template = current(EmailTemplateManager::fetch(null, 'welcome', array($role->get('id'))));
 			}
 
 			if(!$email_template instanceof EmailTemplate) return null;
@@ -196,7 +196,7 @@
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), '`entry_id` = ' . $entry->get('id'));
 
 			// Get Template for a New Password for this Role
-			$email_template = current(EmailTemplateManager::fetch(null, 'new-password', $role->get('id')));
+			$email_template = current(EmailTemplateManager::fetch(null, 'new-password', array($role->get('id'))));
 
 			if(!$email_template instanceof EmailTemplate) return null;
 
@@ -210,7 +210,7 @@
 				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			);
 
-			$email_template = current(EmailTemplateManager::fetch(null, 'reset-password', $role->get('id')));
+			$email_template = current(EmailTemplateManager::fetch(null, 'reset-password', array($role->get('id'))));
 
 			if(!$email_template instanceof EmailTemplate) return null;
 

@@ -476,11 +476,19 @@
 	-------------------------------------------------------------------------*/
 
 		public function getExampleFormMarkup(){
+			$fieldset = new XMLElement('fieldset');
 
 			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][password]', NULL, 'password'));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][password]', null, 'password'));
+			
+			$fieldset->appendChild($label);
+			
+			$label = Widget::Label($this->get('label') . __('Confirm'));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][confirm]', null, 'password'));
+			
+			$fieldset->appendChild($label);
 
-			return $label;
+			return $fieldset;
 		}
 
 	}
