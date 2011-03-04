@@ -2,9 +2,6 @@
 
 	require_once(TOOLKIT . '/fields/field.select.php');
 
-	/**
-	 * @todo Add default Role
-	 */
 	Class fieldMemberRole extends fieldSelect {
 
 	/*-------------------------------------------------------------------------
@@ -32,6 +29,18 @@
 	/*-------------------------------------------------------------------------
 		Setup:
 	-------------------------------------------------------------------------*/
+
+		public static function createSettingsTable() {
+			return Symphony::Database()->query("
+				CREATE TABLE IF NOT EXISTS `tbl_fields_memberrole` (
+				  `id` int(11) unsigned NOT NULL auto_increment,
+				  `field_id` int(11) unsigned NOT NULL,
+				  `default_role` int(11) unsigned NOT NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `field_id` (`field_id`)
+				) ENGINE=MyISAM;
+			");
+		}
 
 		public function createTable(){
 			return Symphony::Database()->query(
@@ -111,6 +120,8 @@
 			$id = $this->get('id');
 
 			if($id === false) return false;
+			
+			fieldMemberRole::createSettingsTable();
 
 			$fields = array(
 				'field_id' => $id,

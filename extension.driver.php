@@ -156,7 +156,6 @@
 		 * and creates all of the field's tables in the database
 		 *
 		 * @return boolean
-		 * @todo Possibly move the field creation to the Fields::commit function
 		 */
 		public function install(){
 
@@ -164,53 +163,6 @@
 			Administration::instance()->saveConfig();
 
 			return Symphony::Database()->import("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberusername` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `validator` varchar(255) DEFAULT NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberemail` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberpassword` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `length` tinyint(2) NOT NULL,
-				  `strength` enum('weak', 'good', 'strong') NOT NULL,
-				  `salt` varchar(255) default NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberactivation` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberrole` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `default_role` int(11) unsigned NOT NULL,
-				  PRIMARY KEY (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
-				CREATE TABLE IF NOT EXISTS `tbl_fields_membertimezone` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
-
 				DROP TABLE IF EXISTS `tbl_members_roles`;
 				CREATE TABLE `tbl_members_roles` (
 				  `id` int(11) unsigned NOT NULL auto_increment,

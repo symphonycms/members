@@ -46,6 +46,20 @@
 		Setup:
 	-------------------------------------------------------------------------*/
 
+		public static function createSettingsTable() {
+			return Symphony::Database()->query("
+				CREATE TABLE IF NOT EXISTS `tbl_fields_memberpassword` (
+				  `id` int(11) unsigned NOT NULL auto_increment,
+				  `field_id` int(11) unsigned NOT NULL,
+				  `length` tinyint(2) NOT NULL,
+				  `strength` enum('weak', 'good', 'strong') NOT NULL,
+				  `salt` varchar(255) default NULL,
+				  PRIMARY KEY  (`id`),
+				  UNIQUE KEY `field_id` (`field_id`)
+				) ENGINE=MyISAM;
+			");
+		}
+
 		public function createTable(){
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
@@ -243,6 +257,8 @@
 			$id = $this->get('id');
 
 			if($id === false) return false;
+			
+			fieldMemberPassword::createSettingsTable();
 
 			$this->rememberSalt();
 

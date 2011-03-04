@@ -21,6 +21,17 @@
 		Setup:
 	-------------------------------------------------------------------------*/
 
+		public static function createSettingsTable() {
+			return Symphony::Database()->query("
+				CREATE TABLE IF NOT EXISTS `tbl_fields_memberemail` (
+				  `id` int(11) unsigned NOT NULL auto_increment,
+				  `field_id` int(11) unsigned NOT NULL,
+				  PRIMARY KEY  (`id`),
+				  UNIQUE KEY `field_id` (`field_id`)
+				) ENGINE=MyISAM;
+			");
+		}
+
 		public function createTable(){
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
@@ -71,6 +82,8 @@
 			$id = $this->get('id');
 
 			if($id === false) return false;
+			
+			fieldMemberEmail::createSettingsTable();
 
 			$fields = array(
 				'field_id' => $id
