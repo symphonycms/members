@@ -156,7 +156,7 @@
 		 * and creates all of the field's tables in the database
 		 *
 		 * @return boolean
-		 * @todo Missing the Email fields
+		 * @todo Possibly move the field creation to the Fields::commit function
 		 */
 		public function install(){
 
@@ -168,6 +168,13 @@
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
 				  `validator` varchar(255) DEFAULT NULL,
+				  PRIMARY KEY  (`id`),
+				  UNIQUE KEY `field_id` (`field_id`)
+				) ENGINE=MyISAM;
+
+				CREATE TABLE IF NOT EXISTS `tbl_fields_memberemail` (
+				  `id` int(11) unsigned NOT NULL auto_increment,
+				  `field_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;

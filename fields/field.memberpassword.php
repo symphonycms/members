@@ -4,7 +4,7 @@
 
 		protected $_strengths = array();
 		protected $_strength_map = array();
-		
+
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@
 			$this->set('length', '6');
 			$this->set('strength', 'good');
 		}
-		
+
 		public function canFilter(){
 			return true;
 		}
@@ -41,7 +41,7 @@
 		public function mustBeUnique(){
 			return true;
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Setup:
 	-------------------------------------------------------------------------*/
@@ -60,11 +60,11 @@
 				) ENGINE=MyISAM;"
 			);
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
-	
+
 		/**
 		 * Given an array or string as `$needle` and an existing `$member_id`
 		 * this function will return the `$member_id` if the given
@@ -90,9 +90,9 @@
 				",
 				$this->get('id'), $password
 			));
-			
+
 			if($entry_id == $member_id) return $member_id;
-			
+
 			return null;
 		}
 
@@ -167,7 +167,7 @@
 
 			return $label;
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -252,7 +252,7 @@
 				'strength' => $this->get('strength'),
 				'salt' => $this->get('salt')
 			);
-			
+
 			Symphony::Configuration()->set('authentication', $id, 'members');
 			Administration::instance()->saveConfig();
 
@@ -260,7 +260,7 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 
 		}
-	
+
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
@@ -347,7 +347,7 @@
 
 			//	If the field is required, we should have both a $username and $password.
 			if($required && !isset($data['optional']) && (empty($password))) {
-				$message = __('Password is a required field.');
+				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
@@ -369,7 +369,7 @@
 				}
 			}
 			else if(!isset($data['optional'])) {
-				$message = __('Password cannot be blank.');
+				$message = __('%s cannot be blank.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
@@ -389,8 +389,8 @@
 			//	their username, but not their password, this will be caught by checkPostFieldData
 			if(!empty($password) || is_null($entry_id)) {
 				return array(
-					'password' 	=> $this->encodePassword($password),
-					'strength' 	=> $this->checkPassword($password),
+					'password'	=> $this->encodePassword($password),
+					'strength'	=> $this->checkPassword($password),
 					'length'	=> strlen($password)
 				);
 			}
@@ -416,8 +416,8 @@
 			if(empty($data)) return __('None');
 
 			return parent::prepareTableValue(array(
-                'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
-            ), $link);
+				'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
+			), $link);
 		}
 
 
@@ -429,28 +429,28 @@
 
 			$field_id = $this->get('id');
 
-            if($andOperation) {
+			if($andOperation) {
 				foreach($data as $key => $value) {
-                    $this->_key++;
-                    $value = $this->encodePassword($value);
+					$this->_key++;
+					$value = $this->encodePassword($value);
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
 					$where .= " AND `t$field_id$key`.password = '$value' ";
 				}
 
 			}
-            else {
-                if (is_array($data) and isset($data['password'])) {
-                    $data = array($data['password']);
-                }
-                else if (!is_array($data)) {
-                    $data = array($data);
-                }
+			else {
+				if (is_array($data) and isset($data['password'])) {
+					$data = array($data['password']);
+				}
+				else if (!is_array($data)) {
+					$data = array($data);
+				}
 
-                foreach ($data as &$value) {
-                    $value = $this->encodePassword($value);
-                }
+				foreach ($data as &$value) {
+					$value = $this->encodePassword($value);
+				}
 
-                $data = implode("', '", $data);
+				$data = implode("', '", $data);
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
 				$where .= " AND `t$field_id`.password IN ('{$data}') ";
 			}

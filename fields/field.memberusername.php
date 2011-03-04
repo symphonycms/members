@@ -4,8 +4,6 @@
 
 	Class fieldMemberUsername extends Identity {
 
-		static private $_driver;
-
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
@@ -13,34 +11,7 @@
 		public function __construct(&$parent){
 			parent::__construct($parent);
 			$this->_name = __('Member: Username');
-			$this->_required = true;
 			$this->set('required', 'yes');
-
-			if(!(self::$_driver instanceof Extension)){
-				if(class_exists('Frontend')){
-					self::$_driver = Frontend::instance()->ExtensionManager->create('members');
-				}
-
-				else{
-					self::$_driver = Administration::instance()->ExtensionManager->create('members');
-				}
-			}
-		}
-
-		function canFilter(){
-			return true;
-		}
-
-		function allowDatasourceParamOutput(){
-			return true;
-		}
-
-		function canPrePopulate(){
-			return true;
-		}
-
-		public function mustBeUnique(){
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -52,10 +23,10 @@
 				CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `username` varchar(150) default NULL,
+				  `value` varchar(255) default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
-				  UNIQUE KEY `username` (`username`)
+				  UNIQUE KEY `username` (`value`)
 				) ENGINE=MyISAM;
 			");
 		}
@@ -65,16 +36,6 @@
 	-------------------------------------------------------------------------*/
 
 		/**
-		 * Given a Member ID, return Member
-		 *
-		 * @param integer $member_id
-		 * @return Entry
-		 */
-		public function fetchMemberFromID($member_id){
-			return self::$_driver->Member->initialiseMemberObject($member_id);
-		}
-
-		/**
 		 * Given a `$needle`, this function will return the Member object.
 		 * If the `$needle` passed is an array, this function expects a
 		 * key of 'username'
@@ -82,7 +43,7 @@
 		 * @param string|array $needle
 		 * @return Entry
 		 */
-		public function fetchMemberIDBy($needle){
+		public function fetchMemberIDBy($needle) {
 			if(is_array($needle)) {
 				extract($needle);
 			}
@@ -91,7 +52,7 @@
 			}
 
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `username` = '%s' LIMIT 1",
+				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
 				$this->get('id'), Symphony::Database()->cleanValue($username)
 			));
 
@@ -108,10 +69,6 @@
 			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
 			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
-		}
-
-		public function checkFields(&$errors, $checkForDuplicates = true) {
-			parent::checkFields($errors, $checkForDuplicates);
 		}
 
 		public function commit(){
@@ -139,63 +96,31 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Publish:
-	-------------------------------------------------------------------------*/
-
-		public function displayPublishPanel(&$wrapper, $data=NULL, $error =NULL, $prefix =NULL, $postfix =NULL, $entry_id = null){
-			$required = ($this->get('required') == 'yes');
-			$field_id = $this->get('id');
-			$handle = $this->get('element_name');
-
-			$container = new XMLElement('div');
-			$container->setAttribute('class', 'container');
-
-		//	Username
-			$label = Widget::Label(__('Username'));
-			if(!$required) $label->appendChild(new XMLElement('i', __('Optional')));
-
-			$label->appendChild(Widget::Input(
-				"fields{$prefix}[{$handle}][username]{$postfix}", $data['username']
-			));
-
-			$container->appendChild($label);
-
-		//	Error?
-			if(!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($container, $error);
-				$wrapper->appendChild($label);
-			}
-			else {
-				$wrapper->appendChild($container);
-			}
-		}
-
-	/*-------------------------------------------------------------------------
 		Input:
 	-------------------------------------------------------------------------*/
 
 		public function checkPostFieldData($data, &$message, $entry_id = null){
 			$message = null;
-			$required = ($this->get('required') == "yes");
 
-			$username = trim($data['username']);
+			$username = trim($data);
 
 			//	If the field is required, we should have both a $username and $password.
-			if($required && empty($username)) {
-				$message = __('Username is a required field.');
+			if(($this->get('required') == "yes") && empty($username)) {
+				$message = __('% is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
 			//	Check Username
 			if(!empty($username)) {
 				if($this->get('validator') && !General::validateString($username, $this->get('validator'))) {
-					$message = __('Username contains invalid characters.');
+					$message = __('%s contains invalid characters.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
 
 				$existing = $this->fetchMemberIDBy($username);
 
-				//	If there is an existing username, and it's not the current object (editing), error.
+				// If there is an existing username, and it's not the current object (editing), error.
+				// @todo This isn't working as expected.
 				if($existing !== $entry_id) {
 					$message = __('That username is already taken.');
 					return self::__INVALID_FIELDS__;
@@ -205,94 +130,18 @@
 			return self::__OK__;
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id = null){
-			$status = self::__OK__;
-
-			if(empty($data)) return array();
-
-			$username = trim($data['username']);
-
-			return array(
-				'username' 	=> $username,
-			);
-		}
-
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-			if(!isset($data['username'])) return;
+			if(!isset($data['value'])) return;
+
 			$wrapper->appendChild(
 				new XMLElement(
 					$this->get('element_name'),
-					General::sanitize($data['username'])
+					General::sanitize($data['value'])
 			));
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL){
-			if(empty($data)) return __('None');
-
-			return parent::prepareTableValue(array('value' => General::sanitize($data['username'])), $link);
-		}
-
-	/*-------------------------------------------------------------------------
-		Sorting:
-	-------------------------------------------------------------------------*/
-
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `$sort_field` ON (`e`.`id` = `ed`.`entry_id`) ";
-			$sort .= (strtolower($order) == 'random' ? 'RAND()' : "`ed`.`username` $order");
-		}
-
-	/*-------------------------------------------------------------------------
-		Filtering:
-	-------------------------------------------------------------------------*/
-
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
-
-			$field_id = $this->get('id');
-
-			// Filter is an regexp.
-			if(self::isFilterRegex($data[0])) {
-				$pattern = str_replace('regexp:', '', $data[0]);
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND (`t$field_id`.username REGEXP '$pattern' OR `t$field_id`.entry_id REGEXP '$pattern') ";
-			}
-
-			// Filter has + in it.
-			else if($andOperation) {
-				foreach($data as $key => $bit){
-					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
-					$where .= " AND (`t$field_id$key`.username = '$bit' OR `t$field_id`.entry_id = '$bit') ";
-				}
-			}
-
-			// Normal
-			else {
-				if(!is_array($data)) {
-					$data = array($data);
-				}
-
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND (
-							`t$field_id`.username IN ('".implode("', '", $data)."')
-							OR `t$field_id`.entry_id IN ('".implode("', '", $data)."')
-							) ";
-			}
-
-			return true;
-		}
-
-	/*-------------------------------------------------------------------------
-		Events:
-	-------------------------------------------------------------------------*/
-
-		public function getExampleFormMarkup(){
-
-			$label = Widget::Label('Username');
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][username]'));
-
-			return $label;
-		}
 	}

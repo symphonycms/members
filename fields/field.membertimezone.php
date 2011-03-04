@@ -117,7 +117,7 @@
 				$groups[] = array('label' => ucwords(strtolower($zone)), 'options' => $options);
 			}
 
-			$label = new XMLElement('label', __('Timezone'));
+			$label = new XMLElement('label', $this->get('label'));
 			$label->appendChild(Widget::Select(
 				"fields{$prefix}[{$this->get('element_name')}]{$postfix}", $groups
 			));
