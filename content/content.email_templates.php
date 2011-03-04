@@ -46,15 +46,15 @@
 			}
 
 			else {
-
 				foreach($templates as $template) {
+
 					$td1 = Widget::TableData(Widget::Anchor(
 						$template->get('subject'), extension_members::baseURL() . 'email_templates/edit/' . $template->get('id') . '/', NULL, 'content'
 					));
 
 					$td1->appendChild(Widget::Input("items[{$template->get('id')}]", null, 'checkbox'));
 
-					$td2 = Widget::TableData($template->get('type'));
+					$td2 = Widget::TableData(ucwords(str_replace('-', ' ', $template->get('type'))));
 
 					$template_roles = $template->get('roles');
 					if(empty($template_roles)) {
@@ -67,7 +67,7 @@
 								$role->get('name'),
 								extension_members::baseURL() . 'roles/edit/' . $role->get('id') . '/',
 								__('Edit this role')
-							);
+							)->generate(true);
 						}
 						$td3 = Widget::TableData(implode(', ', $links));
 					}
@@ -150,9 +150,7 @@
 			}
 
 			// Has the form got any errors?
-			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
-
-			if($formHasErrors) $this->pageAlert(
+			if(is_array($this->_errors) && !empty($this->_errors)) $this->pageAlert(
 				__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR
 			);
 

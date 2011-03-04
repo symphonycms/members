@@ -5,7 +5,7 @@
 		private static $_pool = array();
 
 		public static function add(Array $data) {
-			Symphony::Database()->insert($data['email_templates'], 'tbl_email_templates');
+			Symphony::Database()->insert($data['email_templates'], 'tbl_members_email_templates');
 			$template_id = Symphony::Database()->getInsertID();
 
 			$roles = $data['email_templates_role_mapping']['roles'];
@@ -15,7 +15,7 @@
 							'email_template_id' => $template_id,
 							'role_id' => $role_id
 						),
-						'`tbl_members_email_templates_role_mapping`'
+						'tbl_members_email_templates_role_mapping'
 					);
 				}
 			}
@@ -26,9 +26,9 @@
 		public static function edit($template_id = null, Array $data) {
 			if(is_null($template_id)) return false;
 
-			Symphony::Database()->update($data['email_templates'], 'tbl_email_templates', "`id` = " . $template_id);
+			Symphony::Database()->update($data['email_templates'], 'tbl_members_email_templates', "`id` = " . $template_id);
 
-			Symphony::Database()->delete("`tbl_members_email_templates_role_mapping`", "`email_template_id` = " . $template_id);
+			Symphony::Database()->delete('tbl_members_email_templates_role_mapping', "`email_template_id` = " . $template_id);
 			$roles = $data['email_templates_role_mapping']['roles'];
 			if(is_array($roles) && !empty($roles)) {
 				foreach($roles as $role_id){
@@ -36,7 +36,7 @@
 							'email_template_id' => $template_id,
 							'role_id' => $role_id
 						),
-						'`tbl_members_email_templates_role_mapping`'
+						'tbl_members_email_templates_role_mapping'
 					);
 				}
 			}
@@ -49,11 +49,11 @@
 			return true;
 		}
 
-		public static function fetch($template_id = null, $type = null, $roles = array()) {
+		public static function fetch($template_id = null, $type = null, Array $roles = array()) {
 			$result = array();
 			$return_single = true;
 
-			if(is_null($role_id)) $return_single = false;
+			if(is_null($template_id)) $return_single = false;
 
 			if($return_single) {
 				// Check static cache for object
@@ -63,13 +63,38 @@
 
 				// No cache object found
 				if(!$templates = Symphony::Database()->fetch(sprintf("
-						SELECT * FROM `tbl_members_email_templates` WHERE `id` = %d ORDER BY `id` ASC LIMIT 1",
-						$template_id
+						SELECT et.* FROM `tbl_members_email_templates` AS et
+						WHERE `id` = %d
+						%s
+						%s
+						ORDER BY `id` ASC
+						LIMIT 1",
+						$template_id,
+						(!is_null($type) ? "AND `type` = '" . Symphony::Database()->cleanValue($type) . "'" : ''),
+						(!empty($roles) ? "AND EXISTS (
+							SELECT `id`
+							FROM `tbl_members_email_templates_role_mapping` AS `etm`
+							WHERE etm.email_template_id = et.id
+							AND `role_id` IN ('" . implode(',', $roles) . "')
+						)" : '')
 					))
 				) return array();
 			}
 			else {
-				$templates = Symphony::Database()->fetch("SELECT * FROM `tbl_members_email_templates` ORDER BY `id` ASC");
+				$templates = Symphony::Database()->fetch(sprintf("
+					SELECT et.* FROM `tbl_members_email_templates` AS et
+					WHERE 1=1
+					%s
+					%s
+					ORDER BY `id` ASC",
+					(!is_null($type) ? "AND `type` = '" . Symphony::Database()->cleanValue($type) . "'" : ''),
+					(!empty($roles) ? "AND EXISTS (
+						SELECT `id`
+						FROM `tbl_members_email_templates_role_mapping` AS `etm`
+						WHERE etm.email_template_id = et.id
+						AND `role_id` IN ('" . implode(',', $roles) . "')
+					)" : '')
+				));
 			}
 
 			foreach($templates as $template) {
@@ -78,7 +103,7 @@
 					EmailTemplateManager::$_pool[$template['id']]->getRoles();
 				}
 
-				$result[] = EmailTemplateManager::$_pool[$role['id']];
+				$result[] = EmailTemplateManager::$_pool[$template['id']];
 			}
 
 			return $return_single ? current($result) : $result;
@@ -123,9 +148,9 @@
 
 			$et_roles = array();
 			foreach($roles as $role_id) {
-				$role = RoleManager::fetch($role_id);
+				$role = RoleManager::fetch($role_id['role_id']);
 
-				if($role) $et_roles[$role_id] = $role;
+				if($role) $et_roles[$role_id['role_id']] = $role;
 			}
 
 			$this->set('roles', $et_roles);
