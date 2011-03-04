@@ -93,10 +93,7 @@
 			$field_id = $this->get('id');
 			$handle = $this->get('element_name');
 
-			$container = new XMLElement('div');
-			$container->setAttribute('class', 'container');
-
-		//	Identity
+			// Identity
 			$label = Widget::Label($this->get('label'));
 			if(!($this->get('required') == 'yes')) $label->appendChild(new XMLElement('i', __('Optional')));
 
@@ -104,15 +101,12 @@
 				"fields{$prefix}[{$handle}]{$postfix}", $data['value']
 			));
 
-			$container->appendChild($label);
-
-		//	Error?
+			// Error?
 			if(!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($container, $error);
-				$wrapper->appendChild($label);
+				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
 			}
 			else {
-				$wrapper->appendChild($container);
+				$wrapper->appendChild($label);
 			}
 		}
 

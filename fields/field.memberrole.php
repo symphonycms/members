@@ -160,8 +160,8 @@
 				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
 			);
 
-			if($flagWithError != NULL) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
+			if(!is_null($error)) {
+				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);

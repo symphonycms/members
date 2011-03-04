@@ -111,7 +111,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $error =NULL, $prefix =NULL, $postfix =NULL, $entry_id = null){
+		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
 			$zones = explode(",", $this->get('available_zones'));
 
 			$groups = array();
@@ -139,11 +139,12 @@
 				"fields{$prefix}[{$this->get('element_name')}]{$postfix}", $groups
 			));
 
-			if(!is_null($flagWithError)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
+			if(!is_null($error)) {
+				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
 			}
-			else $wrapper->appendChild($label);
-
+			else {
+				$wrapper->appendChild($label);
+			}
 		}
 
 	/*-------------------------------------------------------------------------
