@@ -176,7 +176,7 @@
 
 		public function getExampleFormMarkup(){
 
-			$label = Widget::Label('Password');
+			$label = Widget::Label($this->get('label'));
 			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][password]', NULL, 'password'));
 
 			return $label;
@@ -195,7 +195,7 @@
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
 
-			$label = Widget::Label('Minimum Length');
+			$label = Widget::Label(__('Minimum Length'));
 			$label->appendChild(Widget::Input(
 				"fields[{$order}][length]", $this->get('length')
 			));
@@ -210,7 +210,7 @@
 				$value[1] = $value[0] == $this->get('strength');
 			}
 
-			$label = Widget::Label('Minimum Strength');
+			$label = Widget::Label(__('Minimum Strength'));
 			$label->appendChild(Widget::Select(
 				"fields[{$order}][strength]", $values
 			));
@@ -220,7 +220,7 @@
 
 		// Salt ---------------------------------------------------------------
 
-			$label = Widget::Label('Password Salt');
+			$label = Widget::Label(__('Password Salt'));
 			$input = Widget::Input(
 				"fields[{$order}][salt]", $this->get('salt')
 			);
@@ -247,7 +247,7 @@
 			$this->rememberSalt();
 
 			if (trim($this->get('salt')) == '') {
-				$errors['salt'] = 'This is a required field.';
+				$errors['salt'] = __('This is a required field.');
 			}
 		}
 
