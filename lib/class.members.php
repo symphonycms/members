@@ -70,19 +70,6 @@
 		Finding:
 	-------------------------------------------------------------------------*/
 
-		public function findMemberIDFromEmail($email = null){
-			if(is_null($email)) return null;
-
-			$entry_id = Symphony::Database()->fetchCol('entry_id', sprintf("
-					SELECT `entry_id`
-					FROM `tbl_entries_data_%d`
-					WHERE `value` = '%s'
-				", extension_Members::getConfigVar('email'), Symphony::Database()->cleanValue($email)
-			));
-
-			return (is_null($entry_id) ? null : $entry_id);
-		}
-
 		public function fetchMemberFromID($member_id = null) {
 			if(!is_null($member_id)) {
 				$Member = self::$driver->em->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
@@ -94,34 +81,6 @@
 			}
 
 			return null;
-		}
-
-		/**
-		 * Returns an Entry object given an array of credentials
-		 *
-		 * @param array $credentials
-		 * @return integer
-		 */
-		public function findMemberIDFromCredentials(Array $credentials) {
-			extract($credentials);
-
-			// It's expected that $password is sha1'd and salted.
-			if(is_null($username) || is_null($password)) return null;
-
-			$identity = self::$driver->fm->fetch(extension_Members::getConfigVar('identity'));
-
-			// Member from Username
-			$member = $identity->fetchMemberIDBy($credentials);
-
-			if(is_null($member)) return null;
-
-			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
-
-			if(is_null($auth)) return $member;
-
-			$member = $auth->fetchMemberIDBy($credentials, $member);
-
-			return $member;
 		}
 
 		/**

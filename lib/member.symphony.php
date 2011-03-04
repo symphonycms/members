@@ -6,56 +6,84 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Utilities:
+		Finding:
 	-------------------------------------------------------------------------*/
-		public static function usernameField(){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection(). " AND `type` = 'memberusername' LIMIT 1");
-		}
 
-		public static function usernameFieldHandle(){
-			return Symphony::Database()->fetchVar('element_name', 0, "SELECT `element_name` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection() ." AND `type` = 'member' LIMIT 1");
-		}
+		/**
+		 * Returns an Entry object given an array of credentials
+		 *
+		 * @param array $credentials
+		 * @return integer
+		 */
+		public function findMemberIDFromCredentials(Array $credentials) {
+			extract($credentials);
 
-		public static function passwordField(){
-			return Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection(). " AND `type` = 'memberpassword' LIMIT 1");
-		}
+			// It's expected that $password is sha1'd and salted.
+			if((is_null($username) && is_null($email)) || is_null($password)) return null;
 
-		public static function passwordFieldHandle(){
-			return Symphony::Database()->fetchVar('element_name', 0, "SELECT `element_name` FROM `tbl_fields` WHERE `parent_section` = ". extension_Members::getMembersSection() ." AND `type` = 'memberpassword' LIMIT 1");
-		}
+			// Login with username
+			if(is_null($email)) {
+				$identity = self::$driver->fm->fetch(extension_Members::getConfigVar('identity'));
+			}
+			else if (is_null($username)) {
+				$identity = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
+			}
 
-		public static function getSalt() {
-			return Symphony::Database()->fetchVar('salt', 0, sprintf("
-					SELECT `salt`
-					FROM `tbl_fields_memberpassword`
-					WHERE `field_id` = %d
-					LIMIT 1
-				", self::passwordField()
-			));
+			if(!$identity instanceof Field) return null;
+
+			// Member from Username
+			$member = $identity->fetchMemberIDBy($credentials);
+
+			if(is_null($member)) return null;
+
+			// Validate against Password
+			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+
+			if(is_null($auth)) return $member;
+
+			$member = $auth->fetchMemberIDBy($credentials, $member);
+
+			return $member;
 		}
 
 	/*-------------------------------------------------------------------------
 		Authentication:
 	-------------------------------------------------------------------------*/
+
 		public function login(Array $credentials){
 			extract($credentials);
 
-			$username = Symphony::Database()->cleanValue($username);
-			$password = Symphony::Database()->cleanValue($password);
+			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
 
-			if($id = $this->findMemberIDFromCredentials(array(
-					'username' => $username,
-					'password' => sha1(self::getSalt() . $password)
-				))
-			) {
+			$data = array(
+				'password' => $auth->encodePassword($password)
+			);
+
+			if(isset($username)) {
+				$username = Symphony::Database()->cleanValue($username);
+				$data['username'] = $username;
+			}
+			else if(isset($email)) {
+				$email = Symphony::Database()->cleanValue($email);
+				$data['email'] = $email;
+			}
+
+			if($id = $this->findMemberIDFromCredentials($data)) {
 				try{
-					self::$member_id = $member->$id;
+					self::$member_id = $id;
 					$this->initialiseCookie();
 					$this->initialiseMemberObject();
 
 					$this->cookie->set('id', $id);
-					$this->cookie->set('username', $username);
-					$this->cookie->set('password', sha1(self::getSalt() . $password));
+
+					if(isset($username)) {
+						$this->cookie->set('username', $data['username']);
+					}
+					else {
+						$this->cookie->set('email', $data['email']);
+					}
+
+					$this->cookie->set('password', $data['password']);
 
 					self::$isLoggedIn = true;
 
@@ -77,11 +105,18 @@
 
 			$this->initialiseCookie();
 
-			if($id = $this->findMemberIDFromCredentials(array(
-				'username' => $this->cookie->get('username'),
+			$data = array(
 				'password' => $this->cookie->get('password')
-				))
-			) {
+			);
+
+			if(!is_null($this->cookie->get('username'))) {
+				$data['username'] = $this->cookie->get('username');
+			}
+			else {
+				$data['email'] = $this->cookie->get('email');
+			}
+
+			if($id = $this->findMemberIDFromCredentials($data)) {
 				self::$member_id = $id;
 				self::$isLoggedIn = true;
 				return true;
@@ -97,7 +132,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function sendNewRegistrationEmail(Entry $entry, Role $role, Array $fields = array()) {
-			$email_template = EmailTemplate::find(
+			/*$email_template = EmailTemplate::find(
 				($role->id() == extension_Members::INACTIVE_ROLE_ID ? 'activate-account' : 'welcome'),
 				$role->id()
 			);
@@ -110,11 +145,11 @@
 				"{$member_field_handle}::username" => $fields[$member_field_handle]['username'],
 				'code' => extension_Members::generateCode($entry->get('id')),
 				'site-name' => Symphony::Configuration()->get('sitename', 'general')
-			));
+			));*/
 		}
 
 		public function sendNewPasswordEmail(Entry $entry, Role $role) {
-			$new_password = General::generatePassword();
+			/*$new_password = General::generatePassword();
 
 			// Attempt to update the password
 			Symphony::Database()->query(sprintf(
@@ -134,11 +169,11 @@
 				"{$member_field_handle}::username" => $entry->getData($member_field_handle, true)->username,
 				'new-password' => $new_password,
 				'site-name' => Symphony::Configuration()->get('sitename', 'general')
-			));
+			));*/
 		}
 
 		public function sendResetPasswordEmail(Entry $entry, Role $role) {
-			$email_template = EmailTemplate::find('reset-password', $role->id());
+			/*$email_template = EmailTemplate::find('reset-password', $role->id());
 			$member_field_handle = self::usernameFieldHandle();
 
 			if(!$email_template instanceof EmailTemplate) return null;
@@ -149,7 +184,7 @@
 				'code' => extension_Members::generateCode($entry->get('id')),
 				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			));
-
+		*/
 		}
 
 	}
