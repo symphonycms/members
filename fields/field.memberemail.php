@@ -26,7 +26,6 @@
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberemail` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
-				  `options` ENUM('unique', 'unique-and-identify') DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -73,10 +72,6 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$group = new XMLElement('div', null, array('class' => 'group'));
-			$this->buildIdentitySelect($group);
-			$wrapper->appendChild($group);
-
 			$this->appendRequiredCheckbox($wrapper);
 			$this->appendShowColumnCheckbox($wrapper);
 		}
@@ -91,8 +86,7 @@
 			fieldMemberEmail::createSettingsTable();
 
 			$fields = array(
-				'field_id' => $id,
-				'options' => $this->get('options')
+				'field_id' => $id
 			);
 
 			Symphony::Configuration()->set('email', $id, 'members');
@@ -132,16 +126,13 @@
 					return self::__INVALID_FIELDS__;
 				}
 
-				// If this field has any options (unique or unique & identify), we need to make sure the
-				// value doesn't already exist in the Section.
-				if(!is_null($this->get('options'))) {
-					$existing = $this->fetchMemberIDBy($email);
+				// We need to make sure the value doesn't already exist in the Section.
+				$existing = $this->fetchMemberIDBy($email);
 
-					// If there is an existing username, and it's not the current object (editing), error.
-					if(!is_null($existing) && $existing != $entry_id) {
-						$message = __('That %s is already taken.', array($this->get('label')));
-						return self::__INVALID_FIELDS__;
-					}
+				// If there is an existing username, and it's not the current object (editing), error.
+				if(!is_null($existing) && $existing != $entry_id) {
+					$message = __('That %s is already taken.', array($this->get('label')));
+					return self::__INVALID_FIELDS__;
 				}
 			}
 
