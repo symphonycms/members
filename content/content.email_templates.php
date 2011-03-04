@@ -159,7 +159,7 @@
 			$this->setPageType('form');
 
 			if($isNew) {
-				$this->setTitle(__('Symphony &ndash; Email Templates &ndash; '));
+				$this->setTitle(__('Symphony &ndash; Email Templates'));
 
 				$fields = array(
 					'subject' => null,
@@ -169,7 +169,7 @@
 				);
 			}
 			else {
-				$this->setTitle(__('Symphony &ndash; Member Roles &ndash; ') . $existing->get('subject'));
+				$this->setTitle(__('Symphony &ndash; Email Templates &ndash; ') . $existing->get('subject'));
 				$this->appendSubheading($existing->get('subject'));
 
 				if(isset($_POST['fields'])){

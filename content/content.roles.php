@@ -195,7 +195,7 @@
 			$this->setPageType('form');
 
 			if($isNew) {
-				$this->setTitle(__('Symphony &ndash; Member Roles &ndash; '));
+				$this->setTitle(__('Symphony &ndash; Member Roles'));
 
 				$fields = array(
 					'name' => null,
