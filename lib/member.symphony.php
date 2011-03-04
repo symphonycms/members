@@ -1,10 +1,32 @@
 <?php
 
 	Class SymphonyMember extends Members {
+
+		protected static $identity_field = null;
+
 		public function __construct($driver) {
 			parent::__construct($driver);
 		}
 
+	/*-------------------------------------------------------------------------
+		Utilities:
+	-------------------------------------------------------------------------*/
+
+		public static function setIdentityField(Array $credentials) {
+			extract($credentials);
+
+			if(!is_null(SymphonyMember::$identity_field)) return SymphonyMember::$identity_field;
+
+			// Login with username
+			if(is_null($email)) {
+				SymphonyMember::$identity_field = self::$driver->fm->fetch(extension_Members::getConfigVar('identity'));
+			}
+			else if (is_null($username)) {
+				SymphonyMember::$identity_field = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
+			}
+
+			return SymphonyMember::$identity_field;
+		}
 	/*-------------------------------------------------------------------------
 		Finding:
 	-------------------------------------------------------------------------*/
@@ -21,13 +43,7 @@
 			// It's expected that $password is sha1'd and salted.
 			if((is_null($username) && is_null($email)) || is_null($password)) return null;
 
-			// Login with username
-			if(is_null($email)) {
-				$identity = self::$driver->fm->fetch(extension_Members::getConfigVar('identity'));
-			}
-			else if (is_null($username)) {
-				$identity = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
-			}
+			$identity = SymphonyMember::setIdentityField($credentials);
 
 			if(!$identity instanceof Field) return null;
 
@@ -130,59 +146,80 @@
 	-------------------------------------------------------------------------*/
 
 		public function sendNewRegistrationEmail(Entry $entry, Role $role, Array $fields = array()) {
-			/*$email_template = EmailTemplate::find(
-				($role->id() == extension_Members::INACTIVE_ROLE_ID ? 'activate-account' : 'welcome'),
-				$role->id()
+			// Setup default `$vars` to be used for tokens
+			$vars = array(
+				'root' => URL,
+				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			);
-			$member_field_handle = self::usernameFieldHandle();
+
+			// If there is an activiation field, we'll need to the send the Activate Account template
+			// not the Welcome template to the user.
+			if(is_null(extension_Members::getConfigVar('activation'))) {
+				$email_template = current(EmailTemplateManager::fetch(null, 'activate-account', $role->get('id')));
+
+				// Add activiation code to the `$vars`
+				$act_field = self::$driver->fm->fetch(extension_Members::getConfigVar('activation'));
+				$code = $act_field->generateCode($entry->get('id'));
+				$vars['code'] = $code['code'];
+			}
+
+			// No activation required, just send a Welcome email template.
+			else {
+				$email_template = current(EmailTemplateManager::fetch(null, 'welcome', $role->get('id')));
+			}
 
 			if(!$email_template instanceof EmailTemplate) return null;
 
-			return $email_template->send($entry->get('id'), array(
-				'root' => URL,
-				"{$member_field_handle}::username" => $fields[$member_field_handle]['username'],
-				'code' => extension_Members::generateCode($entry->get('id')),
-				'site-name' => Symphony::Configuration()->get('sitename', 'general')
-			));*/
+			// Get the Identity field object so we can map the $_POST data to a
+			// token for use in the Email body.
+			$identity = SymphonyMember::setIdentityField($fields);
+			$member_field_handle = $identity->get('element_name');
+			$vars[$member_field_handle] = $fields[$member_field_handle];
+
+			// Send Email
+			return $email_template->send($entry->get('id'), $vars);
 		}
 
 		public function sendNewPasswordEmail(Entry $entry, Role $role) {
-			/*$new_password = General::generatePassword();
+			// Setup default `$vars` to be used for tokens
+			$vars = array(
+				'root' => URL,
+				'site-name' => Symphony::Configuration()->get('sitename', 'general')
+			);
+
+			$new_password = General::generatePassword();
+			$vars['new-password'] = $new_password;
 
 			// Attempt to update the password
-			Symphony::Database()->query(sprintf(
-				"UPDATE `tbl_entries_data_%d` SET `password` = '%s' WHERE `entry_id` = %d LIMIT 1",
-				self::passwordField(),
-				sha1(self::getSalt() . $new_password),
-				$member_id
-			));
+			$auth = extension_Members::getConfigVar('authentication');
+			$data = $auth->processRawFieldData(array('password' => $new_password));
+			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), '`entry_id` = ' . $entry->get('id'));
 
-			$email_template = EmailTemplate::find('new-password', $role->id());
-			$member_field_handle = self::usernameFieldHandle();
+			// Get Template for a New Password for this Role
+			$email_template = current(EmailTemplateManager::fetch(null, 'new-password', $role->get('id')));
 
 			if(!$email_template instanceof EmailTemplate) return null;
 
-			return $email_template->send($entry->get('id'), array(
-				'root' => URL,
-				"{$member_field_handle}::username" => $entry->getData($member_field_handle, true)->username,
-				'new-password' => $new_password,
-				'site-name' => Symphony::Configuration()->get('sitename', 'general')
-			));*/
+			return $email_template->send($entry->get('id'), $vars);
 		}
 
 		public function sendResetPasswordEmail(Entry $entry, Role $role) {
-			/*$email_template = EmailTemplate::find('reset-password', $role->id());
-			$member_field_handle = self::usernameFieldHandle();
+			// Setup default `$vars` to be used for tokens
+			$vars = array(
+				'root' => URL,
+				'site-name' => Symphony::Configuration()->get('sitename', 'general')
+			);
+
+			$email_template = current(EmailTemplateManager::find(null'reset-password', $role->get('id')));
 
 			if(!$email_template instanceof EmailTemplate) return null;
 
-			return $email_template->send($entry->get('id'), array(
-				'root' => URL,
-				"{$member_field_handle}::username" => $entry->getData($member_field_handle, true)->username,
-				'code' => extension_Members::generateCode($entry->get('id')),
-				'site-name' => Symphony::Configuration()->get('sitename', 'general')
-			));
-		*/
+			// Add activiation code to the `$vars`
+			$act_field = self::$driver->fm->fetch(extension_Members::getConfigVar('activation'));
+			$code = $act_field->generateCode($entry->get('id'));
+			$vars['code'] = $code['code'];
+
+			return $email_template->send($entry->get('id'), $vars);
 		}
 
 	}

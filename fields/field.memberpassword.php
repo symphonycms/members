@@ -196,7 +196,7 @@
 
 		// Strength -----------------------------------------------------------
 
-			$values = $this->_strengths;
+			$values = fieldMemberPassword::$_strengths;
 
 			foreach ($values as &$value) {
 				$value[1] = $value[0] == $this->get('strength');
@@ -266,7 +266,13 @@
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
+		}
 
+		public function fieldCleanup(){
+			Symphony::Configuration()->set('authentication', null, 'members');
+			Administration::instance()->saveConfig();
+
+			return true;
 		}
 
 	/*-------------------------------------------------------------------------

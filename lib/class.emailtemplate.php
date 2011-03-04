@@ -174,7 +174,7 @@
 					EmailTemplate::__replaceVarsInString($this->get('body'), $vars), $member
 				);
 
-				return $email->send();
+				var_dump($email->send());
 			}
 			catch(Exception $e){
 			    throw new SymphonyErrorPage('Error sending email. ' . $e->getMessage());

@@ -96,6 +96,13 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
+		public function fieldCleanup(){
+			Symphony::Configuration()->set('email', null, 'members');
+			Administration::instance()->saveConfig();
+
+			return true;
+		}
+
 	/*-------------------------------------------------------------------------
 		Input:
 	-------------------------------------------------------------------------*/

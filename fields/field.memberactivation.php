@@ -154,7 +154,9 @@
 					SELECT DISTINCT(code_expiry) FROM `tbl_fields_memberactivation`
 				"));
 
-				$default = array_merge($default, array_combine($used, $used));
+				if(is_array($used) && !empty($used)) {
+					$default = array_merge($default, array_combine($used, $used));
+				}
 			}
 			catch (DatabaseException $ex) {
 				// Table doesn't exist yet, it's ok we have defaults.
@@ -217,7 +219,13 @@
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
+		}
 
+		public function fieldCleanup() {
+			Symphony::Configuration()->set('activation', null, 'members');
+			Administration::instance()->saveConfig();
+
+			return true;
 		}
 
 	/*-------------------------------------------------------------------------

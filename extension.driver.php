@@ -135,6 +135,11 @@
 					'callback' => 'emailNewMember'
 				),
 				array(
+					'page' => '/blueprints/sections/',
+					'delegate' => 'SectionPreEdit',
+					'callback' => 'fieldCleanup'
+				),
+				array(
 					'page' => '/system/preferences/',
 					'delegate' => 'AddCustomPreferenceFieldsets',
 					'callback' => 'appendPreferences'
@@ -366,6 +371,36 @@
 			}
 		}
 
+		/**
+		 * There is no way for a Field to know that it's been deleted via the Section
+		 * Editor to do custom logic, so we'll have to do it ourselves through a delegate
+		 */
+		public function fieldCleanup($context) {
+			if($context['section_id'] != extension_Members::getMembersSection()) return;
+
+			$id_list = array();
+			if(is_array($context['fields']) && !empty($context['fields'])){
+				foreach($fields as $position => $data){
+					if(isset($data['id'])) $id_list[] = $data['id'];
+				}
+			}
+
+			$missing_fields = Symphony::Database()->fetchCol('id', sprintf("
+					SELECT `id` FROM `tbl_fields` WHERE `parent_section` = %d AND `id` NOT IN ('%s')
+				", $context['section_id'], implode("', '", $id_list)
+			));
+
+			if(is_array($missing_cfs) && !empty($missing_cfs)){
+				foreach($missing_cfs as $id){
+					$field = $this->fm->fetch($id);
+
+					if(!method_exists($field, 'fieldCleanup')) continue;
+
+					$field->fieldCleanup();
+				}
+			}
+		}
+
 	/*-------------------------------------------------------------------------
 		Role Manager:
 	-------------------------------------------------------------------------*/
@@ -453,7 +488,8 @@
 		}
 
 		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){
-			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
+			$role_data = $entry->getData(extension_Members::getConfigVar('role'));
+			if(!$role = RoleManager::fetch($role_data['role_id'])) return;
 
 			return $this->Member->sendNewRegistrationEmail($entry, $role, $fields);
 		}
@@ -463,7 +499,8 @@
 
 			if(!$entry instanceof Entry) throw new Exception('Invalid member ID specified');
 
-			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
+			$role_data = $entry->getData(extension_Members::getConfigVar('role'));
+			if(!$role = RoleManager::fetch($role_data['role_id'])) return;
 
 			return $this->Member->sendNewPasswordEmail($entry, $role);
 		}
@@ -473,7 +510,8 @@
 
 			if(!$entry instanceof Entry) throw new Exception('Invalid member ID specified');
 
-			if(!$role = RoleManager::fetch($entry->getData(extension_Members::getConfigVar('role'))->role_id)) return;
+			$role_data = $entry->getData(extension_Members::getConfigVar('role'));
+			if(!$role = RoleManager::fetch($role_data['role_id'])) return;
 
 			return $this->Member->sendResetPasswordEmail($entry, $role);
 		}
@@ -583,4 +621,3 @@
 		}
 
 	}
-
