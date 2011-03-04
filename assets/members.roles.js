@@ -1,5 +1,16 @@
+/**
+ * This code is fairly crude and definitely needs a lookover and tidy to fit
+ * with the Symphony pseudo standard!
+ * @todo Attack this code.
+ */
 jQuery(document).ready(function(){
-
+	
+	jQuery("form").submit(function() {
+	  if(jQuery("#with-selected").val() == "delete"){
+	    return confirm('There are still members in this role, are you sure you want to delete the role and all associated members?');
+	  }
+	});
+	
 	$ = jQuery;
 
 	$.fn.setSliderValue = function() {
