@@ -210,7 +210,7 @@
 				'site-name' => Symphony::Configuration()->get('sitename', 'general')
 			);
 
-			$email_template = current(EmailTemplateManager::find(null'reset-password', $role->get('id')));
+			$email_template = current(EmailTemplateManager::fetch(null, 'reset-password', $role->get('id')));
 
 			if(!$email_template instanceof EmailTemplate) return null;
 
