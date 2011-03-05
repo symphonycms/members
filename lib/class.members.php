@@ -15,11 +15,6 @@
 		// Finding
 		public function findMemberIDFromCredentials(Array $credentials);
 
-		// Emails
-		public function sendNewRegistrationEmail(Entry $entry, Role $role, Array $fields = array());
-		public function sendNewPasswordEmail(Entry $entry, Role $role);
-		public function sendResetPasswordEmail(Entry $entry, Role $role);
-
 		// Output
 		public function addMemberDetailsToPageParams(Array $context = null);
 		public function appendLoginStatusToEventXML(Array $context = null);
@@ -102,6 +97,7 @@
 	/*-------------------------------------------------------------------------
 		Authentication:
 	-------------------------------------------------------------------------*/
+
 		public function logout(){
 			if(is_null($this->cookie)) $this->initialiseCookie();
 

@@ -77,23 +77,13 @@
 		}
 
 		public function fetchNavigation(){
-			$navigation = array();
-
-			$navigation[] = array(
-				'location' 	=> __('System'),
-				'name' 		=> __('Member Roles'),
-				'link' 		=> '/roles/'
-			);
-
-			if(!is_null(extension_Members::getConfigVar('email'))) {
-				$navigation[] = array(
+			return array(
+				array(
 					'location' 	=> __('System'),
-					'name' 		=> __('Member Emails'),
-					'link' 		=> '/email_templates/'
-				);
-			}
-
-			return $navigation;
+					'name' 		=> __('Member Roles'),
+					'link' 		=> '/roles/'
+				)
+			);
 		}
 
 		public function getSubscribedDelegates(){
@@ -121,19 +111,9 @@
 					'delegate' => 'EventPreSaveFilter',
 					'callback' => 'checkEventPermissions'
 				),
-				array(
-					'page' => '/frontend/',
-					'delegate' => 'EventPostSaveFilter',
-					'callback' => 'processEventData'
-				),
 				/*
 					BACKEND
 				*/
-				array(
-					'page' => '/publish/new/',
-					'delegate' => 'EntryPostCreate',
-					'callback' => 'emailNewMember'
-				),
 				array(
 					'page' => '/blueprints/sections/',
 					'delegate' => 'SectionPreEdit',
@@ -198,23 +178,6 @@
 				  PRIMARY KEY  (`id`),
 				  KEY `role_id` (`role_id`,`page_id`)
 				) ENGINE=MyISAM;
-
-				DROP TABLE IF EXISTS `tbl_members_email_templates`;
-				CREATE TABLE  `tbl_members_email_templates` (
-					`id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-					`subject` VARCHAR( 255 ) NOT NULL ,
-					`body` LONGTEXT NOT NULL ,
-					`type` VARCHAR( 100 ) NOT NULL ,
-					INDEX (`type`)
-				) ENGINE=MyISAM;
-
-				DROP TABLE IF EXISTS `tbl_members_email_templates_role_mapping`;
-				CREATE TABLE  `tbl_members_email_templates_role_mapping` (
-					`id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-					`email_template_id` INT( 11 ) UNSIGNED NOT NULL ,
-					`role_id` INT( 11 ) UNSIGNED NOT NULL ,
-					INDEX (  `email_template_id` ,  `role_id` )
-				) ENGINE=MyISAM;
 			");
 		}
 
@@ -236,11 +199,9 @@
 					`tbl_fields_memberactivation`,
 					`tbl_fields_memberrole`,
 					`tbl_fields_membertimezone`,
-					`tbl_members_email_templates`,
 					`tbl_members_roles`,
 					`tbl_members_roles_event_permissions`,
 					`tbl_members_roles_forbidden_pages`,
-					`tbl_members_email_templates_role_mapping`;
 			");
 		}
 
@@ -480,53 +441,8 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Email Templates:
-	-------------------------------------------------------------------------*/
-
-		public function emailNewMember($context){
-			if($context['section']->get('id') == extension_Members::getMembersSection()) {
-				$this->sendNewRegistrationEmail($context['entry'], $context['fields']);
-			}
-		}
-
-		public function sendNewRegistrationEmail(Entry $entry, Array $fields = array()){
-			$role_data = $entry->getData(extension_Members::getConfigVar('role'));
-			if(!$role = RoleManager::fetch($role_data['role_id'])) return;
-
-			return $this->Member->sendNewRegistrationEmail($entry, $role, $fields);
-		}
-
-		public function sendNewPasswordEmail($member_id){
-			$entry = $this->Member->Member->fetchMemberFromID($member_id);
-
-			if(!$entry instanceof Entry) throw new Exception('Invalid member ID specified');
-
-			$role_data = $entry->getData(extension_Members::getConfigVar('role'));
-			if(!$role = RoleManager::fetch($role_data['role_id'])) return;
-
-			return $this->Member->sendNewPasswordEmail($entry, $role);
-		}
-
-		public function sendResetPasswordEmail($member_id){
-			$entry = $this->Member->Member->fetchMemberFromID($member_id);
-
-			if(!$entry instanceof Entry) throw new Exception('Invalid member ID specified');
-
-			$role_data = $entry->getData(extension_Members::getConfigVar('role'));
-			if(!$role = RoleManager::fetch($role_data['role_id'])) return;
-
-			return $this->Member->sendResetPasswordEmail($entry, $role);
-		}
-
-	/*-------------------------------------------------------------------------
 		Events:
 	-------------------------------------------------------------------------*/
-
-		public function processEventData($context){
-			if($context['event']->getSource() == extension_Members::getMembersSection() && isset($_POST['action']['members-register'])){
-				return $this->sendNewRegistrationEmail($context['entry'], $context['fields']);
-			}
-		}
 
 		public function checkEventPermissions($context){
 			/**
