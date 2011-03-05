@@ -3,7 +3,6 @@
 	include_once(TOOLKIT . '/class.entrymanager.php');
 	include_once(TOOLKIT . '/class.sectionmanager.php');
 
-	include_once(EXTENSIONS . '/members/lib/class.emailtemplate.php');
 	include_once(EXTENSIONS . '/members/lib/class.role.php');
 	include_once(EXTENSIONS . '/members/lib/class.members.php');
 
@@ -27,6 +26,11 @@
 		);
 
 		/**
+		 * @param boolean $failed_login_attempt
+		 */
+		public static $_failed_login_attempt = false;
+
+		/**
 		 * @param FieldManager $fm
 		 */
 		public $fm = null;
@@ -40,11 +44,6 @@
 		 * @param EntryManager $em
 		 */
 		public $em = null;
-
-		/**
-		 * @param boolean $failed_login_attempt
-		 */
-		public static $_failed_login_attempt = false;
 
 		/**
 		 * Only create a Member object on the Frontend of the site.
@@ -110,6 +109,21 @@
 					'page' => '/frontend/',
 					'delegate' => 'EventPreSaveFilter',
 					'callback' => 'checkEventPermissions'
+				),
+				array(
+					'page'		=> '/blueprints/events/new/',
+					'delegate'	=> 'AppendEventFilter',
+					'callback'	=> 'appendFilter'
+				),
+				array(
+					'page'		=> '/blueprints/events/edit/',
+					'delegate'	=> 'AppendEventFilter',
+					'callback'	=> 'appendFilter'
+				),
+				array(
+					'page'		=> '/frontend/',
+					'delegate'	=> 'EventPreSaveFilter',
+					'callback'	=> 'processData'
 				),
 				/*
 					BACKEND
@@ -186,14 +200,13 @@
 		 * database tables created by the Members extension
 		 *
 		 * @return boolean
-		 * @todo Missing the Email fields
 		 */
 		public function uninstall(){
 			Symphony::Configuration()->remove('members');
 			Administration::instance()->saveConfig();
 
 			return Symphony::Database()->query("
-				DROP TABLE
+				DROP TABLE IF EXISTS
 					`tbl_fields_memberusername`,
 					`tbl_fields_memberpassword`,
 					`tbl_fields_memberactivation`,
@@ -203,84 +216,6 @@
 					`tbl_members_roles_event_permissions`,
 					`tbl_members_roles_forbidden_pages`,
 			");
-		}
-
-	/*-------------------------------------------------------------------------
-		Preferences:
-	-------------------------------------------------------------------------*/
-
-		public function appendPreferences($context) {
-			$fieldset = new XMLElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(new XMLElement('legend', __('Members')));
-
-			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
-
-			$label = new XMLElement('label', __('Active Members Section'));
-
-			$sections = $this->sm->fetch();
-			$member_sections = array();
-
-			if(is_array($sections) && !empty($sections)) {
-				foreach($sections as $section) {
-					$schema = $section->fetchFieldsSchema();
-
-					foreach($schema as $field) {
-						// Possible @todo, check for the existance of the Identity field  instead of using this array
-						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
-
-						if(array_key_exists($section->get('id'), $member_sections)) continue;
-
-						$member_sections[$section->get('id')] = $section->get();
-					}
-				}
-			}
-
-			$options = array();
-			foreach($member_sections as $section_id => $section) {
-				$options[] = array($section['id'], ($section->get['id'] == extension_Members::getMembersSection()), $section['name']);
-			}
-
-			$label->appendChild(Widget::Select('settings[members][section]', $options));
-
-			$group->appendChild($label);
-
-			if(!is_null(extension_Members::getMembersSection())) {
-				$div = new XMLElement('div');
-
-				$options = array();
-
-				$fields = $this->fm->fetch(null, extension_Members::getMembersSection());
-
-				foreach($fields as $field) {
-					// Possible @todo, check that each field's validator is set to that of the email validator..
-					$options[] = array($field->get('id'), ($field->get('id') == extension_Members::getConfigVar('email')), $field->get('label'));
-				}
-
-				$label = new XMLElement('label', __('Email Field'));
-				$label->appendChild(Widget::Select('settings[members][email]', $options));
-				$div->appendChild($label);
-
-				$div->appendChild(
-					new XMLElement('p', __('Symphony will use this field\'s value to send emails to this Member'), array('class' => 'help'))
-				);
-
-				$group->appendChild($div);
-			}
-
-			$fieldset->appendChild($group);
-			$context['wrapper']->appendChild($fieldset);
-		}
-
-		public function savePreferences(){
-			$settings = $_POST['settings'];
-
-			$setting_group = 'members';
-
-			Symphony::Configuration()->set('section', $settings['members']['section'], $setting_group);
-			Symphony::Configuration()->set('email', $settings['members']['email'], $setting_group);
-			Administration::instance()->saveConfig();
 		}
 
 	/*-------------------------------------------------------------------------
@@ -298,7 +233,7 @@
 
         public static function getMembersSection() {
 			if(is_null(extension_Members::$members_section)) {
-				extension_Members::$members_section = Symphony::Configuration()->get('section', 'members');
+				extension_Members::$members_section = extension_Members::getConfigVar('section');
 			}
 
 			return extension_Members::$members_section;
@@ -337,6 +272,8 @@
 		/**
 		 * There is no way for a Field to know that it's been deleted via the Section
 		 * Editor to do custom logic, so we'll have to do it ourselves through a delegate
+		 *
+		 * @uses SectionPreEdit
 		 */
 		public function fieldCleanup($context) {
 			if($context['section_id'] != extension_Members::getMembersSection()) return;
@@ -362,6 +299,72 @@
 					$field->fieldCleanup();
 				}
 			}
+		}
+
+		/**
+		 * The Members extension provides a number of filters for users to add their
+		 * events to do various functionality. This negates the need for custom events
+		 *
+		 * @uses AppendEventFilter
+		 */
+		public function appendFilter($context) {
+
+		}
+
+	/*-------------------------------------------------------------------------
+		Preferences:
+	-------------------------------------------------------------------------*/
+
+		/**
+		 * Allows a user to select which section they would like to use as their
+		 * active members section. This allows developers to build multiple sections
+		 * for migration during development.
+		 *
+		 * @uses AddCustomPreferenceFieldsets
+		 * @todo Look at how this could be expanded so users can log into multiple
+		 * sections. This is not in scope for 1.0
+		 */
+		public function appendPreferences($context) {
+			$fieldset = new XMLElement('fieldset');
+			$fieldset->setAttribute('class', 'settings');
+			$fieldset->appendChild(new XMLElement('legend', __('Members')));
+
+			$label = new XMLElement('label', __('Active Members Section'));
+
+			$sections = $this->sm->fetch();
+			$member_sections = array();
+
+			if(is_array($sections) && !empty($sections)) {
+				foreach($sections as $section) {
+					$schema = $section->fetchFieldsSchema();
+
+					foreach($schema as $field) {
+						// Possible @todo, check for the existance of the Identity field  instead of using this array
+						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
+
+						if(array_key_exists($section->get('id'), $member_sections)) continue;
+
+						$member_sections[$section->get('id')] = $section->get();
+					}
+				}
+			}
+
+			$fieldset->appendChild($label);
+			$context['wrapper']->appendChild($fieldset);
+		}
+		
+		/**
+		 * Saves the Member Section to the configuration
+		 *
+		 * @uses savePreferences
+		 */
+		public function savePreferences(){
+			$settings = $_POST['settings'];
+
+			$setting_group = 'members';
+
+			Symphony::Configuration()->set('section', $settings['members']['section'], $setting_group);
+			Administration::instance()->saveConfig();
 		}
 
 	/*-------------------------------------------------------------------------
