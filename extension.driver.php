@@ -333,7 +333,6 @@
 
 			$sections = $this->sm->fetch();
 			$member_sections = array();
-
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
 					$schema = $section->fetchFieldsSchema();
@@ -349,10 +348,17 @@
 				}
 			}
 
+			$options = array();
+			foreach($member_sections as $section_id => $section) {
+  				$options[] = array($section['id'], ($section->get['id'] == extension_Members::getMembersSection()), $section['name']);
+			}
+
+			$label->appendChild(Widget::Select('settings[members][section]', $options));
+
 			$fieldset->appendChild($label);
 			$context['wrapper']->appendChild($fieldset);
 		}
-		
+
 		/**
 		 * Saves the Member Section to the configuration
 		 *
