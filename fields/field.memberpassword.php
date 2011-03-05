@@ -145,15 +145,23 @@
 		protected function rememberSalt() {
 			$field_id = $this->get('id');
 
-			$salt = Symphony::Database()->fetchVar('salt', 0, "
-				SELECT
-					f.salt
-				FROM
-					`tbl_fields_memberpassword` AS f
-				WHERE
-					f.field_id = '$field_id'
-				LIMIT 1
-			");
+			try {
+				$salt = Symphony::Database()->fetchVar('salt', 0, "
+					SELECT
+						f.salt
+					FROM
+						`tbl_fields_memberpassword` AS f
+					WHERE
+						f.field_id = '$field_id'
+					LIMIT 1
+				");
+			}
+			catch (DatabaseException $ex) {
+				// Table hasn't been created yet, just catch
+				// and do nothing because there is no salt
+				// to remember ;)
+				return;
+			}
 
 			if ($salt and !$this->get('salt')) {
 				$this->set('salt', $salt);
@@ -480,12 +488,12 @@
 
 			$label = Widget::Label($this->get('label'));
 			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][password]', null, 'password'));
-			
+
 			$fieldset->appendChild($label);
-			
+
 			$label = Widget::Label($this->get('label') . __('Confirm'));
 			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][confirm]', null, 'password'));
-			
+
 			$fieldset->appendChild($label);
 
 			return $fieldset;
