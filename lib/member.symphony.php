@@ -145,7 +145,7 @@
 		Filters:
 	-------------------------------------------------------------------------*/
 
-		public function filter_MemberRegister(Array &$context) {
+		public function filter_Register(Array &$context) {
 			// If there is a Role field, this needs to check that if it was
 			// not provided in the $_POST data, that it is set to the Default Role.
 			if(!is_null(extension_Members::getConfigVar('role'))) {
@@ -154,10 +154,32 @@
 					$context['fields'][$role->get('element_name')] = $role->get('default_role');
 				}
 			}
+		}
 
-			$context['messages'][] = array(
-				'member-register', true, __('Passed')
-			);
+		public function filter_UpdatePassword(Array &$context) {
+			// If there is an Authentication field, we need to inject the 'optional'
+			// key so that it won't flag a user's password as invalid if they fail to
+			// enter it. The use of the 'optional' key will only trigger validation should
+			// they enter a value in the password field, in which it assumes the user is
+			// trying to update their password.
+			if(!is_null(extension_Members::getConfigVar('authentication'))) {
+				$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+				$context['fields'][$auth->get('element_name')]['optional'] = 'yes';
+			}
+		}
+
+		public function filter_UpdatePasswordLogin(Array &$context) {
+			$this->login(array(
+				'password' => $context['fields']['password']['password'],
+				'username' => $context['entry']->getData(extension_Members::getConfigVar('identity'), true)->value
+			));
+
+			if(isset($_REQUEST['redirect'])) {
+				redirect($_REQUEST['redirect']);
+			}
+			else {
+				redirect(URL);
+			}
 		}
 
 	}

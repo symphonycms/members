@@ -111,6 +111,11 @@
 					'callback' => 'checkEventPermissions'
 				),
 				array(
+					'page' => '/frontend/',
+					'delegate' => 'EventPostSaveFilter',
+					'callback' => 'processPostSaveFilter'
+				),
+				array(
 					'page'		=> '/blueprints/events/new/',
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'appendFilter'
@@ -292,6 +297,13 @@
 			}
 
 			if(!is_null(extension_Members::getConfigVar('authentication'))) {
+				// Add Member: Update Password filter
+				$context['options'][] = array(
+					'member-update-password',
+					in_array('member-update-password', $selected),
+					__('Members: Update Password')
+				);
+
 				// Add Member: Forgot Password filter
 				$context['options'][] = array(
 					'member-forgot-password',
@@ -563,7 +575,24 @@
 		private function __processEventFilters(Array &$context) {
 			// Process the Member Register
 			if (in_array('member-register', $context['event']->eParamFILTERS)) {
-				return $this->Member->filter_MemberRegister(&$context);
+				$this->Member->filter_Register(&$context);
+			}
+
+			// Process updating a Member's Password
+			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
+				$this->Member->filter_UpdatePassword(&$context);
+			}
+		}
+
+		/**
+		 * Any post save behaviour
+		 *
+		 * @uses EventPostSaveFilter
+		 */
+		public function processPostSaveFilter(Array &$context) {
+			// Process updating a Member's Password
+			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
+				$this->Member->filter_UpdatePasswordLogin(&$context);
 			}
 		}
 
