@@ -405,7 +405,7 @@
 				switch ($_POST['with-selected']) {
 					case 'delete':
 						foreach($checked as $role_id) {
-							$this->__actionDelete($role_id);
+							RoleManager::delete($role_id);
 						}
 						redirect(extension_Members::baseURL() . '/roles/');
 
@@ -413,7 +413,7 @@
 
 					case 'delete-members':
 						foreach($checked as $role_id) {
-							$this->__actionDelete($role_id, null, true);
+							RoleManager::delete($role_id, null, true);
 						}
 						redirect(extension_Members::baseURL() . '/roles/');
 

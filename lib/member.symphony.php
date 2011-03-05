@@ -53,7 +53,7 @@
 			if(is_null($member)) return null;
 
 			// Validate against Password
-			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));;
 
 			if(is_null($auth)) return $member;
 

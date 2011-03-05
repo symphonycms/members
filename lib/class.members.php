@@ -140,9 +140,14 @@
 				));
 			}
 			else {
-				$result->setAttributeArray(array(
-					'logged-in' => 'false'
-				));
+				$result->setAttribute('logged-in','false');
+
+				if(extension_Members::$_failed_login_attempt) {
+					$result->setAttribute('failed-login-attempt','true');
+				}
+				else {
+					$result->setAttribute('failed-login-attempt','false');
+				}
 			}
 
 			$context['wrapper']->appendChild($result);
