@@ -141,4 +141,23 @@
 			return false;
 		}
 
+	/*-------------------------------------------------------------------------
+		Filters:
+	-------------------------------------------------------------------------*/
+
+		public function filter_MemberRegister(Array &$context) {
+			// If there is a Role field, this needs to check that if it was
+			// not provided in the $_POST data, that it is set to the Default Role.
+			if(!is_null(extension_Members::getConfigVar('role'))) {
+				$role = self::$driver->fm->fetch(extension_Members::getConfigVar('role'));
+				if(!isset($context['fields'][$role->get('element_name')])) {
+					$context['fields'][$role->get('element_name')] = $role->get('default_role');
+				}
+			}
+
+			$context['messages'][] = array(
+				'member-register', true, __('Passed')
+			);
+		}
+
 	}

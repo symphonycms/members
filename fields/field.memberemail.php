@@ -96,8 +96,8 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		public function fieldCleanup(){
-			Symphony::Configuration()->set('email', null, 'members');
+		public function teardown(){
+			Symphony::Configuration()->remove('email', 'members');
 			Administration::instance()->saveConfig();
 
 			return true;

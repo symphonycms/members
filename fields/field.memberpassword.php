@@ -276,8 +276,8 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		public function fieldCleanup(){
-			Symphony::Configuration()->set('authentication', null, 'members');
+		public function teardown(){
+			Symphony::Configuration()->remove('authentication', 'members');
 			Administration::instance()->saveConfig();
 
 			return true;
@@ -491,7 +491,7 @@
 
 			$fieldset->appendChild($label);
 
-			$label = Widget::Label($this->get('label') . __('Confirm'));
+			$label = Widget::Label($this->get('label') . ' ' . __('Confirm'));
 			$label->appendChild(Widget::Input('fields['.$this->get('element_name').'][confirm]', null, 'password'));
 
 			$fieldset->appendChild($label);

@@ -221,8 +221,8 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		public function fieldCleanup() {
-			Symphony::Configuration()->set('activation', null, 'members');
+		public function teardown() {
+			Symphony::Configuration()->remove('activation', 'members');
 			Administration::instance()->saveConfig();
 
 			return true;

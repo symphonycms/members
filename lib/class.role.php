@@ -27,7 +27,7 @@
 							'page_id' => $page_id,
 							'role_id' => $role_id
 						),
-						'`tbl_members_roles_forbidden_pages`'
+						'tbl_members_roles_forbidden_pages'
 					);
 				}
 			}
@@ -69,7 +69,7 @@
 							'page_id' => $page_id,
 							'role_id' => $role_id
 						),
-						'`tbl_members_roles_forbidden_pages`'
+						'tbl_members_roles_forbidden_pages'
 					);
 				}
 			}

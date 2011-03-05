@@ -135,8 +135,8 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		public function fieldCleanup(){
-			Symphony::Configuration()->set('role', null, 'members');
+		public function teardown(){
+			Symphony::Configuration()->remove('role', 'members');
 			Administration::instance()->saveConfig();
 
 			return true;

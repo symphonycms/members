@@ -120,19 +120,9 @@
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'appendFilter'
 				),
-				array(
-					'page'		=> '/frontend/',
-					'delegate'	=> 'EventPreSaveFilter',
-					'callback'	=> 'processData'
-				),
 				/*
 					BACKEND
 				*/
-				array(
-					'page' => '/blueprints/sections/',
-					'delegate' => 'SectionPreEdit',
-					'callback' => 'fieldCleanup'
-				),
 				array(
 					'page' => '/system/preferences/',
 					'delegate' => 'AddCustomPreferenceFieldsets',
@@ -270,45 +260,52 @@
 		}
 
 		/**
-		 * There is no way for a Field to know that it's been deleted via the Section
-		 * Editor to do custom logic, so we'll have to do it ourselves through a delegate
-		 *
-		 * @uses SectionPreEdit
-		 */
-		public function fieldCleanup($context) {
-			if($context['section_id'] != extension_Members::getMembersSection()) return;
-
-			$id_list = array();
-			if(is_array($context['fields']) && !empty($context['fields'])){
-				foreach($fields as $position => $data){
-					if(isset($data['id'])) $id_list[] = $data['id'];
-				}
-			}
-
-			$missing_fields = Symphony::Database()->fetchCol('id', sprintf("
-					SELECT `id` FROM `tbl_fields` WHERE `parent_section` = %d AND `id` NOT IN ('%s')
-				", $context['section_id'], implode("', '", $id_list)
-			));
-
-			if(is_array($missing_cfs) && !empty($missing_cfs)){
-				foreach($missing_cfs as $id){
-					$field = $this->fm->fetch($id);
-
-					if(!method_exists($field, 'fieldCleanup')) continue;
-
-					$field->fieldCleanup();
-				}
-			}
-		}
-
-		/**
 		 * The Members extension provides a number of filters for users to add their
 		 * events to do various functionality. This negates the need for custom events
 		 *
 		 * @uses AppendEventFilter
 		 */
 		public function appendFilter($context) {
+			$selected = !is_array($context['selected']) ? array() : $context['selected'];
 
+			// Add Member: Register filter
+			$context['options'][] = array(
+				'member-register',
+				in_array('member-register', $selected),
+				__('Members: Register')
+			);
+
+			if(!is_null(extension_Members::getConfigVar('activation'))) {
+				// Add Member: Activation filter
+				$context['options'][] = array(
+					'member-activation',
+					in_array('member-activation', $selected),
+					__('Members: Activation')
+				);
+
+				// Add Member: Resend Activation filter
+				$context['options'][] = array(
+					'member-resend-activation',
+					in_array('member-resend-activation', $selected),
+					__('Members: Resend Activation')
+				);
+			}
+
+			if(!is_null(extension_Members::getConfigVar('authentication'))) {
+				// Add Member: Forgot Password filter
+				$context['options'][] = array(
+					'member-forgot-password',
+					in_array('member-forgot-password', $selected),
+					__('Members: Forgot Password')
+				);
+
+				// Add Member: Reset Password filter
+				$context['options'][] = array(
+					'member-reset-password',
+					in_array('member-reset-password', $selected),
+					__('Members: Reset Password')
+				);
+			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -367,9 +364,7 @@
 		public function savePreferences(){
 			$settings = $_POST['settings'];
 
-			$setting_group = 'members';
-
-			Symphony::Configuration()->set('section', $settings['members']['section'], $setting_group);
+			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
 			Administration::instance()->saveConfig();
 		}
 
@@ -453,86 +448,123 @@
 		Events:
 	-------------------------------------------------------------------------*/
 
-		public function checkEventPermissions($context){
-			/**
-			 * If this system has no Roles, return immediately.
-			 * @todo Possibly look at dynamically subscribing to this delegate
-			 * when a Role field is added.
-			 */
-			if(is_null(extension_Members::getConfigVar('role'))) return;
-
-			$action = 'create';
-			$entry_id = 0;
+		/**
+		 * This function will ensure that the user who has submitted the form (and
+		 * hence is requesting that an event be triggered) is actually allowed to
+		 * do this request.
+		 * There are 2 action types, creation and editing. Creation is a simple yes/no
+		 * affair, whereas editing has three levels of permission, None, Own Entries
+		 * or All Entries:
+		 * - None: This user can't do process this event
+		 * - Own Entries: If the entry the user is trying to update is their own
+		 *   determined by if the `entry_id` or, in the case of a SBL or
+		 *   similar field, the `entry_id` of the linked entry matches the logged in
+		 *   user's id, process the event.
+		 * - All Entries: The user can update any entry in Symphony.
+		 * If there are no Roles in this system, it will immediately proceed to
+		 * processing any of the Filters attached to the event before returning.
+		 *
+		 * @uses checkEventPermissions
+		 */
+		public function checkEventPermissions(Array &$context){
+			// If this system has no Roles, continue straight to processing the Filters
+			if(is_null(extension_Members::getConfigVar('role'))) {
+				return $this->__processEventFilters($context);
+			}
 
 			if(isset($_POST['id'])){
 				$entry_id = (int)$_POST['id'];
 				$action = 'edit';
 			}
+			else {
+				$action = 'create';
+				$entry_id = 0;
+			}
 
+			$required_level = EventPermissions::ALL_ENTRIES;
+			$role_id = Role::PUBLIC_ROLE;
 			$isLoggedIn = $this->Member->isLoggedIn();
 
-			$this->Member->initialiseMemberObject();
+			if($isLoggedIn) {
+				$this->Member->initialiseMemberObject();
 
-			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
-				$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
+				if($this->Member->Member instanceOf Entry) {
+					$required_level = EventPermissions::OWN_ENTRIES;
+					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
+					$role_id = $role_data['role_id'];
+
+					if($action == 'edit') {
+						$section_id = $context['event']->getSource();
+						$member_id = false;
+
+						// If the $section_id = members_section
+						if($section_id == extension_Members::getMembersSection()) {
+							$field_id = extension_Members::getConfigVar('authentication');
+						}
+						// Or a SBL/RL field links to the identity field
+						// @todo check this is working as expected
+						else {
+							$field_id = Symphony::Database()->fetchVar('child_section_field_id', 0, sprintf("
+									SELECT `child_section_field_id`
+									FROM `tbl_sections_association`
+									WHERE `parent_section_id` = %d
+									AND `parent_section_field_id` = %d
+									AND `child_section_id` = %d
+								",
+								extension_Members::getMembersSection(),
+								extension_Members::getConfigVar('authentication'),
+								$section_id
+							));
+						}
+
+						// check that logged in member id == $entry_id
+						if($field_id) {
+							$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
+								"SELECT * FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1",
+								$field_id, $entry_id
+							));
+						}
+
+						// if logged in member is the same as the member id for the Entry we are editing
+						// then this user is the Owner, and can modify EventPermissions::OWN_ENTRIES
+						$isOwner = ($this->Member->Member->get('id') == $member_id);
+
+						// User is not the owner, so they can edit EventPermissions::ALL_ENTRIES
+						if($isOwner === false) $required_level = EventPermissions::ALL_ENTRIES;
+					}
+				}
 			}
 
-			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
-			$role = RoleManager::fetch($role_id);
+			try {
+				$role = RoleManager::fetch($role_id);
+				$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
+				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 
-			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
-
-			$isOwner = false;
-			$field_id = false;
-			$required_level = ($isLoggedIn) ? EventPermissions::OWN_ENTRIES : EventPermissions::ALL_ENTRIES;
-
-			if($action == 'edit' && $isLoggedIn) {
-				$section_id = $context['event']->getSource();
-				$member_id = false;
-
-				// If the $section_id = members_section
-				if($section_id == extension_Members::getMembersSection()) {
-					$field_id = extension_Members::getConfigVar('authentication');
-				}
-				// Or a SBL/RL field links to the identity field
-				// @todo check this is working as expected
-				else {
-					$field_id = Symphony::Database()->fetchVar('child_section_field_id', 0, sprintf("
-							SELECT `child_section_field_id`
-							FROM `tbl_sections_association`
-							WHERE `parent_section_id` = %d
-							AND `parent_section_field_id` = %d
-							AND `child_section_id` = %d
-						",
-						extension_Members::getMembersSection(),
-						extension_Members::getConfigVar('authentication'),
-						$section_id
-					));
-				}
-
-				// check that logged in member id == $entry_id
-				if($field_id) {
-					$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-						"SELECT * FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1",
-						$field_id, $entry_id
-					));
-				}
-
-				// if logged in member is the same as the member id for the Entry we are editing
-				// then this user is the Owner, and can modify EventPermissions::OWN_ENTRIES
-				$isOwner = ($this->Member->Member->get('id') == $member_id);
-
-				// User is not the owner, so they can edit EventPermissions::ALL_ENTRIES
-				if($isOwner === false) $required_level = EventPermissions::ALL_ENTRIES;
+				$context['messages'][] = array(
+					'permission',
+					$success,
+					($success === false) ? __('You are not authorised to perform this action') : null
+				);
+			}
+			catch (Exception $ex) {
+				// Unsure of what the possible Exceptions would be here, so lets
+				// just throw for now for the sake of discovery.
+				throw new $ex;
 			}
 
-			$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
+			// Process the Filters for this event.
+			return $this->__processEventFilters($context);
+		}
 
-			$context['messages'][] = array(
-				'permission',
-				$success,
-				($success === false) ? __('You are not authorised to perform this action') : null
-			);
+		/**
+		 * We can safely assume at this stage of the process that whatever user has
+		 * requested this event has permission to actually do so.
+		 */
+		private function __processEventFilters(Array &$context) {
+			// Process the Member Register
+			if (in_array('member-register', $context['event']->eParamFILTERS)) {
+				return $this->Member->filter_MemberRegister(&$context);
+			}
 		}
 
 	/*-------------------------------------------------------------------------

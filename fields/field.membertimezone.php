@@ -107,8 +107,8 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 		
-		public function fieldCleanup() {
-			Symphony::Configuration()->set('timezone', null, 'members');
+		public function teardown() {
+			Symphony::Configuration()->remove('timezone', 'members');
 			Administration::instance()->saveConfig();
 			
 			return true;

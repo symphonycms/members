@@ -116,8 +116,8 @@
 			if($this->get('validator') == '') $this->remove('validator');
 		}
 
-		public function fieldCleanup(){
-			Symphony::Configuration()->set('identity', null, 'members');
+		public function teardown(){
+			Symphony::Configuration()->remove('identity', 'members');
 			Administration::instance()->saveConfig();
 			
 			return true;
