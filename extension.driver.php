@@ -280,7 +280,7 @@
 				__('Members: Register')
 			);
 
-			if(!is_null(extension_Members::getConfigVar('activation'))) {
+			if(!is_null(extension_Members::getConfigVar('activation')) && !is_null(extension_Members::getConfigVar('email'))) {
 				// Add Member: Activation filter
 				$context['options'][] = array(
 					'member-activation',
@@ -304,19 +304,14 @@
 					__('Members: Update Password')
 				);
 
-				// Add Member: Forgot Password filter
-				$context['options'][] = array(
-					'member-forgot-password',
-					in_array('member-forgot-password', $selected),
-					__('Members: Forgot Password')
-				);
-
-				// Add Member: Reset Password filter
-				$context['options'][] = array(
-					'member-reset-password',
-					in_array('member-reset-password', $selected),
-					__('Members: Reset Password')
-				);
+				if(!is_null(extension_Members::getConfigVar('email'))) {
+					// Add Member: Reset Password filter
+					$context['options'][] = array(
+						'member-reset-password',
+						in_array('member-reset-password', $selected),
+						__('Members: Reset Password')
+					);
+				}
 			}
 		}
 
@@ -386,6 +381,7 @@
 
 		public function checkFrontendPagePermissions($context) {
 			$isLoggedIn = false;
+			$errors = array();
 
 			if(is_array($_REQUEST['member-action'])){
 				list($action) = array_keys($_REQUEST['member-action']);
@@ -408,7 +404,7 @@
 				self::$_failed_login_attempt = true;
 			}
 
-			else $isLoggedIn = $this->Member->isLoggedIn();
+			else $isLoggedIn = $this->Member->isLoggedIn($errors);
 
 			$this->Member->initialiseMemberObject();
 
@@ -581,6 +577,11 @@
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
 				$this->Member->filter_UpdatePassword(&$context);
+			}
+
+			// Process a Password Reset
+			if (in_array('member-reset-password', $context['event']->eParamFILTERS)) {
+				$this->Member->filter_PasswordReset(&$context);
 			}
 		}
 

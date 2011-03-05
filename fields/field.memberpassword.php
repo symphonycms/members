@@ -67,9 +67,13 @@
 				  `password` varchar(40) default NULL,
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
+				  `reset` enum('yes','no') default 'no',
+				  `expires` DATETIME default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
-				  KEY `length` (`length`)
+				  KEY `length` (`length`),
+				  KEY `password` (`password`),
+				  KEY `expires` (`expires`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -87,7 +91,7 @@
 		 * @param integer $member_id
 		 * @return Entry|null
 		 */
-		public function fetchMemberIDBy($needle, $member_id) {
+		public function fetchMemberIDBy($needle, $member_id, &$errors) {
 			if(is_array($needle)) {
 				extract($needle);
 			}
@@ -95,16 +99,40 @@
 				$password = $needle;
 			}
 
-			$entry_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
-					SELECT `entry_id`
+			$data = Symphony::Database()->fetchRow(0, sprintf("
+					SELECT `entry_id`, `reset`
 					FROM `tbl_entries_data_%d`
 					WHERE `password` = '%s'
 					LIMIT 1
 				",
-				$this->get('id'), $password
+				$this->get('id'), $password, DateTimeObj::get('Y-m-d H:i:s', strtotime('now - 1 hour'))
 			));
 
-			if($entry_id == $member_id) return $member_id;
+			// Check that if the password has been reset that it is still valid
+			if(!empty($data) && $data['reset'] == 'yes') {
+				$valid_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
+						SELECT `entry_id`
+						FROM `tbl_entries_data_%d`
+						WHERE `entry_id` = %d
+						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
+						LIMIT 1
+					",
+					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now + 1 hour'))
+				));
+
+				// If we didn't get an entry_id back, then it's because it was expired
+				if(is_null($valid_id)) {
+					$errors[] = array('expired-password', __('Password has expired'));
+				}
+				// Otherwise, we found the entry_id, so lets remove the reset and expires as this password
+				// has now been used by the user.
+				else {
+					$fields = array('reset' => 'no', 'expires' => null);
+					Symphony::Database()->update($fields, 'tbl_entries_data_' . $this->get('id'), ' `entry_id` = ' . $valid_id);
+				}
+			}
+
+			if($data['entry_id'] == $member_id) return $member_id;
 
 			return null;
 		}

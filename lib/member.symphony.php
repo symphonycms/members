@@ -37,7 +37,7 @@
 		 * @param array $credentials
 		 * @return integer
 		 */
-		public function findMemberIDFromCredentials(Array $credentials) {
+		public function findMemberIDFromCredentials(Array $credentials, Array &$errors = array()) {
 			extract($credentials);
 
 			// It's expected that $password is sha1'd and salted.
@@ -48,7 +48,7 @@
 			if(!$identity instanceof Field) return null;
 
 			// Member from Username
-			$member = $identity->fetchMemberIDBy($credentials);
+			$member = $identity->fetchMemberIDBy($credentials, $errors);
 
 			if(is_null($member)) return null;
 
@@ -57,7 +57,7 @@
 
 			if(is_null($auth)) return $member;
 
-			$member = $auth->fetchMemberIDBy($credentials, $member);
+			$member = $auth->fetchMemberIDBy($credentials, $member, $errors);
 
 			return $member;
 		}
@@ -68,6 +68,7 @@
 
 		public function login(Array $credentials){
 			extract($credentials);
+			$errors = array();
 
 			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
 
@@ -82,7 +83,7 @@
 				$data['email'] = Symphony::Database()->cleanValue($email);
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data)) {
+			if($id = $this->findMemberIDFromCredentials($data, $errors)) {
 				try{
 					self::$member_id = $id;
 					$this->initialiseCookie();
@@ -114,7 +115,7 @@
 			return false;
 		}
 
-		public function isLoggedIn() {
+		public function isLoggedIn(Array &$errors = array()) {
 			if(self::$isLoggedIn) return true;
 
 			$this->initialiseCookie();
@@ -130,7 +131,7 @@
 				$data['email'] = $this->cookie->get('email');
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data)) {
+			if($id = $this->findMemberIDFromCredentials($data, $errors)) {
 				self::$member_id = $id;
 				self::$isLoggedIn = true;
 				return true;
@@ -172,7 +173,7 @@
 			$this->login(array(
 				'password' => $context['fields']['password']['password'],
 				'username' => $context['entry']->getData(extension_Members::getConfigVar('identity'), true)->value
-			));
+			), array());
 
 			if(isset($_REQUEST['redirect'])) {
 				redirect($_REQUEST['redirect']);
@@ -181,5 +182,33 @@
 				redirect(URL);
 			}
 		}
+
+		public function filter_PasswordReset(Array &$context) {
+
+			// Check that this Email has an Entry
+			$email = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
+			$member_id = $email->fetchMemberIDBy($context['fields'][$email->get('element_name')]);
+
+			if(is_null($member_id)) return null;
+
+			// Generate new password
+			$newPassword = General::generatePassword();
+
+			// Set the Entry password to be reset and the current timestamp
+			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+			$simulate = false;
+			$fields = $auth->processRawFieldData(array('password' => $newPassword), $simulate);
+
+			$fields['reset'] = 'yes';
+			$fields['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
+
+			Symphony::Database()->update($fields, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' .$member_id);
+
+			// Add new password to the Event output
+			$context['messages'][] = array(
+				'member-reset-password', false, $newPassword
+			);
+		}
+
 
 	}

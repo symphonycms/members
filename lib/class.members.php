@@ -10,10 +10,10 @@
 		// Authentication
 		public function login(Array $credentials);
 		public function logout();
-		public function isLoggedIn();
+		public function isLoggedIn(Array &$errors = array());
 
 		// Finding
-		public function findMemberIDFromCredentials(Array $credentials);
+		public function findMemberIDFromCredentials(Array $credentials, Array &$errors = array());
 
 		// Output
 		public function addMemberDetailsToPageParams(Array $context = null);
@@ -48,7 +48,7 @@
 		public function initialiseCookie() {
 			if(is_null($this->cookie)) {
 				$this->cookie = new Cookie(
-					Symphony::Configuration()->get('cookie-prefix', 'members'),	TWO_WEEKS, __SYM_COOKIE_PATH__, true
+					Symphony::Configuration()->get('cookie-prefix', 'members'), TWO_WEEKS, __SYM_COOKIE_PATH__, true
 				);
 			}
 		}
@@ -131,8 +131,9 @@
 
 		public function appendLoginStatusToEventXML(Array $context = null){
 			$result = new XMLElement('member-login-info');
+			$errors = array();
 
-			if($this->isLoggedIn()) {
+			if($this->isLoggedIn($errors)) {
 				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
 				$result->setAttributeArray(array(
 					'logged-in' => 'true',
@@ -147,6 +148,14 @@
 				}
 				else {
 					$result->setAttribute('failed-login-attempt','false');
+				}
+
+				if(is_array($errors) && !empty($errors)) {
+					foreach($errors as $error) {
+						$result->appendChild(
+							new XMLElement($error[0], $error[1])
+						);
+					}
 				}
 			}
 
