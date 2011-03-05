@@ -115,16 +115,6 @@
 					'delegate' => 'EventPostSaveFilter',
 					'callback' => 'processPostSaveFilter'
 				),
-				array(
-					'page'		=> '/blueprints/events/new/',
-					'delegate'	=> 'AppendEventFilter',
-					'callback'	=> 'appendFilter'
-				),
-				array(
-					'page'		=> '/blueprints/events/edit/',
-					'delegate'	=> 'AppendEventFilter',
-					'callback'	=> 'appendFilter'
-				),
 				/*
 					BACKEND
 				*/
@@ -137,7 +127,27 @@
 					'page' => '/system/preferences/',
 					'delegate' => 'Save',
 					'callback' => 'savePreferences'
-				)
+				),
+				array(
+					'page'		=> '/blueprints/events/new/',
+					'delegate'	=> 'AppendEventFilter',
+					'callback'	=> 'appendFilter'
+				),
+				array(
+					'page'		=> '/blueprints/events/edit/',
+					'delegate'	=> 'AppendEventFilter',
+					'callback'	=> 'appendFilter'
+				),
+				array(
+					'page'		=> '/blueprints/events/',
+					'delegate'	=> 'EventPreCreate',
+					'callback'	=> 'customEventInjection'
+				),
+				array(
+					'page'		=> '/blueprints/events/',
+					'delegate'	=> 'EventPreEdit',
+					'callback'	=> 'customEventInjection'
+				),
 			);
 		}
 
@@ -578,11 +588,6 @@
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
 				$this->Member->filter_UpdatePassword(&$context);
 			}
-
-			// Process a Password Reset
-			if (in_array('member-reset-password', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_PasswordReset(&$context);
-			}
 		}
 
 		/**
@@ -595,6 +600,20 @@
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
 				$this->Member->filter_UpdatePasswordLogin(&$context);
 			}
+		}
+
+		/**
+		 * Custom Event injection
+		 */
+		public function customEventInjection(Array &$context) {
+			if(!in_array('member-reset-password', $context['filters'])) return;
+
+			$replacements = "
+			\$result = new XMLElement(self::ROOTELEMENT);
+			SymphonyMember::filter_PasswordReset(\$_POST['fields'], \$result);
+			";
+
+			$context['contents'] = str_replace("include(TOOLKIT . '/events/event.section.php');", $replacements, $context['contents']);
 		}
 
 	/*-------------------------------------------------------------------------

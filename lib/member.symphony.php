@@ -183,11 +183,17 @@
 			}
 		}
 
-		public function filter_PasswordReset(Array &$context) {
+		/**
+		 * Custom code that is called from the Event's load() function
+		 *
+		 * @param array $fields
+		 * @param XMLElement $result
+		 */
+		public static function filter_PasswordReset(Array &$fields, &$result) {
 
 			// Check that this Email has an Entry
 			$email = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
-			$member_id = $email->fetchMemberIDBy($context['fields'][$email->get('element_name')]);
+			$member_id = $email->fetchMemberIDBy($fields[$email->get('element_name')]);
 
 			if(is_null($member_id)) return null;
 
@@ -197,18 +203,21 @@
 			// Set the Entry password to be reset and the current timestamp
 			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
 			$simulate = false;
-			$fields = $auth->processRawFieldData(array('password' => $newPassword), $simulate);
+			$data = $auth->processRawFieldData(array('password' => $newPassword), $simulate);
 
-			$fields['reset'] = 'yes';
-			$fields['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
+			$data['reset'] = 'yes';
+			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
 
-			Symphony::Database()->update($fields, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' .$member_id);
+			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
 
 			// Add new password to the Event output
-			$context['messages'][] = array(
-				'member-reset-password', false, $newPassword
+			$result->appendChild(
+				new XMLElement('new-password', $newPassword)
+			);
+
+			$result->appendChild(
+				new XMLElement('member-email', $fields[$email->get('element_name')])
 			);
 		}
-
 
 	}
