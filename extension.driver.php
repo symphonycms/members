@@ -214,6 +214,7 @@
 				DROP TABLE IF EXISTS
 					`tbl_fields_memberusername`,
 					`tbl_fields_memberpassword`,
+					`tbl_fields_memberemail`,
 					`tbl_fields_memberactivation`,
 					`tbl_fields_memberrole`,
 					`tbl_fields_membertimezone`,
