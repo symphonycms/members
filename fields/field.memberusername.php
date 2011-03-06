@@ -116,7 +116,7 @@
 			if($this->get('validator') == '') $this->remove('validator');
 		}
 
-		public function teardown(){
+		public function tearDown(){
 			Symphony::Configuration()->remove('identity', 'members');
 			Administration::instance()->saveConfig();
 			

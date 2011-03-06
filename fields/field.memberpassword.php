@@ -304,7 +304,7 @@
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		public function teardown(){
+		public function tearDown(){
 			Symphony::Configuration()->remove('authentication', 'members');
 			Administration::instance()->saveConfig();
 

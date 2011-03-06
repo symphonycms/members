@@ -610,7 +610,7 @@
 
 			$replacements = "
 			\$result = new XMLElement(self::ROOTELEMENT);
-			SymphonyMember::filter_PasswordReset(\$_POST['fields'], \$result);
+			SymphonyMember::filter_PasswordReset(\$_POST['fields'], \$result, \$this);
 			";
 
 			$context['contents'] = str_replace("include(TOOLKIT . '/events/event.section.php');", $replacements, $context['contents']);

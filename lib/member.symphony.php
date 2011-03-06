@@ -188,8 +188,9 @@
 		 *
 		 * @param array $fields
 		 * @param XMLElement $result
+		 * @param Event $event
 		 */
-		public static function filter_PasswordReset(Array &$fields, &$result) {
+		public static function filter_PasswordReset(Array &$fields, XMLElement &$result, Event &$event) {
 
 			// Check that this Email has an Entry
 			$email = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
@@ -217,6 +218,29 @@
 
 			$result->appendChild(
 				new XMLElement('member-email', $fields[$email->get('element_name')])
+			);
+
+			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
+			// uses to send emails.
+			$filter_errors = array();
+			$entry = self::$driver->em->fetch($member_id);
+
+			/**
+			 * @delegate EventFinalSaveFilter
+			 * @param string $context
+			 * '/frontend/'
+			 * @param array $fields
+			 * @param string $event
+			 * @param array $filter_errors
+			 * @param Entry $entry
+			 */
+			Symphony::ExtensionManager()->notifyMembers(
+				'EventFinalSaveFilter', '/frontend/', array(
+					'fields'	=> $fields,
+					'event'		=> &$event,
+					'errors'	=> &$filter_errors,
+					'entry'		=> $entry
+				)
 			);
 		}
 
