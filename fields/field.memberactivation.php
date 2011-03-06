@@ -45,6 +45,7 @@
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `field_id` int(11) unsigned NOT NULL,
 				  `code_expiry` varchar(50) NOT NULL,
+				  `activation_role_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -172,6 +173,12 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+
+			// Add Activiation Code Expiry
+			$div = new XMLElement('div');
+
 			$label = Widget::Label(__('Activation Code Expiry'));
 			$label->appendChild(
 				new XMLElement('i', __('How long a user\'s activation code will be valid for before it expires'))
@@ -186,8 +193,28 @@
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
 			}
 
-			$wrapper->appendChild($label);
-			$wrapper->appendChild($ul);
+			$div->appendChild($label);
+			$div->appendChild($ul);
+
+			// Get Roles in system
+			$roles = RoleManager::fetch();
+			$options = array();
+			if(is_array($roles) && !empty($roles)) {
+				foreach($roles as $role) {
+					$options[] = array($role->get('id'), ($this->get('activation_role_id') == $role->get('id')), $role->get('name'));
+				}
+			}
+
+			$label = new XMlElement('label', __('Role for Members who are awaiting activation'));
+			$label->appendChild(Widget::Select(
+				"fields[{$this->get('sortorder')}][activation_role_id]", $options
+			));
+
+			$group->appendChild($label);
+
+			// Add Group
+			$group->appendChild($div);
+			$wrapper->appendChild($group);
 
 			$this->appendShowColumnCheckbox($wrapper);
 		}
