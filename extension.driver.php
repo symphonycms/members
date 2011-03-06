@@ -219,7 +219,7 @@
 					`tbl_fields_membertimezone`,
 					`tbl_members_roles`,
 					`tbl_members_roles_event_permissions`,
-					`tbl_members_roles_forbidden_pages`,
+					`tbl_members_roles_forbidden_pages`
 			");
 		}
 
