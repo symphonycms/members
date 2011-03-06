@@ -406,7 +406,7 @@
 				redirect(URL);
 			}
 
-			else if(trim($action) == 'login') {
+			else if(trim($action) == 'login' && !is_null($_REQUEST['fields'])) {
 				if($this->Member->login($_REQUEST['fields'])) {
 					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 					redirect(URL);
