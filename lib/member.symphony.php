@@ -204,18 +204,17 @@
 			// Set the Entry password to be reset and the current timestamp
 			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
 			$simulate = false;
-			$data = $auth->processRawFieldData(array('password' => $newPassword), $simulate);
+			$data = $auth->processRawFieldData(array(
+				'recovery-code' => sha1($newPassword . $member_id),
+				'password' => null
+			), $simulate);
 
 			$data['reset'] = 'yes';
 			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
 
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
 
-			// Add new password to the Event output
-			$result->appendChild(
-				new XMLElement('new-password', $newPassword)
-			);
-
+			// Add member email to event output.
 			$result->appendChild(
 				new XMLElement('member-email', $fields[$email->get('element_name')])
 			);
@@ -242,6 +241,85 @@
 					'entry'		=> $entry
 				)
 			);
+		}
+
+		/**
+		 * Checks the recovery code to ensure it's valid and then sets the Members
+		 * new password before logging them in.
+		 *
+		 * @param array $fields
+		 * @param XMLElement $result
+		 */
+		public static function checkRecoveryCode(Array &$fields, XMLElement &$result) {
+
+			// Check that there is a row with this recovery code and that they request a password
+			// reset
+			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+			$row = Symphony::Database()->fetchRow(0, sprintf("
+					SELECT `entry_id`, `recovery-code`
+					FROM tbl_entries_data_%d
+					WHERE reset = 'yes'
+					AND recovery-code = '%s'
+					AND password IS NULL
+				", $auth->get('id'), Symphony::Database()->cleanValue($fields['recovery-code'])
+			));
+
+			if(empty($row)) {
+				$result->setAttribute('status', 'failed');
+				$result->appendChild(
+					new XMLElement('error', __('No recovery code found'))
+				);
+
+				return $result;
+			}
+			else {
+				// Retrieve Member Entry record
+				$entry = self::$driver->em->fetch($row['entry_id']);
+
+				if(!$entry instanceof Entry) {
+					$result->setAttribute('status', 'failed');
+					$result->appendChild(
+						new XMLElement('error', __('Member ID not found'))
+					);
+
+					return $result;
+				}
+
+				// Create new password using the auth field so simulate the checkPostFieldData
+				// and processRawFieldData functions.
+				$message = '';
+				if(Field::__OK__ != $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id'])) {
+					$result->setAttribute('status', 'failed');
+					$result->appendChild(
+						new XMLElement('error', $message)
+					);
+
+					return $result;
+				}
+
+				// processRawFieldData will encode the user's new password with the current one
+				$simulate = false;
+				$data = $auth->processRawFieldData(array(
+					'password' => $fields[$auth->get('element_name')],
+					'recovery-code' => null,
+					'reset' => 'no'
+				));
+
+				// Update the database with the new password, removing the recovery code and setting
+				// reset to no.
+				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $row['entry_id']);
+
+				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
+				// handle relogging in the user.
+				SymphonyMember::filter_UpdatePasswordLogin(array(
+					'entry' => $entry,
+					'fields' => array(
+						'password' => array(
+							'password' => $data['password']
+						)
+					)
+				));
+			}
 		}
 
 	}

@@ -65,6 +65,7 @@
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
 				  `password` varchar(40) default NULL,
+				  `recovery-code` varchar(40) default NULL,
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
 				  `reset` enum('yes','no') default 'no',
@@ -453,12 +454,24 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 			if(!isset($data['password'])) return;
-			$wrapper->appendChild(
-				new XMLElement(
-					$this->get('element_name'),
-					NULL,
-					array('password' => $data['password'])
-			));
+
+			$pw = new XMLElement($this->get('element_name'));
+
+			// If reset is set, return the recovery-code
+			if($data['reset'] == 'yes') {
+				$pw->setAttribute('reset-requested', 'yes');
+
+				$pw->appendChild(
+					new XMLElement('recovery-code', $data['recovery-code'])
+				);
+				
+			}
+			// Output the hash of the password.
+			else {
+				$pw->setValue($data['password']);
+			}
+
+			$wrapper->appendChild($pw);
 		}
 
 		public function prepareTableValue($data, XMLElement $link=NULL){
