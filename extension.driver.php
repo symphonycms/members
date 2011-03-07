@@ -214,12 +214,13 @@
 				DROP TABLE IF EXISTS
 					`tbl_fields_memberusername`,
 					`tbl_fields_memberpassword`,
+					`tbl_fields_memberemail`,
 					`tbl_fields_memberactivation`,
 					`tbl_fields_memberrole`,
 					`tbl_fields_membertimezone`,
 					`tbl_members_roles`,
 					`tbl_members_roles_event_permissions`,
-					`tbl_members_roles_forbidden_pages`,
+					`tbl_members_roles_forbidden_pages`
 			");
 		}
 
@@ -405,7 +406,7 @@
 				redirect(URL);
 			}
 
-			else if(trim($action) == 'login') {
+			else if(trim($action) == 'login' && !is_null($_REQUEST['fields'])) {
 				if($this->Member->login($_REQUEST['fields'])) {
 					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 					redirect(URL);
