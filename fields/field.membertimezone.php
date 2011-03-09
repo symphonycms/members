@@ -99,9 +99,11 @@
 				'field_id' => $id,
 				'available_zones' => implode(",", $this->get('available_zones'))
 			);
-
-			Symphony::Configuration()->set('timezone', $id, 'members');
-			Administration::instance()->saveConfig();
+			
+			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+				Symphony::Configuration()->set('timezone', $id, 'members');
+				Administration::instance()->saveConfig();
+			}
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());

@@ -297,9 +297,11 @@
 				'strength' => $this->get('strength'),
 				'salt' => $this->get('salt')
 			);
-
-			Symphony::Configuration()->set('authentication', $id, 'members');
-			Administration::instance()->saveConfig();
+			
+			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+				Symphony::Configuration()->set('authentication', $id, 'members');
+				Administration::instance()->saveConfig();
+			}
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());

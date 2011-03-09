@@ -142,8 +142,8 @@
 		public function purgeCodes($entry_id = null){
 			$entry_id = Symphony::Database()->cleanValue($entry_id);
 
-			Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("`timestamp` <= %s %s",
-				time(), ($entry_id ? " OR `entry_id` = $entry_id" : '')
+			Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') <= %s %s",
+				DateTimeObj::get('Y-m-d H:i:s', time()), ($entry_id ? " OR `entry_id` = $entry_id" : '')
 			));
 		}
 
@@ -240,9 +240,11 @@
 				'field_id' => $id,
 				'code_expiry' => $this->get('code_expiry')
 			);
-
-			Symphony::Configuration()->set('activation', $id, 'members');
-			Administration::instance()->saveConfig();
+			
+			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+				Symphony::Configuration()->set('activation', $id, 'members');
+				Administration::instance()->saveConfig();
+			}
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
