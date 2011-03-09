@@ -107,6 +107,7 @@
 		 * code generated is still valid by comparing it's generation timestamp
 		 * with the maximum code expiry time.
 		 *
+		 * @todo possibly return if the code didn't exist or if it was expired
 		 * @param integer $entry_id
 		 * @return array
 		 */
@@ -142,7 +143,7 @@
 		public function purgeCodes($entry_id = null){
 			$entry_id = Symphony::Database()->cleanValue($entry_id);
 
-			Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') <= %s %s",
+			return Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') <= %s %s",
 				DateTimeObj::get('Y-m-d H:i:s', time()), ($entry_id ? " OR `entry_id` = $entry_id" : '')
 			));
 		}
@@ -240,7 +241,7 @@
 				'field_id' => $id,
 				'code_expiry' => $this->get('code_expiry')
 			);
-			
+
 			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
 				Symphony::Configuration()->set('activation', $id, 'members');
 				Administration::instance()->saveConfig();

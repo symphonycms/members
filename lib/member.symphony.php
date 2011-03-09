@@ -47,43 +47,43 @@
 
 			if(!$identity instanceof Field) return null;
 
-			// Member from Username
-			$member = $identity->fetchMemberIDBy($credentials, $errors);
+			// Member from Identity
+			$member_id = $identity->fetchMemberIDBy($credentials, $errors);
 
-			if(is_null($member)) return null;
+			if(is_null($member_id)) return null;
 
 			// Validate against Password
 			$auth = extension_Members::$fields['authentication'];
 
-			if(is_null($auth)) return $member;
+			if(is_null($auth)) return $member_id;
 
-			$member = $auth->fetchMemberIDBy($credentials, $member, $errors);
+			$member_id = $auth->fetchMemberIDBy($credentials, $member_id, $errors);
 
 			// Check that if there's activiation, that this Member is activated.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$activation = extension_Members::$fields['activation'];
 
 				if($activation->get('activated') == 'no') {
-					$errors['activation'] = __('Account not activated');
+					$errors['activation'] = __('Account not activated.');
 					return false;
 				}
 			}
 
-			return $member;
+			return $member_id;
 		}
 
 	/*-------------------------------------------------------------------------
 		Authentication:
 	-------------------------------------------------------------------------*/
 
-		public function login(Array $credentials){
+		public function login(Array $credentials, $isHashed = false){
 			extract($credentials);
 			$errors = array();
 
 			$auth = extension_Members::$fields['authentication'];
 
 			$data = array(
-				'password' => $auth->encodePassword($password)
+				'password' => $isHashed ? $password : $auth->encodePassword($password)
 			);
 
 			if(isset($username)) {
@@ -220,11 +220,10 @@
 
 			// Set the Entry password to be reset and the current timestamp
 			$auth = extension_Members::$fields['authentication'];
-			$simulate = false;
 			$data = $auth->processRawFieldData(array(
 				'recovery-code' => sha1($newPassword . $member_id),
 				'password' => null
-			), $simulate);
+			), false);
 
 			$data['reset'] = 'yes';
 			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
@@ -258,85 +257,6 @@
 					'entry'		=> $entry
 				)
 			);
-		}
-
-		/**
-		 * Checks the recovery code to ensure it's valid and then sets the Members
-		 * new password before logging them in.
-		 *
-		 * @param array $fields
-		 * @param XMLElement $result
-		 */
-		public static function checkRecoveryCode(Array &$fields, XMLElement &$result) {
-
-			// Check that there is a row with this recovery code and that they request a password
-			// reset
-			$auth = extension_Members::$fields['authentication'];
-			$row = Symphony::Database()->fetchRow(0, sprintf("
-					SELECT `entry_id`, `recovery-code`
-					FROM tbl_entries_data_%d
-					WHERE reset = 'yes'
-					AND recovery-code = '%s'
-					AND password IS NULL
-				", $auth->get('id'), Symphony::Database()->cleanValue($fields['recovery-code'])
-			));
-
-			if(empty($row)) {
-				$result->setAttribute('status', 'failed');
-				$result->appendChild(
-					new XMLElement('error', __('No recovery code found'))
-				);
-
-				return $result;
-			}
-			else {
-				// Retrieve Member Entry record
-				$entry = self::$driver->em->fetch($row['entry_id']);
-
-				if(!$entry instanceof Entry) {
-					$result->setAttribute('status', 'failed');
-					$result->appendChild(
-						new XMLElement('error', __('Member ID not found'))
-					);
-
-					return $result;
-				}
-
-				// Create new password using the auth field so simulate the checkPostFieldData
-				// and processRawFieldData functions.
-				$message = '';
-				if(Field::__OK__ != $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id'])) {
-					$result->setAttribute('status', 'failed');
-					$result->appendChild(
-						new XMLElement('error', $message)
-					);
-
-					return $result;
-				}
-
-				// processRawFieldData will encode the user's new password with the current one
-				$simulate = false;
-				$data = $auth->processRawFieldData(array(
-					'password' => $fields[$auth->get('element_name')],
-					'recovery-code' => null,
-					'reset' => 'no'
-				));
-
-				// Update the database with the new password, removing the recovery code and setting
-				// reset to no.
-				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $row['entry_id']);
-
-				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
-				// handle relogging in the user.
-				SymphonyMember::filter_UpdatePasswordLogin(array(
-					'entry' => $entry,
-					'fields' => array(
-						'password' => array(
-							'password' => $data['password']
-						)
-					)
-				));
-			}
 		}
 
 	}

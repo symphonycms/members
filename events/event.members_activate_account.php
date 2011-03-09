@@ -4,8 +4,6 @@
 
 	Class eventMembers_Activate_Account extends Event{
 
-		private static $_fields;
-
 		const ROOTELEMENT = 'members-activate-account';
 
 		public static function about(){
@@ -16,123 +14,112 @@
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
 				'version' => '1.0',
-				'release-date' => '2009-11-05',
-				'trigger-condition' => 'Inactive member logged in + fields[code] + action[members-activate-account]');
+				'release-date' => '2011-03-09'
+			);
 		}
 
 		public function load(){
-			if(isset($_POST['action'][self::ROOTELEMENT]) && isset($_POST['fields']['code'])) return $this->__trigger();
+			if(isset($_POST['action'][self::ROOTELEMENT])) return $this->__trigger();
 		}
 
 		public static function documentation(){
 			return '
-				<p>This event uses a code to activate an inactive member account.</p>
+				<p>This event takes a recovery code and a new password for a user. A recovery code is
+				can be sent to a Member\'s email after the Member: Reset Password filter has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
-				<p>This is an example of the form markup you can use on your front end. A text field accepts the member&#39;s activation code, and a hidden field redirects the member when activation is successful.</p>
-				<pre class="XML"><code>&lt;form action="" method="post"&gt;
-	&lt;label&gt;Code: &lt;input name="fields[code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
-	&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Activate Account"/&gt;
-	&lt;input type="hidden" name="redirect" value="{$root}/activate/success/"/&gt;
-&lt;/form&gt;</code></pre>
-				<h3>Example Response XML</h3>
-				<p>On failure...</p>
-				<pre class="XML"><code>&lt;'.self::ROOTELEMENT.' result="error"&gt;
-	&lt;error&gt;Activation failed. Code was invalid.&lt;/error&gt;
-&lt;/'.self::ROOTELEMENT.'&gt;</code></pre>
+				<p>This is an example of the form markup you can use on your front end. An input field
+				accepts the member\'s activation code and either the member\'s email address or username.</p>
+				<pre class="XML"><code>
+				&lt;form method="post"&gt;
+					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
+					or
+					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
+					&lt;label&gt;Activation Code: &lt;input name="fields[activation-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
+					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Activate Account"/&gt;
+					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
+				&lt;/form&gt;
+				</code></pre>
+				<h3>Example Error XML</h3>
+				<pre class="XML"><code>
+				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
+					&lt;error&gt;No Activation field found&lt;/error&gt;
+					&lt;error&gt;Member not found&lt;/error&gt;
+					&lt;error&gt;Activation failed. Code was invalid.&lt;/error&gt;
+				&lt;/' . self::ROOTELEMENT . '&gt;
+				</code></pre>
 			';
 		}
 
-		public static function findFieldID($handle){
-			return self::$_fields[$handle];
-		}
-
-		private static function __init(){
-			if(!is_array(self::$_fields)){
-				self::$_fields = array();
-
-				$rows = Symphony::Database()->fetch(sprintf("
-						SELECT f.`element_name` AS `handle`, f.`id`
-						FROM `sym_fields` AS `f`
-						WHERE f.parent_section = %d
-						ORDER BY `id` ASC
-					", extension_Members::getMembersSection())
-				);
-
-				if(!empty($rows)){
-					foreach($rows as $r){
-						self::$_fields[$r['handle']] = $r['id'];
-					}
-				}
-			}
-		}
-
 		protected function __trigger(){
-
 			$result = new XMLElement(self::ROOTELEMENT);
+			$fields = $_REQUEST['fields'];
 
-			self::__init();
-			$success = false;
+			$activation = extensionMembers::$fields['activation'];
 
-			$Members = Frontend::instance()->ExtensionManager->create('members');
-
-			if(!get_class($Members) == 'SymphonyMember') {
-				$result->appendChild(new XMLElement('notice', 'Unsupported Member Class ' . get_class($Members)));
+			if(!$activation instanceof Field) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', __('No Activation field found'))
+				);
 				return $result;
 			}
-
-			$Members->Member->initialiseCookie();
-
-			if($Members->Member->isLoggedIn() !== true){
-				$result->appendChild(new XMLElement('error', 'Must be logged in.'));
-				$result->setAttribute('status', 'error');
-				return $result;
-			}
-
-			$Members->Member->initialiseMemberObject();
 
 			// Make sure we dont accidently use an expired code
-			extension_Members::purgeCodes();
+			$activation->purgeCodes();
 
-			$activation_row = Symphony::Database()->fetchRow(0, sprintf(
-					"SELECT * FROM `tbl_members_codes` WHERE `code` = '%s' AND `member_id` = %d LIMIT 1",
-					$db->cleanValue($_POST['fields']['code']),
-					(int)$Members->Member->get('id')
-				)
-			);
+			// Check that a member exists first before proceeding.
+			$errors = array();
+			$identity = SymphonyMember::setIdentityField($fields);
+			$member_id = $identity->fetchMemberIDBy($fields, $errors);
 
-			// No code, you are a spy!
-			if(!empty($activation_row)){
-				$success = false;
-				$result->appendChild(new XMLElement('error', 'Activation failed. Code was invalid.'));
+			if(is_null($member_id)) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', __('Member not found.'))
+				);
+				return $result;
 			}
 
-			else{
-				// Got this far, all is well.
-				Symphony::Database()->query(sprintf(
-					"UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `entry_id` = %d LIMIT 1",
-					$Members->roleField(),
-					Symphony::Configuration()->get('new_member_default_role', 'members'),
-					(int)$Members->Member->get('id')
-				));
-
-				extension_Members::purgeCodes((int)$Members->Member->get('id'));
-
-				$entry = $Members->Member->Member;
-				$email = $entry->getData(extension_Members::getConfigVar('email'));
-				$name = $entry->getData(self::findFieldID('name'));
-
-				$Members->sendNewRegistrationEmail($entry, array(
-					'username-and-password' => $Members->Member->getData(self::findFieldID('username-and-password')),
-					'name' => $name['value'],
-					'email-address' => $email['value']
-				));
-
-				$success = true;
+			if($activation->isCodeActive($member_id) !== $fields['activation-code']) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', __('Activation failed. Code was invalid.'))
+				);
+				return $result;
 			}
 
-			if($success == true && isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+			// Got to here, then everything is awesome.
+			$activation->purgeCodes($member_id);
 
-			$result->setAttribute('result', ($success === true ? 'success' : 'error'));
+			$data = $activation->processRawFieldData(array(
+				'activated' => 'yes',
+				'code' => null
+			), false);
+
+			// Update the database setting activation to yes.
+			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
+
+			// Retrieve Member Entry record
+			$entryManager = new EntryManager(Frontend::instance());
+			$entry = $entryManager->fetch($member_id);
+
+			// Simulate an array to login with.
+			$data_fields = array_merge($fields, array(
+				'password' => $entry->getData(extension_Members::getConfigVar('authentication'), true)->password
+			));
+
+			$driver = Symphony::ExtensionManager()->create('members');
+			if($driver->Member->login($data_fields, true)) {
+				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+				$result->setAttribute('result', 'success');
+			}
+			// User didn't login, unknown error.
+			else {
+				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+				$result->setAttribute('result', 'error');
+			}
 
 			return $result;
 		}
