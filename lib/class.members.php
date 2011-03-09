@@ -89,7 +89,7 @@
 		public function findMemberIDFromIdentity($needle = null){
 			if(is_null($needle)) return null;
 
-			$identity = self::$driver->$fm->fetch(extension_Members::getConfigVar('identity'));
+			$identity = extension_Members::$fields['identity'];
 
 			return $identity->fetchMemberIDBy($needle);
 		}

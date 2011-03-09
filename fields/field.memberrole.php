@@ -129,7 +129,7 @@
 			);
 			
 			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
-				Symphony::Configuration()->set('role', $i    d, 'members');
+				Symphony::Configuration()->set('role', $id, 'members');
 				Administration::instance()->saveConfig();
 			}
 

@@ -19,10 +19,10 @@
 
 			// Login with username
 			if(is_null($email)) {
-				SymphonyMember::$identity_field = self::$driver->fm->fetch(extension_Members::getConfigVar('identity'));
+				SymphonyMember::$identity_field = extension_Members::$fields['identity'];
 			}
 			else if (is_null($username)) {
-				SymphonyMember::$identity_field = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
+				SymphonyMember::$identity_field = extension_Members::$fields['email'];
 			}
 
 			return SymphonyMember::$identity_field;
@@ -53,11 +53,21 @@
 			if(is_null($member)) return null;
 
 			// Validate against Password
-			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));;
+			$auth = extension_Members::$fields['authentication'];
 
 			if(is_null($auth)) return $member;
 
 			$member = $auth->fetchMemberIDBy($credentials, $member, $errors);
+
+			// Check that if there's activiation, that this Member is activated.
+			if(!is_null(extension_Members::getConfigVar('activation'))) {
+				$activation = extension_Members::$fields['activation'];
+
+				if($activation->get('activated') == 'no') {
+					$errors['activation'] = __('Account not activated');
+					return false;
+				}
+			}
 
 			return $member;
 		}
@@ -70,7 +80,7 @@
 			extract($credentials);
 			$errors = array();
 
-			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+			$auth = extension_Members::$fields['authentication'];
 
 			$data = array(
 				'password' => $auth->encodePassword($password)
@@ -150,9 +160,16 @@
 			// If there is a Role field, this needs to check that if it was
 			// not provided in the $_POST data, that it is set to the Default Role.
 			if(!is_null(extension_Members::getConfigVar('role'))) {
-				$role = self::$driver->fm->fetch(extension_Members::getConfigVar('role'));
+				$role = extension_Members::$fields['role'];
 				if(!isset($context['fields'][$role->get('element_name')])) {
 					$context['fields'][$role->get('element_name')] = $role->get('default_role');
+				}
+			}
+
+			if(!is_null(extension_Members::getConfigVar('activation'))) {
+				$activation = extension_Members::$fields['activation'];
+				if(!isset($context['fields'][$activation->get('element_name')])) {
+					$context['fields'][$activation->get('element_name')] = 'no';
 				}
 			}
 		}
@@ -164,7 +181,7 @@
 			// they enter a value in the password field, in which it assumes the user is
 			// trying to update their password.
 			if(!is_null(extension_Members::getConfigVar('authentication'))) {
-				$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+				$auth = extension_Members::$fields['authentication'];
 				$context['fields'][$auth->get('element_name')]['optional'] = 'yes';
 			}
 		}
@@ -193,7 +210,7 @@
 		public static function filter_PasswordReset(Array &$fields, XMLElement &$result, Event &$event) {
 
 			// Check that this Email has an Entry
-			$email = self::$driver->fm->fetch(extension_Members::getConfigVar('email'));
+			$email = extension_Members::$fields['email'];
 			$member_id = $email->fetchMemberIDBy($fields[$email->get('element_name')]);
 
 			if(is_null($member_id)) return null;
@@ -202,7 +219,7 @@
 			$newPassword = General::generatePassword();
 
 			// Set the Entry password to be reset and the current timestamp
-			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+			$auth = extension_Members::$fields['authentication'];
 			$simulate = false;
 			$data = $auth->processRawFieldData(array(
 				'recovery-code' => sha1($newPassword . $member_id),
@@ -254,7 +271,7 @@
 
 			// Check that there is a row with this recovery code and that they request a password
 			// reset
-			$auth = self::$driver->fm->fetch(extension_Members::getConfigVar('authentication'));
+			$auth = extension_Members::$fields['authentication'];
 			$row = Symphony::Database()->fetchRow(0, sprintf("
 					SELECT `entry_id`, `recovery-code`
 					FROM tbl_entries_data_%d

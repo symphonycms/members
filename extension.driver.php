@@ -9,39 +9,44 @@
 	Class extension_Members extends Extension {
 
 		/**
-		 * @param SymphonyMember $Member
+		 * @var SymphonyMember $Member
 		 */
 		public $Member = null;
 
 		/**
-		 * @param integer $members_section
+		 * @var integer $members_section
 		 */
 		public static $members_section = null;
 
 		/**
-		 * @param array $member_fields
+		 * @var array $member_fields
 		 */
 		public static $member_fields = array(
 			'memberusername'
 		);
 
 		/**
-		 * @param boolean $failed_login_attempt
+		 * @var boolean $failed_login_attempt
 		 */
 		public static $_failed_login_attempt = false;
 
 		/**
-		 * @param FieldManager $fm
+		 * @var array $fields
 		 */
-		public $fm = null;
+		public static $fields = array();
 
 		/**
-		 * @param SectionManager $sm
+		 * @var boolean $initialised
+		 */
+		public static $initialised = false;
+
+		/**
+		 * @var SectionManager $sm
 		 */
 		public $sm = null;
 
 		/**
-		 * @param EntryManager $em
+		 * @var EntryManager $em
 		 */
 		public $em = null;
 
@@ -56,9 +61,54 @@
 				$this->Member = new SymphonyMember($this);
 			}
 
-			$this->fm = new FieldManager(Symphony::Engine());
 			$this->sm = new SectionManager(Symphony::Engine());
 			$this->em = new EntryManager(Symphony::Engine());
+
+			if(!extension_Members::$initialised) {
+				extension_Members::initialise();
+			}
+		}
+
+		public static function initialise() {
+			extension_Members::$initialised = true;
+			$fieldManager = new FieldManager(Symphony::Engine());
+
+			if(!is_null(extension_Members::getConfigVar('timezone'))) {
+				extension_Members::$fields['timezone'] = $fieldManager->fetch(
+					extension_Members::getConfigVar('timezone')
+				);
+			}
+
+			if(!is_null(extension_Members::getConfigVar('role'))) {
+				extension_Members::$fields['role'] = $fieldManager->fetch(
+					extension_Members::getConfigVar('role')
+				);
+			}
+
+			if(!is_null(extension_Members::getConfigVar('activation'))) {
+				extension_Members::$fields['activation'] = $fieldManager->fetch(
+					extension_Members::getConfigVar('activation')
+				);
+			}
+
+			if(!is_null(extension_Members::getConfigVar('identity'))) {
+				extension_Members::$fields['identity'] = $fieldManager->fetch(
+					extension_Members::getConfigVar('identity')
+				);
+			}
+
+			if(!is_null(extension_Members::getConfigVar('email'))) {
+				extension_Members::$fields['email'] = $fieldManager->fetch(
+					extension_Members::getConfigVar('email')
+				);
+			}
+
+			if(!is_null(extension_Members::getConfigVar('authentication'))) {
+				extension_Members::$fields['authentication'] = $fieldManager->fetch(
+					extension_Members::getConfigVar('authentication')
+				);
+			}
+
 		}
 
 		public function about(){
@@ -257,9 +307,7 @@
 		 * @return void
 		 */
 		public function __updateSystemTimezoneOffset($member_id) {
-			if(is_null(extension_Members::getConfigVar('timezone'))) return;
-
-			$timezone = $this->fm->fetch(extension_Members::getConfigVar('timezone'));
+			$timezone = extension_Members::$fields['timezone'];
 
 			if(!$timezone instanceof fieldMemberTimezone) return;
 
