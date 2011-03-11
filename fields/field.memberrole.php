@@ -128,7 +128,7 @@
 				'default_role' => $this->get('default_role')
 			);
 			
-			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('role', $id, 'members');
 				Administration::instance()->saveConfig();
 			}

@@ -59,7 +59,7 @@
 				  `entry_id` int(11) unsigned NOT NULL,
 				  `activated` enum('yes','no') NOT NULL default 'no',
 				  `timestamp` DATETIME default NULL,
-				  `code` varchar(40) NOT NULL,
+				  `code` varchar(40) default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`)
 				) ENGINE=MyISAM;"
@@ -112,16 +112,19 @@
 		 * @return array
 		 */
 		public function isCodeActive($entry_id) {
-			// First check if a code already exists
-			$code = Symphony::Database()->fetchRow(0, sprintf("
+
+			$sql = sprintf("
 				SELECT `code`, `timestamp` FROM `tbl_entries_data_%d`
 				WHERE `entry_id` = %d
 				AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
 				LIMIT 1",
  				$this->get('id'),
 				$entry_id,
-				DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry')))
-			));
+				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
+			);
+
+			// First check if a code already exists
+			$code = Symphony::Database()->fetchRow(0, $sql);
 
 			if(is_array($code) && !empty($code)) {
 				return $code;
@@ -137,14 +140,15 @@
 		 * be removed on a per member basis, or whether it should be a global
 		 * purge.
 		 *
+		 * @todo Look whether this function needs to exist..
 		 * @param integer $entry_id
 		 * @return boolean
 		 */
 		public function purgeCodes($entry_id = null){
 			$entry_id = Symphony::Database()->cleanValue($entry_id);
 
-			return Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') <= %s %s",
-				DateTimeObj::get('Y-m-d H:i:s', time()), ($entry_id ? " OR `entry_id` = $entry_id" : '')
+			return Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
+				DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))), ($entry_id ? " OR `entry_id` = $entry_id" : '')
 			));
 		}
 
@@ -242,7 +246,7 @@
 				'code_expiry' => $this->get('code_expiry')
 			);
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('activation', $id, 'members');
 				Administration::instance()->saveConfig();
 			}
@@ -331,15 +335,23 @@
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 
-			$data = array(
-				'activated' => $data
-			);
+			if(is_null($data) && !is_null($entry_id)) {
+				$entryManager = new EntryManager(Symphony::Engine());
+				$entry = $entryManager->fetch($entry_id);
 
-			if($data['activated'] == "no") {
-				$data = array_merge($data, $this->generateCode($entry_id));
+				$data = $entry[0]->getData($this->get('id'));
 			}
 			else {
-				$data['timestamp'] = DateTimeObj::get('Y-m-d H:i:s', time());
+				if(!is_array($data)) {
+					$data = array('activated' => $data);
+				}
+
+				if($data['activated'] == "no") {
+					$data = array_merge($data, $this->generateCode($entry_id));
+				}
+				else {
+					$data['timestamp'] = DateTimeObj::get('Y-m-d H:i:s', time());
+				}
 			}
 
 			return $data;

@@ -68,7 +68,11 @@
 				$this->get('id'), Symphony::Database()->cleanValue($username)
 			));
 
-			return ($member_id ? $member_id : NULL);
+			if(is_null($member_id)) {
+				extension_Members::$_errors[$this->get('element_name')] = __("Member not found");
+				return null;
+			}
+			else return $member_id;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -104,7 +108,7 @@
 				'validator' => $this->get('validator')
 			);
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('identity', $id, 'members');
 				Administration::instance()->saveConfig();
 			}

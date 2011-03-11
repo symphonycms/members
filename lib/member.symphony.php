@@ -37,7 +37,7 @@
 		 * @param array $credentials
 		 * @return integer
 		 */
-		public function findMemberIDFromCredentials(Array $credentials, Array &$errors = array()) {
+		public function findMemberIDFromCredentials(Array $credentials) {
 			extract($credentials);
 
 			// It's expected that $password is sha1'd and salted.
@@ -57,14 +57,15 @@
 
 			if(is_null($auth)) return $member_id;
 
-			$member_id = $auth->fetchMemberIDBy($credentials, $member_id, $errors);
+			$member_id = $auth->fetchMemberIDBy($credentials, $member_id);
+
+			if(is_null($member_id)) return null;
 
 			// Check that if there's activiation, that this Member is activated.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
-				$activation = extension_Members::$fields['activation'];
-
-				if($activation->get('activated') == 'no') {
-					$errors['activation'] = __('Account not activated.');
+				$entry = self::$driver->em->fetch($member_id);
+				if($entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
+					extension_Members::$_errors['activation'] = __('Account not activated.');
 					return false;
 				}
 			}
@@ -78,7 +79,6 @@
 
 		public function login(Array $credentials, $isHashed = false){
 			extract($credentials);
-			$errors = array();
 
 			$auth = extension_Members::$fields['authentication'];
 
@@ -93,7 +93,7 @@
 				$data['email'] = Symphony::Database()->cleanValue($email);
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data, $errors)) {
+			if($id = $this->findMemberIDFromCredentials($data)) {
 				try{
 					self::$member_id = $id;
 					$this->initialiseCookie();
@@ -125,7 +125,7 @@
 			return false;
 		}
 
-		public function isLoggedIn(Array &$errors = array()) {
+		public function isLoggedIn() {
 			if(self::$isLoggedIn) return true;
 
 			$this->initialiseCookie();
@@ -141,7 +141,7 @@
 				$data['email'] = $this->cookie->get('email');
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data, $errors)) {
+			if($id = $this->findMemberIDFromCredentials($data)) {
 				self::$member_id = $id;
 				self::$isLoggedIn = true;
 				return true;

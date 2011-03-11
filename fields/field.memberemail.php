@@ -62,7 +62,11 @@
 				$this->get('id'), Symphony::Database()->cleanValue($email)
 			));
 
-			return ($member_id ? $member_id : NULL);
+			if(is_null($member_id)) {
+				extension_Members::$_errors[$this->get('element_name')] = __("Member not found");
+				return null;
+			}
+			else return $member_id;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -88,8 +92,8 @@
 			$fields = array(
 				'field_id' => $id
 			);
-			
-			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+
+			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('email', $id, 'members');
 				Administration::instance()->saveConfig();
 			}

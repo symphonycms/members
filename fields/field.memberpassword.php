@@ -92,7 +92,7 @@
 		 * @param integer $member_id
 		 * @return Entry|null
 		 */
-		public function fetchMemberIDBy($needle, $member_id, &$errors) {
+		public function fetchMemberIDBy($needle, $member_id) {
 			if(is_array($needle)) {
 				extract($needle);
 			}
@@ -123,7 +123,7 @@
 
 				// If we didn't get an entry_id back, then it's because it was expired
 				if(is_null($valid_id)) {
-					$errors[] = array('expired-password', __('Password has expired'));
+					extension_Members::$_errors[$this->get('element_name')] = __('Password has expired');
 				}
 				// Otherwise, we found the entry_id, so lets remove the reset and expires as this password
 				// has now been used by the user.
@@ -134,6 +134,8 @@
 			}
 
 			if($data['entry_id'] == $member_id) return $member_id;
+			
+			extension_Members::$_errors[$this->get('element_name')] = __('Invalid password');
 
 			return null;
 		}
@@ -297,8 +299,8 @@
 				'strength' => $this->get('strength'),
 				'salt' => $this->get('salt')
 			);
-			
-			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+
+			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('authentication', $id, 'members');
 				Administration::instance()->saveConfig();
 			}
@@ -466,7 +468,7 @@
 				$pw->appendChild(
 					new XMLElement('recovery-code', $data['recovery-code'])
 				);
-				
+
 			}
 			// Output the hash of the password.
 			else {

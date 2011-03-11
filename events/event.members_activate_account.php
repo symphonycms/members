@@ -54,7 +54,7 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_REQUEST['fields'];
 
-			$activation = extensionMembers::$fields['activation'];
+			$activation = extension_Members::$fields['activation'];
 
 			if(!$activation instanceof Field) {
 				$result->setAttribute('result', 'error');
@@ -80,7 +80,8 @@
 				return $result;
 			}
 
-			if($activation->isCodeActive($member_id) !== $fields['activation-code']) {
+			$code = $activation->isCodeActive($member_id);
+			if($code['code'] != $fields['activation-code']) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', __('Activation failed. Code was invalid.'))
@@ -89,12 +90,12 @@
 			}
 
 			// Got to here, then everything is awesome.
-			$activation->purgeCodes($member_id);
-
+			$status = Field::__OK__;
 			$data = $activation->processRawFieldData(array(
 				'activated' => 'yes',
+				'timestamp' => DateTimeObj::get('Y-m-d H:i:s', time()),
 				'code' => null
-			), false);
+			), $status);
 
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
@@ -105,7 +106,7 @@
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
-				'password' => $entry->getData(extension_Members::getConfigVar('authentication'), true)->password
+				'password' => $entry[0]->getData(extension_Members::getConfigVar('authentication'), true)->password
 			));
 
 			$driver = Symphony::ExtensionManager()->create('members');

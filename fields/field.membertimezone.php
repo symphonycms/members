@@ -104,7 +104,7 @@
 				'available_zones' => implode(",", $this->get('available_zones'))
 			);
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section')) {
+			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('timezone', $id, 'members');
 				Administration::instance()->saveConfig();
 			}

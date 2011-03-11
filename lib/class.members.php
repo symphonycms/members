@@ -10,10 +10,10 @@
 		// Authentication
 		public function login(Array $credentials);
 		public function logout();
-		public function isLoggedIn(Array &$errors = array());
+		public function isLoggedIn();
 
 		// Finding
-		public function findMemberIDFromCredentials(Array $credentials, Array &$errors = array());
+		public function findMemberIDFromCredentials(Array $credentials);
 
 		// Output
 		public function addMemberDetailsToPageParams(Array $context = null);
@@ -131,9 +131,8 @@
 
 		public function appendLoginStatusToEventXML(Array $context = null){
 			$result = new XMLElement('member-login-info');
-			$errors = array();
 
-			if($this->isLoggedIn($errors)) {
+			if($this->isLoggedIn()) {
 				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
 				$result->setAttributeArray(array(
 					'logged-in' => 'true',
@@ -150,10 +149,10 @@
 					$result->setAttribute('failed-login-attempt','false');
 				}
 
-				if(is_array($errors) && !empty($errors)) {
-					foreach($errors as $error) {
+				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
+					foreach(extension_Members::$_errors as $type => $error) {
 						$result->appendChild(
-							new XMLElement($error[0], $error[1])
+							new XMLElement($type, $error)
 						);
 					}
 				}

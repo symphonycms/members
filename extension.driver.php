@@ -29,6 +29,11 @@
 		 * @var boolean $failed_login_attempt
 		 */
 		public static $_failed_login_attempt = false;
+		
+		/**
+		 * @var boolean $failed_login_attempt
+		 */
+		public static $_errors = array();
 
 		/**
 		 * @var array $fields

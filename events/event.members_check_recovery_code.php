@@ -80,6 +80,7 @@
 				// Retrieve Member Entry record
 				$entryManager = new EntryManager(Frontend::instance());
 				$entry = $entryManager->fetch($row['entry_id']);
+				$entry = $entry[0];
 
 				if(!$entry instanceof Entry) {
 					$result->setAttribute('status', 'failed');
@@ -103,11 +104,12 @@
 				}
 
 				// processRawFieldData will encode the user's new password with the current one
+				$status = Field::__OK__;
 				$data = $auth->processRawFieldData(array(
 					'password' => $fields[$auth->get('element_name')],
 					'recovery-code' => null,
 					'reset' => 'no'
-				), false);
+				), $status);
 
 				// Update the database with the new password, removing the recovery code and setting
 				// reset to no.
