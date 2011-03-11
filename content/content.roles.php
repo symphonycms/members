@@ -148,6 +148,15 @@
 				}
 			}
 
+			// Add the Role mappings into Symphony.Context
+			$this->addElementToHead(
+				new XMLElement(
+					'script',
+					"Symphony.Context.add('members-roles', " . json_encode(EventPermissions::$permissionMap) . ");",
+					array('type' => 'text/javascript')
+				), 73
+			);
+
 			// Add in custom assets
 			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/members.roles.css', 'screen', 101);
 			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/jquery-ui.css', 'screen', 102);

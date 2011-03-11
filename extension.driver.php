@@ -197,7 +197,7 @@
 					'page'		=> '/blueprints/events/',
 					'delegate'	=> 'EventPreEdit',
 					'callback'	=> 'customEventInjection'
-				),
+				)
 			);
 		}
 
@@ -481,7 +481,6 @@
 			$role = RoleManager::fetch($role_id);
 
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
-
 				// User has no access to this page, so look for a custom 403 page
 				if($row = Symphony::Database()->fetchRow(0,"
 					SELECT `p`.*
@@ -489,25 +488,22 @@
 					LEFT JOIN `tbl_pages_types` AS `pt` ON(`p`.id = `pt`.page_id)
 					WHERE `pt`.type = '403'
 				")) {
-
-					$row['type'] = Symphony::Database()->fetchCol('type',
-						"SELECT `type` FROM `tbl_pages_types` WHERE `page_id` = ".$row['id']
-					);
-
-					$row['filelocation'] = (PAGES . '/' . trim(str_replace('/', '_', $row['path'] . '_' . $row['handle']), '_') . '.xsl');
+					$row['type'] = FrontendPage::fetchPageTypes($row['id']);
+					$row['filelocation'] = FrontendPage::resolvePageFileLocation($row['path'], $row['handle']);
 
 					$context['page_data'] = $row;
 					return;
 				}
-
-				// No custom 403, just throw default 403
-				GenericExceptionHandler::$enabled = true;
-				throw new SymphonyErrorPage(
-					__('Please <a href="%s">login</a> to view this page.', array(SYMPHONY_URL . '/login/')),
-					__('Forbidden'),
-					'error',
-					array('header' => 'HTTP/1.0 403 Forbidden')
-				);
+				else {
+					// No custom 403, just throw default 403
+					GenericExceptionHandler::$enabled = true;
+					throw new SymphonyErrorPage(
+						__('Please <a href="%s">login</a> to view this page.', array(SYMPHONY_URL . '/login/')),
+						__('Forbidden'),
+						'error',
+						array('header' => 'HTTP/1.0 403 Forbidden')
+					);
+				}
 			}
 		}
 
@@ -548,13 +544,13 @@
 				$entry_id = 0;
 			}
 
-			$required_level = EventPermissions::ALL_ENTRIES;
+			$required_level = $action == 'create' ? EventPermissions::OWN_ENTRIES : EventPermissions::ALL_ENTRIES;
 			$role_id = Role::PUBLIC_ROLE;
 			$isLoggedIn = $this->Member->isLoggedIn();
 
-			if($isLoggedIn) {
-				$this->Member->initialiseMemberObject();
+			$this->Member->initialiseMemberObject();
 
+			if($isLoggedIn) {
 				if($this->Member->Member instanceOf Entry) {
 					$required_level = EventPermissions::OWN_ENTRIES;
 					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));

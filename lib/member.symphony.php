@@ -174,19 +174,30 @@
 			}
 		}
 
+		/**
+		 * Part 1 - Update Password
+		 * If there is an Authentication field, we need to inject the 'optional'
+		 * key so that it won't flag a user's password as invalid if they fail to
+		 * enter it. The use of the 'optional' key will only trigger validation should
+		 * they enter a value in the password field, in which it assumes the user is
+		 * trying to update their password.
+		 */
 		public function filter_UpdatePassword(Array &$context) {
-			// If there is an Authentication field, we need to inject the 'optional'
-			// key so that it won't flag a user's password as invalid if they fail to
-			// enter it. The use of the 'optional' key will only trigger validation should
-			// they enter a value in the password field, in which it assumes the user is
-			// trying to update their password.
 			if(!is_null(extension_Members::getConfigVar('authentication'))) {
 				$auth = extension_Members::$fields['authentication'];
 				$context['fields'][$auth->get('element_name')]['optional'] = 'yes';
 			}
 		}
 
+		/**
+		 * Part 2 - Update Password, logs the user in
+		 * If the user changed their password, we need to login them back into the
+		 * system with their new password.
+		 */
 		public function filter_UpdatePasswordLogin(Array &$context) {
+			// If the user didn't update their password.
+			if(empty($context['fields']['password']['password'])) return;
+
 			$this->login(array(
 				'password' => $context['fields']['password']['password'],
 				'username' => $context['entry']->getData(extension_Members::getConfigVar('identity'), true)->value

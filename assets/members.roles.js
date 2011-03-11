@@ -4,13 +4,13 @@
  * @todo Attack this code.
  */
 jQuery(document).ready(function(){
-	
+
 	jQuery("form").submit(function() {
 	  if(jQuery("#with-selected").val() == "delete"){
 	    return confirm('There are still members in this role, are you sure you want to delete the role and all associated members?');
 	  }
 	});
-	
+
 	$ = jQuery;
 
 	$.fn.setSliderValue = function() {
@@ -19,10 +19,7 @@ jQuery(document).ready(function(){
 		});
 	}
 
-	var permissions = new Array();
-	permissions[0] = "No Privileges";
-	permissions[1] = "Own Entries";
-	permissions[2] = "All Entries";
+	var permissions = Symphony.Context.get('members-roles');
 
 	$(".global-slider").slider({
 		range: "min",
