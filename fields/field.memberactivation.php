@@ -360,17 +360,21 @@
 			$el->setAttribute('activated', $data['activated']);
 
 			if($data['activated'] == 'yes') {
+				// Append the time the person was activated
 				$el->appendChild(
 					General::createXMLDateObject(strtotime($data['timestamp']), 'date')
 				);
 			}
 			else {
+				// Append the code
 				$el->appendChild(
 					new XMLElement('code', $data['code'])
 				);
-				$el->appendChild(
-					General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry')), 'expires')
-				);
+
+				// Add expiry timestamp, including how long the code is valid for
+				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry')), 'expires');
+				$expiry->setAttribute('expiry', $this->get('code_expiry'));
+				$el->appendChild($expiry);
 			}
 
 			$wrapper->appendChild($el);

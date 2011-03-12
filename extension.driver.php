@@ -544,11 +544,10 @@
 
 			$required_level = $action == 'create' ? EventPermissions::OWN_ENTRIES : EventPermissions::ALL_ENTRIES;
 			$role_id = Role::PUBLIC_ROLE;
+
 			$isLoggedIn = $this->Member->isLoggedIn();
 
-			$this->Member->initialiseMemberObject();
-
-			if($isLoggedIn) {
+			if($isLoggedIn && $this->Member->initialiseMemberObject()) {
 				if($this->Member->Member instanceOf Entry) {
 					$required_level = EventPermissions::OWN_ENTRIES;
 					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
