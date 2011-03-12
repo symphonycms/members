@@ -2,13 +2,13 @@
 
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
 
-	Class eventMembers_Check_Recovery_Code extends Event {
+	Class eventMembers_Recover_Account extends Event {
 
-		const ROOTELEMENT = 'members-check-recovery-code';
+		const ROOTELEMENT = 'members-recover-account';
 
 		public static function about(){
 			return array(
-				'name' => 'Members: Check Recovery Code',
+				'name' => 'Members: Recover Account',
 				'author' => array(
 					'name' => 'Symphony CMS',
 					'website' => 'http://symphony-cms.com',
@@ -25,7 +25,7 @@
 		public static function documentation(){
 			return '
 				<p>This event takes a recovery code and a new password for a user. A recovery code is
-				can be sent to a Member\'s email after the Member: Reset Password filter has executed.</p>
+				can be sent to a Member\'s email after the Member: Reset Password event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
 				accepts the member\'s recovery code, two password fields (one for password, one to confirm)
@@ -39,16 +39,20 @@
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;
 				</code></pre>
-					<h3>Example Error XML</h3>
-					<pre class="XML"><code>
-					&lt;' . self::ROOTELEMENT . ' result="error"&gt;
-						&lt;error&gt;No recovery code found&lt;/error&gt;
-						&lt;error&gt;Member not found&lt;/error&gt;
-						&lt;error&gt;Passwords do not match.&lt;/error&gt;
-						&lt;error&gt;Password is too short. It must be at least %d characters.&lt;/error&gt;
-						&lt;error&gt;Password is not strong enough.&lt;/error&gt;
-					&lt;/' . self::ROOTELEMENT . '&gt;
-					</code></pre>
+				<h3>Example Success XML</h3>
+				<pre class="XML"><code>
+				&lt;' . self::ROOTELEMENT . ' result="success"/&gt;
+				</code></pre>
+				<h3>Example Error XML</h3>
+				<pre class="XML"><code>
+				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
+					&lt;error&gt;No recovery code found&lt;/error&gt;
+					&lt;error&gt;Member not found&lt;/error&gt;
+					&lt;error&gt;Passwords do not match.&lt;/error&gt;
+					&lt;error&gt;Password is too short. It must be at least %d characters.&lt;/error&gt;
+					&lt;error&gt;Password is not strong enough.&lt;/error&gt;
+				&lt;/' . self::ROOTELEMENT . '&gt;
+				</code></pre>
 			';
 		}
 
@@ -63,13 +67,13 @@
 					SELECT `entry_id`, `recovery-code`
 					FROM tbl_entries_data_%d
 					WHERE reset = 'yes'
-					AND recovery-code = '%s'
+					AND `recovery-code` = '%s'
 					AND password IS NULL
 				", $auth->get('id'), Symphony::Database()->cleanValue($fields['recovery-code'])
 			));
 
 			if(empty($row)) {
-				$result->setAttribute('status', 'failed');
+				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', __('No recovery code found'))
 				);
@@ -83,7 +87,7 @@
 				$entry = $entry[0];
 
 				if(!$entry instanceof Entry) {
-					$result->setAttribute('status', 'failed');
+					$result->setAttribute('result', 'error');
 					$result->appendChild(
 						new XMLElement('error', __('Member not found'))
 					);
@@ -95,7 +99,7 @@
 				// and processRawFieldData functions.
 				$message = '';
 				if(Field::__OK__ != $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id'])) {
-					$result->setAttribute('status', 'failed');
+					$result->setAttribute('result', 'error');
 					$result->appendChild(
 						new XMLElement('error', $message)
 					);
@@ -106,7 +110,7 @@
 				// processRawFieldData will encode the user's new password with the current one
 				$status = Field::__OK__;
 				$data = $auth->processRawFieldData(array(
-					'password' => $fields[$auth->get('element_name')],
+					'password' => $fields[$auth->get('element_name')]['password'],
 					'recovery-code' => null,
 					'reset' => 'no'
 				), $status);
@@ -117,7 +121,8 @@
 
 				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
 				// handle relogging in the user.
-				SymphonyMember::filter_UpdatePasswordLogin(array(
+				$driver = Symphony::ExtensionManager()->create('members');
+				$driver->Member->filter_UpdatePasswordLogin(array(
 					'entry' => $entry,
 					'fields' => array(
 						'password' => array(
@@ -125,6 +130,8 @@
 						)
 					)
 				));
+
+				$result->setAttribute('result', 'success');
 			}
 
 			return $result;

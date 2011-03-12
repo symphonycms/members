@@ -15,8 +15,6 @@
 		public static function setIdentityField(Array $credentials) {
 			extract($credentials);
 
-			if(!is_null(SymphonyMember::$identity_field)) return SymphonyMember::$identity_field;
-
 			// Login with username
 			if(is_null($email)) {
 				SymphonyMember::$identity_field = extension_Members::$fields['identity'];
@@ -196,7 +194,7 @@
 		 * If the user changed their password, we need to login them back into the
 		 * system with their new password.
 		 */
-		public function filter_UpdatePasswordLogin(Array &$context) {
+		public function filter_UpdatePasswordLogin(Array $context) {
 			// If the user didn't update their password.
 			if(empty($context['fields']['password']['password'])) return;
 
@@ -211,65 +209,6 @@
 			else {
 				redirect(URL);
 			}
-		}
-
-		/**
-		 * Custom code that is called from the Event's load() function
-		 *
-		 * @param array $fields
-		 * @param XMLElement $result
-		 * @param Event $event
-		 */
-		public static function filter_PasswordReset(Array &$fields, XMLElement &$result, Event &$event) {
-
-			// Check that this Email has an Entry
-			$email = extension_Members::$fields['email'];
-			$member_id = $email->fetchMemberIDBy($fields[$email->get('element_name')]);
-
-			if(is_null($member_id)) return null;
-
-			// Generate new password
-			$newPassword = General::generatePassword();
-
-			// Set the Entry password to be reset and the current timestamp
-			$auth = extension_Members::$fields['authentication'];
-			$data = $auth->processRawFieldData(array(
-				'recovery-code' => sha1($newPassword . $member_id),
-				'password' => null
-			), false);
-
-			$data['reset'] = 'yes';
-			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
-
-			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
-
-			// Add member email to event output.
-			$result->appendChild(
-				new XMLElement('member-email', $fields[$email->get('element_name')])
-			);
-
-			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
-			// uses to send emails.
-			$filter_errors = array();
-			$entry = self::$driver->em->fetch($member_id);
-
-			/**
-			 * @delegate EventFinalSaveFilter
-			 * @param string $context
-			 * '/frontend/'
-			 * @param array $fields
-			 * @param string $event
-			 * @param array $filter_errors
-			 * @param Entry $entry
-			 */
-			Symphony::ExtensionManager()->notifyMembers(
-				'EventFinalSaveFilter', '/frontend/', array(
-					'fields'	=> $fields,
-					'event'		=> &$event,
-					'errors'	=> &$filter_errors,
-					'entry'		=> $entry
-				)
-			);
 		}
 
 	}

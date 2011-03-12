@@ -192,16 +192,6 @@
 					'page'		=> '/blueprints/events/edit/',
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'appendFilter'
-				),
-				array(
-					'page'		=> '/blueprints/events/',
-					'delegate'	=> 'EventPreCreate',
-					'callback'	=> 'customEventInjection'
-				),
-				array(
-					'page'		=> '/blueprints/events/',
-					'delegate'	=> 'EventPreEdit',
-					'callback'	=> 'customEventInjection'
 				)
 			);
 		}
@@ -360,15 +350,6 @@
 					in_array('member-update-password', $selected),
 					__('Members: Update Password')
 				);
-
-				if(!is_null(extension_Members::getConfigVar('email'))) {
-					// Add Member: Reset Password filter
-					$context['options'][] = array(
-						'member-reset-password',
-						in_array('member-reset-password', $selected),
-						__('Members: Reset Password')
-					);
-				}
 			}
 		}
 
@@ -389,6 +370,8 @@
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild(new XMLElement('legend', __('Members')));
+
+			$group = new XMLElement('div', null, array('class' => 'group'));
 
 			$label = new XMLElement('label', __('Active Members Section'));
 
@@ -415,8 +398,26 @@
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
+			$group->appendChild($label);
 
-			$fieldset->appendChild($label);
+			try {
+				$label = new XMLElement('label', __('Reset Password Email Template'));
+				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
+				$templates = $driver->getTemplates();
+
+				$options = array();
+				foreach($templates as $template) {
+					$options[] = array($template['id'], ($template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
+				}
+
+				$label->appendChild(Widget::Select('settings[members][reset-password-template]', $options));
+				$group->appendChild($label);
+			}
+			catch(Exception $ex) {
+
+			}
+
+			$fieldset->appendChild($group);
 			$context['wrapper']->appendChild($fieldset);
 		}
 
@@ -429,6 +430,7 @@
 			$settings = $_POST['settings'];
 
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
+			Symphony::Configuration()->set('section', $settings['members']['reset-password-template'], 'members');
 			Administration::instance()->saveConfig();
 		}
 
@@ -662,22 +664,8 @@
 		public function processPostSaveFilter(Array &$context) {
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_UpdatePasswordLogin(&$context);
+				$this->Member->filter_UpdatePasswordLogin($context);
 			}
-		}
-
-		/**
-		 * Custom Event injection
-		 */
-		public function customEventInjection(Array &$context) {
-			if(!in_array('member-reset-password', $context['filters'])) return;
-
-			$replacements = "
-			\$result = new XMLElement(self::ROOTELEMENT);
-			SymphonyMember::filter_PasswordReset(\$_POST['fields'], \$result, \$this);
-			";
-
-			$context['contents'] = str_replace("include(TOOLKIT . '/events/event.section.php');", $replacements, $context['contents']);
 		}
 
 	/*-------------------------------------------------------------------------

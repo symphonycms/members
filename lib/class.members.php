@@ -108,11 +108,6 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		/**
-		 * TODO
-		 * Do we leave this as-is, or shift to a more 3-esque approach where
-		 * all the data goes into the XML?
-		 */
 		public function addMemberDetailsToPageParams(Array $context = null) {
 			if(!$this->isLoggedIn()) return;
 

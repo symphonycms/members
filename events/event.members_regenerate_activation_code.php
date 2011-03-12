@@ -2,19 +2,19 @@
 
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
 
-	Class eventMembers_Activate_Account extends Event{
+	Class eventMembers_Regenerate_Activation_Code extends Event{
 
-		const ROOTELEMENT = 'members-activate-account';
+		const ROOTELEMENT = 'members-regenerate-activation-code';
 
 		public static function about(){
 			return array(
-				'name' => 'Members: Activate Account',
+				'name' => 'Members: Regenerate Activation Code',
 				'author' => array(
 					'name' => 'Symphony CMS',
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
 				'version' => '1.0',
-				'release-date' => '2011-03-09'
+				'release-date' => '2011-03-12'
 			);
 		}
 
@@ -24,31 +24,32 @@
 
 		public static function documentation(){
 			return '
-				<p>This event takes a recovery code and a new password for a user. A recovery code is
-				can be sent to a Member\'s email after the Member: Reset Password filter has executed.</p>
+				<p>This event will regenerate an activation code for a user and is useful if their current
+				activation code has expired. The activation code can be sent to a Member\'s email after
+				this event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
-				accepts the member\'s activation code and either the member\'s email address or username.</p>
+				accepts either the member\'s email address or username.</p>
 				<pre class="XML"><code>
 				&lt;form method="post"&gt;
 					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
 					or
 					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
-					&lt;label&gt;Activation Code: &lt;input name="fields[activation-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
-					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Activate Account"/&gt;
+					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Regenerate Activation Code"/&gt;
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;
 				</code></pre>
 				<h3>Example Success XML</h3>
 				<pre class="XML"><code>
-				&lt;' . self::ROOTELEMENT . ' result="success"/&gt;
+				&lt;' . self::ROOTELEMENT . ' result="success"&gt;
+					&lt;activation-code&gt;{$code}&lt;/activation-code&gt;
+				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>
 				<h3>Example Error XML</h3>
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
 					&lt;error&gt;No Activation field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
-					&lt;error&gt;Activation error. Code was invalid or has expired.&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>
 			';
@@ -84,47 +85,21 @@
 				return $result;
 			}
 
-			$code = $activation->isCodeActive($member_id);
-			if($code['code'] != $fields['activation-code']) {
-				$result->setAttribute('result', 'error');
-				$result->appendChild(
-					new XMLElement('error', __('Activation error. Code was invalid or has expired.'))
-				);
-				return $result;
-			}
-
-			// Got to here, then everything is awesome.
+			// Regenerate the code
 			$status = Field::__OK__;
 			$data = $activation->processRawFieldData(array(
-				'activated' => 'yes',
-				'timestamp' => DateTimeObj::get('Y-m-d H:i:s', time()),
-				'code' => null
+				'activated' => 'no',
 			), $status);
 
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
 
-			// Retrieve Member Entry record
-			$entryManager = new EntryManager(Frontend::instance());
-			$entry = $entryManager->fetch($member_id);
+			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
-			// Simulate an array to login with.
-			$data_fields = array_merge($fields, array(
-				'password' => $entry[0]->getData(extension_Members::getConfigVar('authentication'), true)->password
-			));
-
-			$driver = Symphony::ExtensionManager()->create('members');
-			if($driver->Member->login($data_fields, true)) {
-				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-
-				$result->setAttribute('result', 'success');
-			}
-			// User didn't login, unknown error.
-			else {
-				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-
-				$result->setAttribute('result', 'error');
-			}
+			$result->setAttribute('result', 'success');
+			$result->appendChild(
+				new XMLElement('activation-code', $data['code'])
+			);
 
 			return $result;
 		}

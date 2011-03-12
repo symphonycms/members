@@ -134,7 +134,7 @@
 			}
 
 			if($data['entry_id'] == $member_id) return $member_id;
-			
+
 			extension_Members::$_errors[$this->get('element_name')] = __('Invalid password');
 
 			return null;
@@ -456,9 +456,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-			if(!isset($data['password'])) return;
-
+		public function appendFormattedElement(&$wrapper, $data, $encode=false) {
 			$pw = new XMLElement($this->get('element_name'));
 
 			// If reset is set, return the recovery-code
@@ -468,10 +466,9 @@
 				$pw->appendChild(
 					new XMLElement('recovery-code', $data['recovery-code'])
 				);
-
 			}
 			// Output the hash of the password.
-			else {
+			else if($data['password']) {
 				$pw->setValue($data['password']);
 			}
 
@@ -481,9 +478,16 @@
 		public function prepareTableValue($data, XMLElement $link=NULL){
 			if(empty($data)) return __('None');
 
-			return parent::prepareTableValue(array(
-				'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
-			), $link);
+			if($data['reset'] == 'yes') {
+				return parent::prepareTableValue(array(
+					'value' => __('Password Reset')
+				), $link);
+			}
+			else {
+				return parent::prepareTableValue(array(
+					'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
+				), $link);
+			}
 		}
 
 	/*-------------------------------------------------------------------------
