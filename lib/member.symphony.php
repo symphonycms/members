@@ -165,7 +165,9 @@
 					$context['fields'][$role->get('element_name')] = $role->get('default_role');
 				}
 			}
+		}
 
+		public function filter_Activation(Array &$context) {
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$activation = extension_Members::$fields['activation'];
 				if(!isset($context['fields'][$activation->get('element_name')])) {

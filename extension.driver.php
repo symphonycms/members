@@ -351,13 +351,6 @@
 					in_array('member-activation', $selected),
 					__('Members: Activation')
 				);
-
-				// Add Member: Resend Activation filter
-				$context['options'][] = array(
-					'member-resend-activation',
-					in_array('member-resend-activation', $selected),
-					__('Members: Resend Activation')
-				);
 			}
 
 			if(!is_null(extension_Members::getConfigVar('authentication'))) {
@@ -649,6 +642,11 @@
 			// Process the Member Register
 			if (in_array('member-register', $context['event']->eParamFILTERS)) {
 				$this->Member->filter_Register(&$context);
+			}
+
+			// Process the Member Activation
+			if (in_array('member-activation', $context['event']->eParamFILTERS)) {
+				$this->Member->filter_Activation(&$context);
 			}
 
 			// Process updating a Member's Password

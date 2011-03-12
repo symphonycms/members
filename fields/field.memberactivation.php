@@ -4,13 +4,7 @@
 	 * Activation field. If added to a Members section, it generates and stores
 	 * activation codes for new members, handles activation via normal events,
 	 * sends emails, and displays as a checkbox in the backend publish area.
-	 *
-	 * === Events ===
-	 * POST data submitted to an activation field can accept one of two kinds of
-	 * data: an activation code, which will activate the member, or a response code.
-	 * Response codes are predefined codes used to get the field to do something,
-	 * like regenerate and reissue an activation code.
-	*/
+	 */
 
 	Class fieldMemberActivation extends Field {
 
@@ -113,7 +107,8 @@
 		 */
 		public function isCodeActive($entry_id) {
 
-			$sql = sprintf("
+			// First check if a code already exists
+			$code = Symphony::Database()->fetchRow(0, sprintf("
 				SELECT `code`, `timestamp` FROM `tbl_entries_data_%d`
 				WHERE `entry_id` = %d
 				AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
@@ -121,10 +116,7 @@
  				$this->get('id'),
 				$entry_id,
 				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
-			);
-
-			// First check if a code already exists
-			$code = Symphony::Database()->fetchRow(0, $sql);
+			));
 
 			if(is_array($code) && !empty($code)) {
 				return $code;
