@@ -2,8 +2,6 @@
 
 	Class SymphonyMember extends Members {
 
-		protected static $identity_field = null;
-
 		public function __construct($driver) {
 			parent::__construct($driver);
 		}
@@ -11,19 +9,26 @@
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
-
+		
+		/**
+		 * This function determines what field instance to use based on the current
+		 * $_POST data.
+		 *
+		 * @param array $credentials
+		 * @return Field
+		 */
 		public static function setIdentityField(Array $credentials) {
 			extract($credentials);
 
 			// Login with username
 			if(is_null($email)) {
-				SymphonyMember::$identity_field = extension_Members::$fields['identity'];
+				$identity_field = extension_Members::$fields['identity'];
 			}
 			else if (is_null($username)) {
-				SymphonyMember::$identity_field = extension_Members::$fields['email'];
+				$identity_field = extension_Members::$fields['email'];
 			}
 
-			return SymphonyMember::$identity_field;
+			return $identity_field;
 		}
 	/*-------------------------------------------------------------------------
 		Finding:

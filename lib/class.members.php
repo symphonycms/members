@@ -156,4 +156,23 @@
 			$context['wrapper']->appendChild($result);
 		}
 
+	/*-------------------------------------------------------------------------
+		Filters:
+	-------------------------------------------------------------------------*/
+	
+		public function filter_Register(Array &$context) {
+			return true;
+		}
+
+		public function filter_Activation(Array &$context) {
+			return true;
+		}
+
+		public function filter_UpdatePassword(Array &$context) {
+			return true;
+		}
+
+		public function filter_UpdatePasswordLogin(Array $context) {
+			return true;
+		}
 	}

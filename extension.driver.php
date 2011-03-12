@@ -113,14 +113,13 @@
 					extension_Members::getConfigVar('authentication')
 				);
 			}
-
 		}
 
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.0 alpha',
-				'release-date'	=> '2011',
+				'version' 		=> '1.0 Beta 1',
+				'release-date'	=> 'March 12th 2011',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
