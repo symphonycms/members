@@ -29,7 +29,7 @@
 		 * @var boolean $failed_login_attempt
 		 */
 		public static $_failed_login_attempt = false;
-		
+
 		/**
 		 * @var boolean $failed_login_attempt
 		 */
@@ -565,35 +565,52 @@
 						$section_id = $context['event']->getSource();
 						$member_id = false;
 
-						// If the $section_id = members_section
+						// If the event is the same section as the Members section, then for `$isOwner`
+						// to be true, the `$entry_id` must match the currently logged in user.
 						if($section_id == extension_Members::getMembersSection()) {
-							$field_id = extension_Members::getConfigVar('authentication');
+							$member_id = $entry_id;
 						}
-						// Or a SBL/RL field links to the identity field
-						// @todo check this is working as expected
+
+						// If the $section_id !== members_section, check the section associations table
+						// for any links to either of the Member fields that my be used for linking,
+						// that is the Username or Email field.
 						else {
+							$field_id = array();
+
+							// Get the ID's of the fields that may be used for Linking (Username/Email)
+							if(!is_null(extension_Members::getConfigVar('identity'))) {
+								$field_ids[] = extension_Members::getConfigVar('identity');
+							}
+
+							if(!is_null(extension_Members::getConfigVar('email'))) {
+								$field_ids[] = extension_Members::getConfigVar('email');
+							}
+
+							// Query for the `field_id` of any linking fields that link to the members
+							// section AND to one of the linking fields (Username/Email)
 							$field_id = Symphony::Database()->fetchVar('child_section_field_id', 0, sprintf("
 									SELECT `child_section_field_id`
 									FROM `tbl_sections_association`
 									WHERE `parent_section_id` = %d
-									AND `parent_section_field_id` = %d
 									AND `child_section_id` = %d
+									AND `parent_section_field_id` IN ('%s')
 								",
 								extension_Members::getMembersSection(),
-								extension_Members::getConfigVar('authentication'),
-								$section_id
+								$section_id,
+								implode("','", $field_ids)
 							));
+
+							// If there was a link found, get the `relation_id`, which is the `member_id` of
+							// an entry in the active Members section.
+							if($field_id) {
+								$member_id = Symphony::Database()->fetchVar('relation_id', 0, sprintf(
+									"SELECT `relation_id` FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1",
+									$field_id, $entry_id
+								));
+							}
 						}
 
-						// check that logged in member id == $entry_id
-						if($field_id) {
-							$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-								"SELECT * FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1",
-								$field_id, $entry_id
-							));
-						}
-
-						// if logged in member is the same as the member id for the Entry we are editing
+						// Check the logged in member is the same as the `$member_id` for the Entry we are editing
 						// then this user is the Owner, and can modify EventPermissions::OWN_ENTRIES
 						$isOwner = ($this->Member->Member->get('id') == $member_id);
 
