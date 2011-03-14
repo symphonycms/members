@@ -22,7 +22,7 @@
 		 * @var array $member_fields
 		 */
 		public static $member_fields = array(
-			'memberusername'
+			'memberusername', 'memberemail'
 		);
 
 		/**
@@ -281,13 +281,13 @@
 			return ($id == 0 ? NULL : $id);
 		}
 
-        public static function getMembersSection() {
+		public static function getMembersSection() {
 			if(is_null(extension_Members::$members_section)) {
 				extension_Members::$members_section = extension_Members::getConfigVar('section');
 			}
 
 			return extension_Members::$members_section;
-        }
+		}
 
 		public static function memberSectionHandle(){
 			return Symphony::Database()->fetchVar('handle', 0, "SELECT `handle` FROM `tbl_sections` WHERE `id` = " . self::getMembersSection(). " LIMIT 1");
@@ -392,6 +392,7 @@
 			}
 
 			$options = array();
+			$options[] = array(null, false, null);
 			foreach($member_sections as $section_id => $section) {
   				$options[] = array($section['id'], ($section->get['id'] == extension_Members::getMembersSection()), $section['name']);
 			}
