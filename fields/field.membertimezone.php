@@ -56,6 +56,26 @@
 			));
 		}
 
+		public function getToggleStates() {
+			$zones = explode(",", $this->get('available_zones'));
+
+			foreach($zones as $zone) {
+				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
+
+				$options = array();
+				foreach($timezones as $timezone) {
+					$tz = new DateTime('now', new DateTimeZone($timezone));
+
+					$options[$timezone] = sprintf("%s %s",
+						str_replace('_', ' ', substr(strrchr($timezone, '/'),1)),
+						$tz->format('P')
+					);
+				}
+			}
+
+			return $options;
+		}
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -126,11 +146,11 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
-			$zones = explode(",", $this->get('available_zones'));
-
 			$groups = array();
 
 			if ($this->get('required') != 'yes') $groups[] = array(NULL, false, NULL);
+
+			$zones = explode(",", $this->get('available_zones'));
 
 			foreach($zones as $zone) {
 				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
