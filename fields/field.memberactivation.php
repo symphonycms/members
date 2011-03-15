@@ -6,7 +6,7 @@
 	 * sends emails, and displays as a checkbox in the backend publish area.
 	 */
 
-	Class fieldMemberActivation extends Field {
+	Class fieldMemberActivation extends fieldSelect {
 
 	/*-------------------------------------------------------------------------
 		Definition:
@@ -14,7 +14,8 @@
 
 		public function __construct(&$parent){
 			parent::__construct($parent);
-			$this->_name = 'Member: Activation';
+			$this->_name = __('Member: Activation');
+			$this->_showassociation = false;
 		}
 
 		public function canToggle(){
@@ -163,12 +164,29 @@
 			return $default;
 		}
 
+		public function getToggleStates() {
+			return array('yes' => __('Yes'), 'no' => __('No'));
+		}
+
+		public function toggleFieldData($data, $newState){
+			$data['activated'] = $newState;
+
+			if($data['activated'] == "no") {
+				$data = array_merge($data, $this->generateCode($entry_id));
+			}
+			else {
+				$data['timestamp'] = DateTimeObj::get('Y-m-d H:i:s', time());
+			}
+
+			return $data;
+		}
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
 
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
-			parent::displaySettingsPanel($wrapper, $errors);
+			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
@@ -225,7 +243,7 @@
 		}
 
 		public function commit(){
-			if(!parent::commit()) return false;
+			if(!Field::commit()) return false;
 
 			$id = $this->get('id');
 
