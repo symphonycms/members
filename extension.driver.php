@@ -394,7 +394,7 @@
 			$options = array();
 			$options[] = array(null, false, null);
 			foreach($member_sections as $section_id => $section) {
-  				$options[] = array($section['id'], ($section->get['id'] == extension_Members::getMembersSection()), $section['name']);
+  				$options[] = array($section_id, ($section_id == extension_Members::getMembersSection()), $section['name']);
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
