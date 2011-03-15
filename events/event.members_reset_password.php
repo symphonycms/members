@@ -64,6 +64,7 @@
 			$fields = $_POST['fields'];
 
 			// Read the password template from the Configuration and continue
+			// @todo Find a way to do this so it's not locked in to ETF
 			$this->eParamFILTERS = array(
 				'etf-' . extension_Members::getConfigVar('reset-password-template')
 			);
@@ -123,7 +124,7 @@
 				)
 			);
 
-			//if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
 			$result->setAttribute('result', 'success');
 			$result->appendChild(

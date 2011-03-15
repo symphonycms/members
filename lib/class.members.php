@@ -130,18 +130,18 @@
 			if($this->isLoggedIn()) {
 				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
 				$result->setAttributeArray(array(
-					'logged-in' => 'true',
+					'logged-in' => 'yes',
 					'id' => $this->Member->get('id')
 				));
 			}
 			else {
-				$result->setAttribute('logged-in','false');
+				$result->setAttribute('logged-in','no');
 
 				if(extension_Members::$_failed_login_attempt) {
-					$result->setAttribute('failed-login-attempt','true');
+					$result->setAttribute('failed-login-attempt','yes');
 				}
 				else {
-					$result->setAttribute('failed-login-attempt','false');
+					$result->setAttribute('failed-login-attempt','no');
 				}
 
 				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
@@ -159,7 +159,7 @@
 	/*-------------------------------------------------------------------------
 		Filters:
 	-------------------------------------------------------------------------*/
-	
+
 		public function filter_Register(Array &$context) {
 			return true;
 		}

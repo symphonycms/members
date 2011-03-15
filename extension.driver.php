@@ -400,6 +400,7 @@
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
 			$group->appendChild($label);
 
+			// @todo Revisit this, either known list of extensions or something so that ETF isn't locked in
 			try {
 				$label = new XMLElement('label', __('Reset Password Email Template'));
 				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
@@ -453,7 +454,7 @@
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 				redirect(URL);
 			}
-
+			// @todo Make this a filter so it can be attached to a normal event
 			else if(trim($action) == 'login' && !is_null($_REQUEST['fields'])) {
 				if($this->Member->login($_REQUEST['fields'])) {
 					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
