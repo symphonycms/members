@@ -283,11 +283,7 @@
 
 			$td3 = Widget::TableData(NULL, 'edit');
 			$td3->appendChild(new XMLElement('p', NULL, array('class' => 'global-slider')));
-			$td3->appendChild(new XMLElement('span', 'n/a'));
-
-			$td4 = Widget::TableData(NULL, 'delete');
-			$td4->appendChild(new XMLElement('p', NULL, array('class' => 'global-slider')));
-			$td4->appendChild(new XMLElement('span', 'n/a'));
+			$td3->appendChild(new XMLElement('span', EventPermissions::$permissionMap[EventPermissions::NO_PERMISSIONS]));
 
 			// Add a row to the body array, assigning each cell to the row
 			$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3), 'global');
@@ -353,15 +349,12 @@
 			$fieldset->setAttribute('class', 'settings type-file');
 			$fieldset->appendChild(new XMLElement('legend', __('Page Level Permissions')));
 
-			$pages = Symphony::Database()->fetch(sprintf(
-				"SELECT id FROM `tbl_pages` %s ORDER BY `title` ASC",
-				(!$isNew ? "WHERE `id` != '{$page_id}' " : NULL)
-			));
-
 			$label = Widget::Label(__('Deny Access'));
 
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
+
 			$options = array();
+			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY `title` ASC");
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],

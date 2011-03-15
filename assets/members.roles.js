@@ -28,13 +28,14 @@ jQuery(document).ready(function(){
 		max: 2,
 		step: 1,
 		slide: function(event, ui) {
-			var $parent = $('.' + $(this).parents("td").attr("class"));
+			var $self = $(this),
+				$parent = $('.' + $self.parents("td").attr("class"));
 
 			$parent.find('.slider').slider('option', 'value', ui.value);
 			$parent.find('span').text(permissions[ui.value]).attr("class", "perm-" + ui.value);
-			$parent.find('input').val(ui.value);
-
-			$(this).siblings("span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
+			
+			$self.find('input').val(ui.value);
+			$self.siblings("span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
 		}
 	});
 
@@ -44,10 +45,11 @@ jQuery(document).ready(function(){
 		max: 2,
 		step: 1,
 		slide: function(event, ui) {
-			$(this).siblings("span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
-			$(this).siblings("input").val(ui.value);
-			$("." + $(this).parents("td").attr("class") + " .global-slider").slider('option', 'value', 0);
-			$(".global ." + $(this).parents("td").attr("class") + " span").text('n/a').attr("class", "perm-0");
+			var $self = $(this);
+			
+			$self.siblings("span").text(permissions[ui.value]).attr("class", "perm-" + ui.value);
+			$self.siblings("input").val(ui.value);
+			$("." + $self.parents("td").attr("class") + " .global-slider").slider('option', 'value', 0);
 		}
 	});
 
