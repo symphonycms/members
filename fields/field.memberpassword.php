@@ -359,7 +359,7 @@
 				$help->setAttribute('class', 'help');
 				$help->setValue(__('Leave new password field blank to keep the current password'));
 
-				$group->appendChild($help);
+
 			}
 			else {
 				$this->displayPublishPassword(
@@ -370,12 +370,17 @@
 				);
 			}
 
-		//	Error?
+			//	Error?
 			if(!is_null($error)) {
 				$group = Widget::wrapFormElementWithError($group, $error);
+				$wrapper->appendChild($group);
 			}
-
-			$wrapper->appendChild($group);
+			else {
+				$wrapper->appendChild($group);
+				if ($help) {
+					$wrapper->appendChild($help);
+				}
+			}
 		}
 
 		public function displayPublishPassword($wrapper, $title, $name) {
