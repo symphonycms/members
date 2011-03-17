@@ -252,6 +252,9 @@
 		// Salt ---------------------------------------------------------------
 
 			$label = Widget::Label(__('Password Salt'));
+			$label->appendChild(
+				new XMLElement('i', __('A salt gives your passwords extra security. It cannot be changed once set'))
+			);
 			$input = Widget::Input(
 				"fields[{$order}][salt]", $this->get('salt')
 			);
