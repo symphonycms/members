@@ -394,7 +394,6 @@
 		public function checkPostFieldData($data, &$message, $entry_id = null){
 			$message = null;
 			$required = ($this->get('required') == "yes");
-			$requires_password = false;
 
 			$password = trim($data['password']);
 			$confirm = trim($data['confirm']);
@@ -422,7 +421,8 @@
 					return self::__INVALID_FIELDS__;
 				}
 			}
-			else if(!isset($data['optional'])) {
+
+			else if($required && !isset($data['optional'])) {
 				$message = __('%s cannot be blank.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}

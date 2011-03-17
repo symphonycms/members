@@ -121,9 +121,12 @@
 			fieldMemberTimezone::createSettingsTable();
 
 			$fields = array(
-				'field_id' => $id,
-				'available_zones' => implode(",", $this->get('available_zones'))
+				'field_id' => $id
 			);
+
+			if(is_array($this->get('available_zones'))) {
+				$fields['available_zones'] = implode(",", $this->get('available_zones'));
+			}
 
 			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('timezone', $id, 'members');
