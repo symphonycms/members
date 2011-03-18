@@ -1,5 +1,7 @@
 <?php
 
+	require_once(TOOLKIT . '/fields/field.select.php');
+
 	/**
 	 * Activation field. If added to a Members section, it generates and stores
 	 * activation codes for new members, handles activation via normal events,
