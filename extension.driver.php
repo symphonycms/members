@@ -460,7 +460,7 @@
 			if(trim($action) == 'logout') {
 				$this->Member->logout();
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-				redirect(URL);
+				redirect(URL.'/');
 			}
 
 			// Login
@@ -473,7 +473,7 @@
 
 				if($this->Member->login($_REQUEST['fields'])) {
 					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-					redirect(URL);
+					redirect(URL.'/');
 				}
 
 				self::$_failed_login_attempt = true;
