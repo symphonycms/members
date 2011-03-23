@@ -104,9 +104,10 @@
 					SELECT `entry_id`, `reset`
 					FROM `tbl_entries_data_%d`
 					WHERE `password` = '%s'
+					AND `entry_id` = %d
 					LIMIT 1
 				",
-				$this->get('id'), $password, DateTimeObj::get('Y-m-d H:i:s', strtotime('now - 1 hour'))
+				$this->get('id'), $password, Symphony::Database()->cleanValue($member_id)
 			));
 
 			// Check that if the password has been reset that it is still valid
@@ -133,7 +134,7 @@
 				}
 			}
 
-			if($data['entry_id'] == $member_id) return $member_id;
+			if(!empty($data)) return $member_id;
 
 			extension_Members::$_errors[$this->get('element_name')] = __('Invalid password');
 
