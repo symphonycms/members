@@ -14,7 +14,7 @@
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
 				'version' => '1.0',
-				'release-date' => '2011-03-09'
+				'release-date' => '2011-03-23'
 			);
 		}
 
@@ -24,8 +24,8 @@
 
 		public static function documentation(){
 			return '
-				<p>This event takes a recovery code and a new password for a user. A recovery code is
-				can be sent to a Member\'s email after the Member: Reset Password filter has executed.</p>
+				<p>This event takes an activation code and an identifier for the Member (either Email or Username) to activate their account.
+				An activation code is available by outputting your Activation field in a Datasource after the registration event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
 				accepts the member\'s activation code and either the member\'s email address or username.</p>

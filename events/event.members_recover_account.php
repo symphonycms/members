@@ -24,8 +24,8 @@
 
 		public static function documentation(){
 			return '
-				<p>This event takes a recovery code and a new password for a user. A recovery code is
-				can be sent to a Member\'s email after the Member: Reset Password event has executed.</p>
+				<p>This event takes a recovery code and a new password for a user. A recovery code is available by outputting the
+				Member: Password field after the Member: Reset Password event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
 				accepts the member\'s recovery code, two password fields (one for password, one to confirm)
