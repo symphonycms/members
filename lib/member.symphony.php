@@ -9,7 +9,7 @@
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
-		
+
 		/**
 		 * This function determines what field instance to use based on the current
 		 * $_POST data.
@@ -160,22 +160,18 @@
 	-------------------------------------------------------------------------*/
 
 		public function filter_Register(Array &$context) {
-			// If there is a Role field, this needs to check that if it was
-			// not provided in the $_POST data, that it is set to the Default Role.
+			// If there is a Role field, this will force it to be the Default Role.
 			if(!is_null(extension_Members::getConfigVar('role'))) {
 				$role = extension_Members::$fields['role'];
-				if(!isset($context['fields'][$role->get('element_name')])) {
-					$context['fields'][$role->get('element_name')] = $role->get('default_role');
-				}
+				$context['fields'][$role->get('element_name')] = $role->get('default_role');
 			}
 		}
 
 		public function filter_Activation(Array &$context) {
+			// If there is an Activation field, this will force it to be no.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$activation = extension_Members::$fields['activation'];
-				if(!isset($context['fields'][$activation->get('element_name')])) {
-					$context['fields'][$activation->get('element_name')] = 'no';
-				}
+				$context['fields'][$activation->get('element_name')] = 'no';
 			}
 		}
 
