@@ -62,7 +62,7 @@
 		 * not this extension.
 		 */
 		public function __construct() {
-			
+
 			if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
 				$this->Member = new SymphonyMember($this);
 			}
@@ -444,19 +444,33 @@
 			$isLoggedIn = false;
 			$errors = array();
 
+			// Checks $_REQUEST to see if a Member Action has been requested,
+			// member-action['login'] and member-action['logout']/?member-action=logout
+			// are the only two supported at this stage.
 			if(is_array($_REQUEST['member-action'])){
 				list($action) = array_keys($_REQUEST['member-action']);
 			} else {
 				$action = $_REQUEST['member-action'];
 			}
 
+			// Check to see a Member is already logged in.
+			$isLoggedIn = $this->Member->isLoggedIn($errors);
+
+			// Logout
 			if(trim($action) == 'logout') {
 				$this->Member->logout();
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 				redirect(URL);
 			}
-			// @todo Make this a filter so it can be attached to a normal event
+
+			// Login
 			else if(trim($action) == 'login' && !is_null($_REQUEST['fields'])) {
+				// If a Member is already logged in and another Login attempt is requested
+				// log the Member out first before trying to login with new details.
+				if($isLoggedIn) {
+					$this->Member->logout();
+				}
+
 				if($this->Member->login($_REQUEST['fields'])) {
 					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 					redirect(URL);
@@ -464,8 +478,6 @@
 
 				self::$_failed_login_attempt = true;
 			}
-
-			else $isLoggedIn = $this->Member->isLoggedIn($errors);
 
 			$this->Member->initialiseMemberObject();
 
