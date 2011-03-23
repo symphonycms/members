@@ -127,7 +127,7 @@
 				'field_id' => $id,
 				'default_role' => $this->get('default_role')
 			);
-			
+
 			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
 				Symphony::Configuration()->set('role', $id, 'members');
 				Administration::instance()->saveConfig();
@@ -204,6 +204,8 @@
 
 			$role_id = $data['role_id'];
 			$role = RoleManager::fetch($role_id);
+
+			if(!$role instanceof Role) return;
 
 			$element = new XMLElement($this->get('element_name'), null, array(
 				'id' => $role->get('id'),
