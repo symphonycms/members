@@ -512,7 +512,7 @@
 					// No custom 403, just throw default 403
 					GenericExceptionHandler::$enabled = true;
 					throw new SymphonyErrorPage(
-						__('Please <a href="%s">login</a> to view this page.', array(SYMPHONY_URL . '/login/')),
+						__('The page you have requested has restricted access permissions.'),
 						__('Forbidden'),
 						'error',
 						array('header' => 'HTTP/1.0 403 Forbidden')
