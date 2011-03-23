@@ -63,7 +63,7 @@
 		 */
 		public function __construct() {
 			
-			if(class_exists('Symphony') && Symphony::Engine() instanceof FrontendPage) {
+			if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
 				$this->Member = new SymphonyMember($this);
 			}
 
