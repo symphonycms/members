@@ -31,7 +31,7 @@
 		public static $_failed_login_attempt = false;
 
 		/**
-		 * @var boolean $failed_login_attempt
+		 * @var boolean $_errors
 		 */
 		public static $_errors = array();
 
@@ -39,6 +39,11 @@
 		 * @var array $fields
 		 */
 		public static $fields = array();
+
+		/**
+		 * @var array $handles
+		 */
+		public static $handles = array();
 
 		/**
 		 * @var boolean $initialised
@@ -75,6 +80,11 @@
 			}
 		}
 
+		/**
+		 * Loops over the configuration to detect the capabilities of this
+		 * Members setup. Populates two array's, one for Field objects, and
+		 * one for Field handles.
+		 */
 		public static function initialise() {
 			extension_Members::$initialised = true;
 			$fieldManager = new FieldManager(Symphony::Engine());
@@ -83,36 +93,60 @@
 				extension_Members::$fields['timezone'] = $fieldManager->fetch(
 					extension_Members::getConfigVar('timezone')
 				);
+
+				if(extension_Members::$fields['timezone'] instanceof Field) {
+					extension_Members::$handles['timezone'] = extension_Members::$fields['timezone']->get('element_name');
+				}
 			}
 
 			if(!is_null(extension_Members::getConfigVar('role'))) {
 				extension_Members::$fields['role'] = $fieldManager->fetch(
 					extension_Members::getConfigVar('role')
 				);
+
+				if(extension_Members::$fields['role'] instanceof Field) {
+					extension_Members::$handles['role'] = extension_Members::$fields['role']->get('element_name');
+				}
 			}
 
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				extension_Members::$fields['activation'] = $fieldManager->fetch(
 					extension_Members::getConfigVar('activation')
 				);
+
+				if(extension_Members::$fields['activation'] instanceof Field) {
+					extension_Members::$handles['activation'] = extension_Members::$fields['activation']->get('element_name');
+				}
 			}
 
 			if(!is_null(extension_Members::getConfigVar('identity'))) {
 				extension_Members::$fields['identity'] = $fieldManager->fetch(
 					extension_Members::getConfigVar('identity')
 				);
+
+				if(extension_Members::$fields['identity'] instanceof Field) {
+					extension_Members::$handles['identity'] = extension_Members::$fields['identity']->get('element_name');
+				}
 			}
 
 			if(!is_null(extension_Members::getConfigVar('email'))) {
 				extension_Members::$fields['email'] = $fieldManager->fetch(
 					extension_Members::getConfigVar('email')
 				);
+
+				if(extension_Members::$fields['email'] instanceof Field) {
+					extension_Members::$handles['email'] = extension_Members::$fields['email']->get('element_name');
+				}
 			}
 
 			if(!is_null(extension_Members::getConfigVar('authentication'))) {
 				extension_Members::$fields['authentication'] = $fieldManager->fetch(
 					extension_Members::getConfigVar('authentication')
 				);
+
+				if(extension_Members::$fields['authentication'] instanceof Field) {
+					extension_Members::$handles['authentication'] = extension_Members::$fields['authentication']->get('element_name');
+				}
 			}
 		}
 
@@ -464,15 +498,15 @@
 			}
 
 			// Login
-			else if(trim($action) == 'login' && !is_null($_REQUEST['fields'])) {
+			else if(trim($action) == 'login' && !is_null($_POST['fields'])) {
 				// If a Member is already logged in and another Login attempt is requested
 				// log the Member out first before trying to login with new details.
 				if($isLoggedIn) {
 					$this->Member->logout();
 				}
 
-				if($this->Member->login($_REQUEST['fields'])) {
-					if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+				if($this->Member->login($_POST['fields'])) {
+					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
 					redirect(URL.'/');
 				}
 

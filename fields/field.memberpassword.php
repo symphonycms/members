@@ -149,7 +149,7 @@
 		 * @return string
 		 */
 		public function encodePassword($password) {
-			return sha1($this->get('salt') . $password);
+			return General::hash($this->get('salt') . $password, 'sha1');
 		}
 
 		protected static function checkPassword($password) {
@@ -426,7 +426,7 @@
 				}
 
 				if (!fieldMemberPassword::compareStrength(fieldMemberPassword::checkPassword($password), $this->get('strength'))) {
-					$message = __('Password is not strong enough.');
+					$message = __('%s is not strong enough.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
 			}

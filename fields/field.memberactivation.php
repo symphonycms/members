@@ -85,7 +85,7 @@
 
 			// Generate a code
 			do {
-				$code = sha1(uniqid());
+				$code = General::hash(uniqid(), 'sha1');
 				$row = Symphony::Database()->fetchRow(0, "
 					SELECT 1 FROM `tbl_entries_data_{$this->get('id')}` WHERE `code` = '{$code}'
 				");

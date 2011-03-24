@@ -88,7 +88,7 @@
 			$auth = extension_Members::$fields['authentication'];
 			$status = Field::__OK__;
 			$data = $auth->processRawFieldData(array(
-				'password' => sha1($newPassword . $member_id),
+				'password' => General::hash($newPassword . $member_id, 'sha1'),
 			), $status);
 
 			$data['recovery-code'] = $data['password'];
@@ -128,7 +128,7 @@
 
 			$result->setAttribute('result', 'success');
 			$result->appendChild(
-				new XMLElement('recovery-code', sha1($newPassword . $member_id))
+				new XMLElement('recovery-code', General::hash($newPassword . $member_id, 'sha1'))
 			);
 
 			return $result;

@@ -14,7 +14,7 @@ environments and is provided solely for the purpose of testing and feedback at t
 ## Known Issues
 
 - Members expects that the Label for the Member: Username, Member: Password and Member: Email fields to be Username, Password and Email
-respectively, this will be rectified in a future beta.
+respectively, this will be rectified in a future beta. [Fixed March 24th]
 - The styling of the Member: Password field, and the Role creation page will change from with the help of the WG's
 
 ## Installation and Setup

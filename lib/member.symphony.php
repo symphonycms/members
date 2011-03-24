@@ -80,20 +80,47 @@
 		Authentication:
 	-------------------------------------------------------------------------*/
 
-		public function login(Array $credentials, $isHashed = false){
-			extract($credentials);
+		/**
+		 * Login function takes an associative array of fields that contain
+		 * an Identity field (Email/Username) and a Password field. They keys
+		 * should be the Field's `element_name`.
+		 * An optional parameter, `$isHashed` refers to if the password provided
+		 * is hashed already, or requires hashing prior to logging in.
+		 *
+		 * @param array $credentials
+		 * @param boolean $isHashed
+		 *  Defaults to false, which will encode the password value before attempting
+		 *  to log the user in
+		 * @return boolean
+		 */
+		public function login(Array $credentials, $isHashed = false) {
+			$username = $email = $password = null;
+			$data = array();
 
-			$auth = extension_Members::$fields['authentication'];
+			// Map POST data to simple terms
+			if(isset($credentials[extension_Members::$handles['identity']])) {
+				$username = $credentials[extension_Members::$handles['identity']];
+			}
 
-			$data = array(
-				'password' => $isHashed ? $password : $auth->encodePassword($password)
-			);
+			if(isset($credentials[extension_Members::$handles['email']])) {
+				$email = $credentials[extension_Members::$handles['email']];
+			}
 
+			// Allow login via username OR email. This normalises the $data array from the custom
+			// field names to simple names for ease of use.
 			if(isset($username)) {
 				$data['username'] = Symphony::Database()->cleanValue($username);
 			}
 			else if(isset($email) && !is_null(extension_Members::getConfigVar('email'))) {
 				$data['email'] = Symphony::Database()->cleanValue($email);
+			}
+
+			// Map POST data for password to `$password`
+			if(isset($credentials[extension_Members::$handles['authentication']])) {
+				$password = $credentials[extension_Members::$handles['authentication']];
+
+				// Use normalised handles for the fields
+				$data['password'] = $isHashed ? $password : extension_Members::$fields['authentication']->encodePassword($password);
 			}
 
 			if($id = $this->findMemberIDFromCredentials($data)) {
@@ -162,16 +189,14 @@
 		public function filter_Register(Array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
 			if(!is_null(extension_Members::getConfigVar('role'))) {
-				$role = extension_Members::$fields['role'];
-				$context['fields'][$role->get('element_name')] = $role->get('default_role');
+				$context['fields'][extension_Members::$handles['role']] = $role->get('default_role');
 			}
 		}
 
 		public function filter_Activation(Array &$context) {
 			// If there is an Activation field, this will force it to be no.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
-				$activation = extension_Members::$fields['activation'];
-				$context['fields'][$activation->get('element_name')] = 'no';
+				$context['fields'][extension_Members::$handles['activation']] = 'no';
 			}
 		}
 
@@ -185,8 +210,7 @@
 		 */
 		public function filter_UpdatePassword(Array &$context) {
 			if(!is_null(extension_Members::getConfigVar('authentication'))) {
-				$auth = extension_Members::$fields['authentication'];
-				$context['fields'][$auth->get('element_name')]['optional'] = 'yes';
+				$context['fields'][extension_Members::$handles['authentication']]['optional'] = 'yes';
 			}
 		}
 
@@ -197,12 +221,12 @@
 		 */
 		public function filter_UpdatePasswordLogin(Array $context) {
 			// If the user didn't update their password.
-			if(empty($context['fields']['password']['password'])) return;
+			if(empty($context['fields'][extension_Members::$handles['authentication']]['password'])) return;
 
 			$this->login(array(
-				'password' => $context['fields']['password']['password'],
-				'username' => $context['entry']->getData(extension_Members::getConfigVar('identity'), true)->value
-			), array());
+				extension_Members::$handles['authentication'] => $context['fields'][extension_Members::$handles['authentication']]['password'],
+				extension_Members::$handles['identity'] => $context['entry']->getData(extension_Members::getConfigVar('identity'), true)->value
+			));
 
 			if(isset($_REQUEST['redirect'])) {
 				redirect($_REQUEST['redirect']);
