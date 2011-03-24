@@ -312,8 +312,8 @@
 		}
 
 		public static function getConfigVar($handle) {
-			$id = (int)Symphony::Configuration()->get($handle, 'members');
-			return ($id == 0 ? NULL : $id);
+			$value = Symphony::Configuration()->get($handle, 'members');
+			return ($value == 0 || is_null($value) || empty($value)) ? NULL : $value;
 		}
 
 		public static function getMembersSection() {
@@ -416,7 +416,6 @@
 					$schema = $section->fetchFieldsSchema();
 
 					foreach($schema as $field) {
-						// Possible @todo, check for the existance of the Identity field  instead of using this array
 						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
 
 						if(array_key_exists($section->get('id'), $member_sections)) continue;
@@ -433,9 +432,17 @@
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
+
+			if(count($options) == 1) {
+				$label->appendChild(
+					new XMLElement('p', __('A Members section will at minimum contain either a Member: Email or a Member: Username field'), array('class' => 'help'))
+				);
+			}
+
 			$group->appendChild($label);
 
-			// @todo Revisit this, either known list of extensions or something so that ETF isn't locked in
+			// Email Template Filter
+			// @link http://symphony-cms.com/download/extensions/view/20743/
 			try {
 				$label = new XMLElement('label', __('Reset Password Email Template'));
 				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
@@ -443,7 +450,7 @@
 
 				$options = array();
 				foreach($templates as $template) {
-					$options[] = array($template['id'], ($template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
+					$options[] = array('etf-'.$template['id'], ('etf-'.$template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
 				}
 
 				$label->appendChild(Widget::Select('settings[members][reset-password-template]', $options));

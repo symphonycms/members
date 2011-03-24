@@ -64,9 +64,8 @@
 			$fields = $_POST['fields'];
 
 			// Read the password template from the Configuration and continue
-			// @todo Find a way to do this so it's not locked in to ETF
 			$this->eParamFILTERS = array(
-				'etf-' . extension_Members::getConfigVar('reset-password-template')
+				extension_Members::getConfigVar('reset-password-template')
 			);
 
 			// Check that this Email has an Entry
