@@ -63,10 +63,13 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
 
-			// Read the password template from the Configuration and continue
-			$this->eParamFILTERS = array(
-				extension_Members::getConfigVar('reset-password-template')
-			);
+			// Read the password template from the Configuration if it exists
+			// This is required for the Email Template Filter.
+			if(!is_null(extension_Members::getConfigVar('reset-password-template'))) {
+				$this->eParamFILTERS = array(
+					extension_Members::getConfigVar('reset-password-template')
+				);
+			}
 
 			// Check that this Email has an Entry
 			$email = extension_Members::$fields['email'];
