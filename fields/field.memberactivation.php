@@ -306,7 +306,7 @@
 					// If code is still live, displays when the code was generated.
 					if(strtotime($data['timestamp']) < strtotime('now + ' . $this->get('code_expiry'))) {
 						$label->appendChild(
-							new XMLElement('i', __('Activation code %s', array($data['code'])))
+							new XMLElement('span', __('Activation code %s', array('<code>' . $data['code'] . '</code>')), array('class' => 'frame'))
 						);
 					}
 					// If the code is expired, displays 'Expired' w/the expiration timestamp.
