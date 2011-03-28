@@ -65,14 +65,6 @@
 		abstract public function fetchMemberIDBy($needle);
 
 	/*-------------------------------------------------------------------------
-		Settings:
-	-------------------------------------------------------------------------*/
-
-		public function checkFields(&$errors, $checkForDuplicates = true) {
-			parent::checkFields($errors, $checkForDuplicates);
-		}
-
-	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
 
@@ -122,19 +114,10 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Sorting:
-	-------------------------------------------------------------------------*/
-
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC') {
-			$joins .= "INNER JOIN `tbl_entries_data_".$this->get('id')."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
-			$sort .= 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "`ed`.`value` $order");
-		}
-
-	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
 
 			$field_id = $this->get('id');
 

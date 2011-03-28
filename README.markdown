@@ -1,8 +1,8 @@
 # Members
 
-- Version: 1.0 Beta 1
+- Version: 1.0 Beta 2
 - Author: Symphony Team
-- Build Date: March 12th 2011
+- Build Date: March 28th 2011
 - Requirements: Symphony 2.2.1
 
 Frontend Membership extension for Symphony CMS.
@@ -13,20 +13,47 @@ environments and is provided solely for the purpose of testing and feedback at t
 
 ## Known Issues
 
-- Members expects that the Label for the Member: Username, Member: Password and Member: Email fields to be Username, Password and Email
-respectively, this will be rectified in a future beta. [Fixed March 24th]
 - The styling of the Member: Password field, and the Role creation page will change from with the help of the WG's
 
 ## Installation and Setup
 
 1.	Upload the 'members' folder to your Symphony 'extensions' folder.
 
-2.	Enable it by selecting the "Members", choose Enable from the	with-selected menu, then click Apply.
+2.	Enable it by selecting the "Members", choose Enable from the with-selected menu, then click Apply.
 
-3.	Create a new Section to hold your Members entries, and add a Member: Password, Member: Password, Member: Role
+3.	Create a new Section to hold your Members entries, and add a Member: Password, Member: Role
 and either a Member: Email or Member: Username field. If you wish to email your users, you can add both.
 
-4.	Go to System > Preferences and select your 'Active Members Section'
+4.	Go to System > Preferences and select your 'Active Members Section'.
+
+5.	Go to System > Member Roles and setup your Roles as required. There is one default Role, Public that cannot be
+removed (but can be edited to suit your needs). This role represents an unauthenticated Member.
+
+6.	On your frontend, Members can login using standard forms. Below is an example:
+
+		<form method="post" autocomplete='off'>
+			<label>Username
+				<input name="fields[{Member: Username element_name}]" type="text" />
+			</label>
+			<label>Password
+				<input name="fields[{Member: Password element_name}]" type="password" />
+			</label>
+
+			<input name="redirect" type="hidden" value="{$root}/account/" />
+			<input name="member-action[login]" type="submit" value="Login" />
+		</form>
+
+Event information will be returned in the XML similar to the following example:
+
+		<events>
+			<member-login-info logged-in="yes" id="72" />
+		</events>
+
+The `$member-id` and `$member-role` parameters will be added to the Page 
+Parameters for you to use in your datasources to get information about the 
+logged in member.
+
+7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
 ## Usage
 
@@ -50,9 +77,11 @@ This extension provides four additional events:
 - Members: Reset Password
 - Members: Recover Account
 
-Go to Blueprints > Components and click on the event name to view documentation for that event.
+Go to Blueprints > Components and click on the event name to view 
+documentation for that event.
 
-This extension provides three event filters that you can add to your events to make them useful to Members:
+This extension provides three event filters that you can add to your events to
+ make them useful to Members:
 
 - Members: Register
 - Members: Update Password
@@ -60,16 +89,24 @@ This extension provides three event filters that you can add to your events to m
 
 ### Roles and Permissions
 
-The Members extension comes with a single default Role, Public. This role cannot be deleted, but it can be renamed and modified
-to suit your installation. This Role is assumed by any Frontend user who is not authenticated. Roles allow you to set Frontend event
-and page permissions.
+The Members extension comes with a single default Role, Public. This role 
+cannot be deleted, but it can be renamed and modified to suit your 
+installation. This Role is assumed by any Frontend user who is not 
+authenticated. Roles allow you to set Frontend event and page permissions.
 
 ### Email Templates
 
-The [Email Template Filter](http://symphony-cms.com/download/extensions/view/20743/) is the recommended way to email
-information specific to the Members extension such as Member Registration, Password Reset and Activation Codes. The ETF
-works by providing Event Filters for each Template you create, which can then be added to your events.
+The [Email Template Filter](http://symphony-cms.com/download/extensions/view/20743/)
+or [Email Template Manager](http://symphony-cms.com/download/extensions/view/64322/)
+can be used to email information specific to the Members extension such as Member
+Registration, Password Reset and Activation Codes. These extensions allow Email 
+Templates to be added as Event Filters to your events. Check the documentation 
+for either extension to evaluate them for your situation. All bugs relating to
+those extensions should be reported to the respective extension, not the 
+Members extension.
 
-The Password Reset event is unique and requires that it's template be set through the System > Preferences page.
+Please note that the Password Reset event is unique and requires that it's 
+template be set through the System > Preferences page.
 
-The Members extension requires a Member: Email field to work with the Email Template Filter
+The Members extension requires a Member: Email field to work with the Email 
+Template Filter or Email Template Manager.
