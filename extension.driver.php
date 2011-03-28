@@ -441,23 +441,57 @@
 
 			$group->appendChild($label);
 
+			$label = new XMLElement('label', __('Reset Password Email Template'));
+			$options = array();
+
 			// Email Template Filter
 			// @link http://symphony-cms.com/download/extensions/view/20743/
 			try {
-				$label = new XMLElement('label', __('Reset Password Email Template'));
 				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
 				$templates = $driver->getTemplates();
 
-				$options = array();
-				foreach($templates as $template) {
-					$options[] = array('etf-'.$template['id'], ('etf-'.$template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
-				}
+				$g = array('label' => __('Email Template Filter'));
+				$group_options = array();
 
-				$label->appendChild(Widget::Select('settings[members][reset-password-template]', $options));
-				$group->appendChild($label);
+				foreach($templates as $template) {
+					$group_options[] = array('etf-'.$template['id'], ('etf-'.$template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
+				}
+				$g['options'] = $group_options;
+
+				if(!empty($g['options'])) {
+					$options[] = $g;
+				}
 			}
 			catch(Exception $ex) {
 
+			}
+
+			// Email Template Manager
+			// @link http://symphony-cms.com/download/extensions/view/64322/
+			try {
+				$templates = EmailTemplateManager::listAll();
+
+				$g = array('label' => __('Email Template Manager'));
+				$group_options = array();
+
+				foreach($templates as $template) {
+					$group_options[] = array('etm-'.$template->getHandle(), ('etm-'.$template->getHandle() == extension_Members::getConfigVar('reset-password-template')), $template->getName());
+				}
+
+				$g['options'] = $group_options;
+
+				if(!empty($g['options'])) {
+					$options[] = $g;
+				}
+			}
+			catch(Exception $ex) {
+
+			}
+
+			// Only append if there is any Templates.
+			if(!empty($options)) {
+				$label->appendChild(Widget::Select('settings[members][reset-password-template]', $options));
+				$group->appendChild($label);
 			}
 
 			$fieldset->appendChild($group);
