@@ -89,7 +89,7 @@
 					}
 
 					else {
-						$td2 = Widget::TableData(__('None'));
+						$td2 = Widget::TableData(__('None'), 'inactive');
 					}
 
 					// Add cells to a row
