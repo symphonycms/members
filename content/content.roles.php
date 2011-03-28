@@ -148,19 +148,8 @@
 				}
 			}
 
-			// Add the Role mappings into Symphony.Context
-			$this->addElementToHead(
-				new XMLElement(
-					'script',
-					"Symphony.Context.add('members-roles', " . json_encode(EventPermissions::$permissionMap) . ");",
-					array('type' => 'text/javascript')
-				), 73
-			);
-
 			// Add in custom assets
 			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/members.roles.css', 'screen', 101);
-			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/jquery-ui.css', 'screen', 102);
-			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/jquery-ui.min.js', 103);
 			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.roles.js', 104);
 
 			// Append any Page Alerts from the form's
@@ -251,29 +240,11 @@
 			$fieldset->setAttribute('class', 'settings type-file');
 			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));
 
-			$aTableHead = array(
-				array(__('Event'), 'col'),
-				array(__('Create'), 'col'),
-				array(__('Edit'), 'col')
-			);
-
 			$aTableBody = array();
 
-			/*
-			<tr class="global">
-				<td>Set Global Permissions</td>
-				<td class="add">
-					<input type="checkbox" name="add-global" value="no"/>
-				</td>
-				<td class="edit">
-					<p class="global-slider"></p>
-					<span>n/a</span>
-				</td>
-			</tr>
-			*/
-
 			## Setup each cell
-			$td1 = Widget::TableData(__('Global Permissions'));
+			
+			/*$td1 = Widget::TableData(__('Global Permissions'));
 
 			$td2 = Widget::TableData(Widget::Input(
 				'global-add',
@@ -287,56 +258,84 @@
 
 			// Add a row to the body array, assigning each cell to the row
 			$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3), 'global');
-
+			*/
+			
 			if(is_array($events) && !empty($events)) foreach($events as $event_handle => $event){
 
 				$permissions = $fields['permissions'][$event_handle];
 
-				// Setup each cell
-				$td1 = Widget::TableData($event['name']);
+				$td_name = Widget::TableData($event['name'], 'name');
 
-				// @todo Look at how we can improve this so PHP is aware of more
-				// such as 'Edit'/'Create' and the actual values 'Own Entries/All Entries'
-				// instead of it just staying in the JS.
-				$td2 = Widget::TableData(Widget::Input(
-					"fields[permissions][{$event_handle}][create]",
-					'1',
-					'checkbox',
-					($permissions['create'] == 1 ? array('checked' => 'checked') : NULL)
-				), 'add');
+				$td_permission_create = Widget::TableData(
+					sprintf('<label>%s <span>%s</span></label>',
+						Widget::Input(
+							"fields[permissions][{$event_handle}][create]",
+							'1',
+							'checkbox',
+							($permissions['create'] == 1 ? array('checked' => 'checked') : NULL)
+						)->generate(),
+						'Create'
+					),
+					'create'
+				);
+				
+				$td_permission_none = Widget::TableData(
+					sprintf('<label>%s <span>%s</span></label>',
+						Widget::Input(
+							"fields[permissions][{$event_handle}][edit]",
+							EventPermissions::NO_PERMISSIONS,
+							'radio',
+							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : NULL)
+						)->generate(),
+						'None'
+					)
+				);
+				
+				$td_permission_own = Widget::TableData(
+					sprintf('<label>%s <span>%s</span></label>',
+						Widget::Input(
+							"fields[permissions][{$event_handle}][edit]",
+							EventPermissions::OWN_ENTRIES,
+							'radio',
+							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : NULL)
+						)->generate(),
+						'Own'
+					)
+				);
+				
+				$td_permission_all = Widget::TableData(
+					sprintf('<label>%s <span>%s</span></label>',
+						Widget::Input(
+							"fields[permissions][{$event_handle}][edit]",
+							EventPermissions::ALL_ENTRIES,
+							'radio',
+							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : NULL)
+						)->generate(),
+						'All'
+					)
+				);
 
-				$td3 = Widget::TableData(NULL, 'edit');
-				$td3->appendChild(new XMLElement('p', NULL, array('class' => 'slider')));
-				$span = new XMLElement('span');
-				$span->setSelfClosingTag(false);
-				$td3->appendChild($span);
-
-				$td3->appendChild(Widget::Input(
-					'fields[permissions][' . $event_handle .'][edit]',
-					(isset($permissions['edit']) ? $permissions['edit'] : EventPermissions::NO_PERMISSIONS),
-					'hidden'
+				$aTableBody[] = Widget::TableRow(array(
+					$td_name,
+					$td_permission_create,
+					$td_permission_none,
+					$td_permission_own,
+					$td_permission_all
 				));
-
-				/*
-				<tr>
-					<td>{EVENT-NAME}</td>
-					<td class="add">
-						<input type="checkbox" name="{ANY NAME}" value="{EXISTING STATE:No}"/>
-					</td>
-					<td class="edit">
-						<p class="slider"></p>
-						<span></span>
-						<input type="hidden" name="{ANY NAME}" value="{EXISTING-VALUE:1}"/>
-					</td>
-				</tr>
-				*/
-
-				// Add a row to the body array, assigning each cell to the row
-				$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3));
 			}
-
+			
+			$thead = Widget::TableHead(
+				array(
+					array(__('Event'), 'col', array('class' => 'name')),
+					array(__('Create New'), 'col', array('class' => 'new')),
+					array(__('No Edit'), 'col', array('class' => 'edit')),
+					array(__('Edit Own'), 'col', array('class' => 'edit')),
+					array(__('Edit All'), 'col', array('class' => 'edit'))
+				)
+			);
+			
 			$table = Widget::Table(
-				Widget::TableHead($aTableHead),
+				$thead,
 				NULL,
 				Widget::TableBody($aTableBody),
 				'role-permissions'
