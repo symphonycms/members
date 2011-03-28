@@ -241,24 +241,6 @@
 			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));
 
 			$aTableBody = array();
-
-			## Setup each cell
-			
-			/*$td1 = Widget::TableData(__('Global Permissions'));
-
-			$td2 = Widget::TableData(Widget::Input(
-				'global-add',
-				'1',
-				'checkbox'
-			), 'add');
-
-			$td3 = Widget::TableData(NULL, 'edit');
-			$td3->appendChild(new XMLElement('p', NULL, array('class' => 'global-slider')));
-			$td3->appendChild(new XMLElement('span', EventPermissions::$permissionMap[EventPermissions::NO_PERMISSIONS]));
-
-			// Add a row to the body array, assigning each cell to the row
-			$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3), 'global');
-			*/
 			
 			if(is_array($events) && !empty($events)) foreach($events as $event_handle => $event){
 
