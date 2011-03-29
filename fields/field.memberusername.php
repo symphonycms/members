@@ -13,6 +13,10 @@
 			$this->_name = __('Member: Username');
 			$this->set('required', 'yes');
 		}
+		
+		public function isSortable(){
+			return true;
+		}
 
 	/*-------------------------------------------------------------------------
 		Setup:

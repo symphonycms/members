@@ -16,6 +16,10 @@
 			$this->_required = true;
 			$this->set('required', 'yes');
 		}
+		
+		public function isSortable(){
+			return true;
+		}
 
 	/*-------------------------------------------------------------------------
 		Setup:
