@@ -208,14 +208,14 @@
 					BACKEND
 				*/
 				array(
-					'page' => '/system/preferences/',
-					'delegate' => 'AddCustomPreferenceFieldsets',
-					'callback' => 'appendPreferences'
+					'page'		=> '/system/preferences/',
+					'delegate'	=> 'AddCustomPreferenceFieldsets',
+					'callback'	=> 'appendPreferences'
 				),
 				array(
-					'page' => '/system/preferences/',
-					'delegate' => 'Save',
-					'callback' => 'savePreferences'
+					'page'		=> '/system/preferences/',
+					'delegate'	=> 'Save',
+					'callback'	=> 'savePreferences'
 				),
 				array(
 					'page'		=> '/blueprints/events/new/',
@@ -226,7 +226,12 @@
 					'page'		=> '/blueprints/events/edit/',
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'appendFilter'
-				)
+				),
+				array(
+					'page'		=> '/backend/',
+					'delegate'	=> 'InitaliseAdminPageHead',
+					'callback'	=> 'initializeAdmin'
+				),
 			);
 		}
 
@@ -385,6 +390,25 @@
 					__('Members: Update Password')
 				);
 			}
+		}
+		
+		
+	/*-------------------------------------------------------------------------
+		Assets:
+	-------------------------------------------------------------------------*/
+
+		/**
+		 * Append CSS/JS assets to backend pages
+		 */
+		public function initializeAdmin($context) {	
+			$page = $context['parent']->Page;
+			
+			$callback = Administration::instance()->getPageCallback();
+					
+			if ($page instanceof contentPublish and in_array($page->_context['page'], array('new', 'edit'))) {
+				$page->addStylesheetToHead(URL . '/extensions/members/assets/members.publish.css', 'screen', 1234);
+			}
+			
 		}
 
 	/*-------------------------------------------------------------------------
