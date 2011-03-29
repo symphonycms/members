@@ -68,7 +68,7 @@
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$entry = self::$driver->em->fetch($member_id);
 				if($entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
-					extension_Members::$_errors['activation'] = __('Account not activated.');
+					extension_Members::$_errors['activation'] = __('Not activated.');
 					return false;
 				}
 			}

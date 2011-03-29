@@ -284,8 +284,8 @@
 			// If $entry_id is null, just preset to Activated Account as it means an authorised user
 			// has enough access to create the record in the backend anyway.
 			$options = array(
-				array('no', ($data['activated'] == 'no'), __('Account not Activated')),
-				array('yes', ($isActivated || is_null($entry_id) or is_null($data)), __('Account Activated'))
+				array('no', ($data['activated'] == 'no'), __('Not Activated')),
+				array('yes', ($isActivated || is_null($entry_id) or is_null($data)), __('Activated'))
 			);
 
 			$label = Widget::Label($this->get('label'));
