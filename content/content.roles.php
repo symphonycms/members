@@ -49,11 +49,6 @@
 			    $sectionManager = new SectionManager(Administration::instance());
 			    $section = $sectionManager->fetch(extension_Members::getMembersSection());
 
-				$role_field_name = Symphony::Database()->fetchVar('element_name', 0, sprintf(
-					"SELECT `element_name` FROM `tbl_fields` WHERE `id` = %d LIMIT 1",
-					extension_Members::getConfigVar('role')
-				));
-
 				$with_selected_roles = array();
 				$hasRoles = !is_null(extension_Members::getConfigVar('role'));
 
@@ -63,7 +58,7 @@
 						$role->get('name'), Administration::instance()->getCurrentPageURL().'edit/' . $role->get('id') . '/', null, 'content'
 					));
 
-					if($role->get('id') == Role::PUBLIC_ROLE) {
+					if($role->get('id') != Role::PUBLIC_ROLE) {
 						$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
 					}
 
@@ -76,12 +71,8 @@
 
 						$td2 = Widget::TableData(Widget::Anchor(
 							"$member_count",
-							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . $role_field_name . ':' . $role->get('id')
+							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . extension_Members::$handles['role'] . ':' . $role->get('id')
 						));
-
-						$td2->appendChild(
-							Widget::Input("items[{$role->get('id')}]", null, 'checkbox')
-						);
 					}
 
 					else if($role->get('id') == Role::PUBLIC_ROLE) {
@@ -95,7 +86,7 @@
 					// Add cells to a row
 					$aTableBody[] = Widget::TableRow(array($td1, $td2));
 
-					if($role->get('id') != Role::PUBLIC_ROLE) {
+					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$with_selected_roles[] = array(
 							"move::" . $role->get('id'), false,$role->get('name')
 						);
@@ -241,7 +232,7 @@
 			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));
 
 			$aTableBody = array();
-			
+
 			if(is_array($events) && !empty($events)) foreach($events as $event_handle => $event){
 
 				$permissions = $fields['permissions'][$event_handle];
@@ -260,7 +251,7 @@
 					),
 					'create'
 				);
-				
+
 				$td_permission_none = Widget::TableData(
 					sprintf('<label>%s <span>%s</span></label>',
 						Widget::Input(
@@ -272,7 +263,7 @@
 						'None'
 					)
 				);
-				
+
 				$td_permission_own = Widget::TableData(
 					sprintf('<label>%s <span>%s</span></label>',
 						Widget::Input(
@@ -284,7 +275,7 @@
 						'Own'
 					)
 				);
-				
+
 				$td_permission_all = Widget::TableData(
 					sprintf('<label>%s <span>%s</span></label>',
 						Widget::Input(
@@ -305,7 +296,7 @@
 					$td_permission_all
 				));
 			}
-			
+
 			$thead = Widget::TableHead(
 				array(
 					array(__('Event'), 'col', array('class' => 'name')),
@@ -315,7 +306,7 @@
 					array(__('Edit All'), 'col', array('class' => 'edit'))
 				)
 			);
-			
+
 			$table = Widget::Table(
 				$thead,
 				NULL,
