@@ -495,7 +495,7 @@
 			try {
 				$templates = EmailTemplateManager::listAll();
 
-				$g = array('label' => __('Email Template Manager'));
+				$g = array('label' => __('Email Templates'));
 				$group_options = array();
 
 				foreach($templates as $template) {
