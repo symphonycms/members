@@ -493,24 +493,27 @@
 			// Email Template Manager
 			// @link http://symphony-cms.com/download/extensions/view/64322/
 			try {
-				if(file_exists(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager"))
-					include_once(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php');
-				
-				if(class_exists("EmailTemplateManager")){
-				
-					$templates = EmailTemplateManager::listAll();
+				$handles = Symphony::ExtensionManager()->listInstalledHandles();
+				if(in_array('email_templates', $handles)){
+					if(file_exists(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager"))
+						include_once(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php');
+					
+					if(class_exists("EmailTemplateManager")){
+					
+						$templates = EmailTemplateManager::listAll();
 
-					$g = array('label' => __('Email Template Manager'));
-					$group_options = array();
+						$g = array('label' => __('Email Template Manager'));
+						$group_options = array();
 
-					foreach($templates as $template) {
-						$group_options[] = array('etm-'.$template->getHandle(), ('etm-'.$template->getHandle() == extension_Members::getConfigVar('reset-password-template')), $template->getName());
-					}
+						foreach($templates as $template) {
+							$group_options[] = array('etm-'.$template->getHandle(), ('etm-'.$template->getHandle() == extension_Members::getConfigVar('reset-password-template')), $template->getName());
+						}
 
-					$g['options'] = $group_options;
+						$g['options'] = $group_options;
 
-					if(!empty($g['options'])) {
-						$options[] = $g;
+						if(!empty($g['options'])) {
+							$options[] = $g;
+						}
 					}
 				}
 			}
