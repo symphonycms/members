@@ -189,7 +189,7 @@
 		public function filter_Register(Array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
 			if(!is_null(extension_Members::getConfigVar('role'))) {
-				$context['fields'][extension_Members::$handles['role']] = $role->get('default_role');
+				$context['fields'][extension_Members::$handles['role']] = extension_Members::$fields['role']->get('default_role');
 			}
 		}
 
