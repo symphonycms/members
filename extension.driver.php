@@ -391,8 +391,8 @@
 				);
 			}
 		}
-		
-		
+
+
 	/*-------------------------------------------------------------------------
 		Assets:
 	-------------------------------------------------------------------------*/
@@ -400,15 +400,15 @@
 		/**
 		 * Append CSS/JS assets to backend pages
 		 */
-		public function initializeAdmin($context) {	
+		public function initializeAdmin($context) {
 			$page = $context['parent']->Page;
-			
+
 			$callback = Administration::instance()->getPageCallback();
-					
+
 			if ($page instanceof contentPublish and in_array($page->_context['page'], array('new', 'edit'))) {
 				$page->addStylesheetToHead(URL . '/extensions/members/assets/members.publish.css', 'screen', 1234);
 			}
-			
+
 		}
 
 	/*-------------------------------------------------------------------------
@@ -468,22 +468,25 @@
 			$label = new XMLElement('label', __('Reset Password Email Template'));
 			$options = array();
 
+			$handles = Symphony::ExtensionManager()->listInstalledHandles();
 			// Email Template Filter
 			// @link http://symphony-cms.com/download/extensions/view/20743/
 			try {
 				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
-				$templates = $driver->getTemplates();
+				if($driver instanceof Extension) {
+					$templates = $driver->getTemplates();
 
-				$g = array('label' => __('Email Template Filter'));
-				$group_options = array();
+					$g = array('label' => __('Email Template Filter'));
+					$group_options = array();
 
-				foreach($templates as $template) {
-					$group_options[] = array('etf-'.$template['id'], ('etf-'.$template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
-				}
-				$g['options'] = $group_options;
+					foreach($templates as $template) {
+						$group_options[] = array('etf-'.$template['id'], ('etf-'.$template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
+					}
+					$g['options'] = $group_options;
 
-				if(!empty($g['options'])) {
-					$options[] = $g;
+					if(!empty($g['options'])) {
+						$options[] = $g;
+					}
 				}
 			}
 			catch(Exception $ex) {
@@ -493,19 +496,27 @@
 			// Email Template Manager
 			// @link http://symphony-cms.com/download/extensions/view/64322/
 			try {
-				$templates = EmailTemplateManager::listAll();
+				if(in_array('email_templates', $handles)){
+					if(file_exists(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager")) {
+						include_once(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php');
+					}
 
-				$g = array('label' => __('Email Templates'));
-				$group_options = array();
+					if(class_exists("EmailTemplateManager")) {
+						$templates = EmailTemplateManager::listAll();
 
-				foreach($templates as $template) {
-					$group_options[] = array('etm-'.$template->getHandle(), ('etm-'.$template->getHandle() == extension_Members::getConfigVar('reset-password-template')), $template->getName());
-				}
+						$g = array('label' => __('Email Template Manager'));
+						$group_options = array();
 
-				$g['options'] = $group_options;
+						foreach($templates as $template) {
+							$group_options[] = array('etm-'.$template->getHandle(), ('etm-'.$template->getHandle() == extension_Members::getConfigVar('reset-password-template')), $template->getName());
+						}
 
-				if(!empty($g['options'])) {
-					$options[] = $g;
+						$g['options'] = $group_options;
+
+						if(!empty($g['options'])) {
+							$options[] = $g;
+						}
+					}
 				}
 			}
 			catch(Exception $ex) {
