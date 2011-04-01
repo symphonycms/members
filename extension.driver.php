@@ -495,8 +495,8 @@
 			try {
 				$handles = Symphony::ExtensionManager()->listInstalledHandles();
 				if(in_array('email_templates', $handles)){
-					if(file_exists(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager"))
-						include_once(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php');
+					if(file_exists(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager"))
+						include_once(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php');
 					
 					if(class_exists("EmailTemplateManager")){
 					
