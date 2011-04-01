@@ -599,7 +599,12 @@
 				}
 			}
 
-			if(is_null(extension_Members::getConfigVar('role'))) return;
+			// If there is no role field, or a Developer is logged in, return, as Developers
+			// should be able to access every page.
+			if(
+				is_null(extension_Members::getConfigVar('role'))
+				|| (Frontend::instance()->Author instanceof Author && Frontend::instance()->Author->isDeveloper())
+			) return;
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
 			$role = RoleManager::fetch($role_id);
