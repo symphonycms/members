@@ -468,7 +468,6 @@
 			$label = new XMLElement('label', __('Reset Password Email Template'));
 			$options = array();
 
-			$handles = Symphony::ExtensionManager()->listInstalledHandles();
 			// Email Template Filter
 			// @link http://symphony-cms.com/download/extensions/view/20743/
 			try {
@@ -496,12 +495,13 @@
 			// Email Template Manager
 			// @link http://symphony-cms.com/download/extensions/view/64322/
 			try {
+				$handles = Symphony::ExtensionManager()->listInstalledHandles();
 				if(in_array('email_templates', $handles)){
-					if(file_exists(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager")) {
-						include_once(EXTENSIONS . '/email_templates/lib/class.emailtemplatemanager.php');
+					if(file_exists(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager")) {
+						include_once(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php');
 					}
 
-					if(class_exists("EmailTemplateManager")) {
+					if(class_exists("EmailTemplateManager")){
 						$templates = EmailTemplateManager::listAll();
 
 						$g = array('label' => __('Email Template Manager'));
