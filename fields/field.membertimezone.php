@@ -56,6 +56,14 @@
 			));
 		}
 
+		/**
+		 * Creates a list of Timezones for the With Selected dropdown in the backend.
+		 * This list has the limitation that the timezones cannot be grouped as the
+		 * With Selected menu already uses `<optgroup>` to separate the toggling of
+		 * different Field data.
+		 *
+		 * @return array
+		 */
 		public function getToggleStates() {
 			$zones = explode(",", $this->get('available_zones'));
 
@@ -74,6 +82,49 @@
 			}
 
 			return $options;
+		}
+
+		/**
+		 * Builds a XMLElement containing a `<select>` with all the available timezone
+		 * options grouped by the different DateTimeZone constants allowed by an instance
+		 * of this field. Developers can select what Timezones are available from the
+		 * Section Editor.
+		 *
+		 * @link http://www.php.net/manual/en/class.datetimezone.php
+		 * @param array $data
+		 * @param string $prefix
+		 * @param string $postfix
+		 * @return XMLElement
+		 */
+		public function buildTZSelection(Array $data = array(), $prefix = null, $postfix = null) {
+			$groups = array();
+
+			if ($this->get('required') != 'yes') $groups[] = array(NULL, false, NULL);
+
+			$zones = explode(",", $this->get('available_zones'));
+
+			foreach($zones as $zone) {
+				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
+
+				$options = array();
+				foreach($timezones as $timezone) {
+					$tz = new DateTime('now', new DateTimeZone($timezone));
+
+					$options[] = array($timezone, ($timezone == $data['value']), sprintf("%s %s",
+						str_replace('_', ' ', substr(strrchr($timezone, '/'),1)),
+						$tz->format('P')
+					));
+				}
+
+				$groups[] = array('label' => ucwords(strtolower($zone)), 'options' => $options);
+			}
+
+			$label = new XMLElement('label', $this->get('label'));
+			$label->appendChild(Widget::Select(
+				"fields{$prefix}[{$this->get('element_name')}]{$postfix}", $groups
+			));
+
+			return $label;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -149,32 +200,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
-			$groups = array();
-
-			if ($this->get('required') != 'yes') $groups[] = array(NULL, false, NULL);
-
-			$zones = explode(",", $this->get('available_zones'));
-
-			foreach($zones as $zone) {
-				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
-
-				$options = array();
-				foreach($timezones as $timezone) {
-					$tz = new DateTime('now', new DateTimeZone($timezone));
-
-					$options[] = array($timezone, ($timezone == $data['value']), sprintf("%s %s",
-						str_replace('_', ' ', substr(strrchr($timezone, '/'),1)),
-						$tz->format('P')
-					));
-				}
-
-				$groups[] = array('label' => ucwords(strtolower($zone)), 'options' => $options);
-			}
-
-			$label = new XMLElement('label', $this->get('label'));
-			$label->appendChild(Widget::Select(
-				"fields{$prefix}[{$this->get('element_name')}]{$postfix}", $groups
-			));
+			$label = $this->buildTZSelection($data, $prefix, $postfix);
 
 			if(!is_null($error)) {
 				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
@@ -205,5 +231,9 @@
 			);
 
 			$wrapper->appendChild($el);
+		}
+
+		public function getExampleFormMarkup(){
+			return $this->buildTZSelection();
 		}
 	}
