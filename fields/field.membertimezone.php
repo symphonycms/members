@@ -96,7 +96,9 @@
 		 * @param string $postfix
 		 * @return XMLElement
 		 */
-		public function buildTZSelection(Array $data = array(), $prefix = null, $postfix = null) {
+		public function buildTZSelection($data = array(), $prefix = null, $postfix = null) {
+			if(is_null($data)) $data = array();
+
 			$groups = array();
 
 			if ($this->get('required') != 'yes') $groups[] = array(NULL, false, NULL);
