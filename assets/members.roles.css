@@ -12,7 +12,7 @@ table.role-permissions th {
 }
 
 table.role-permissions th {
-	padding: 3px 0;
+	padding: 0;
 	white-space: nowrap;
 }
 
@@ -35,8 +35,13 @@ table.role-permissions tr td {
 	width: 1px;
 }
 
+table.role-permissions tr td:last-child {
+	border-right: 1px solid #E6E6E5;
+}
+
 table.role-permissions tr td.name {
 	width: auto;
+	border-left: 1px solid #E6E6E5;
 }
 
 table.role-permissions td:first-child {
@@ -68,7 +73,7 @@ table.role-permissions td.create span {
 }
 
 table.role-permissions td.create {
-	border-left: 1px solid #E6E6E5;
-	border-right: 1px solid #E6E6E5;
-	
+/*	border-left: 1px solid #E6E6E5;*/
+/*	border-right: 1px solid #E6E6E5;*/
+/*	*/
 }
