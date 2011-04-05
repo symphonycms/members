@@ -9,14 +9,9 @@
 		);
 
 		protected static $_strength_map = array(
-			0			=> 1,
-			1			=> 1,
-			2			=> 2,
-			3			=> 3,
-			4			=> 3,
-			'weak'		=> 1,
-			'good'		=> 2,
-			'strong'	=> 3
+			'weak' => array(0,1),
+			'good' => array(2),
+			'strong' => array(3,4)
 		);
 
 	/*-------------------------------------------------------------------------
@@ -159,17 +154,21 @@
 				'/[¬!"£$%^&*()`{}\[\]:@~;\'#<>?,.\/\\-=_+\|]/'
 			);
 
-			foreach ($patterns as $pattern) {
-				if (preg_match($pattern, $password, $matches)) {
+			foreach($patterns as $pattern) {
+				if(preg_match($pattern, $password, $matches)) {
 					$strength++;
 				}
 			}
 
-			return $strength;
+			foreach(fieldMemberPassword::$_strength_map as $key => $values) {
+				if(!in_array($strength, $values)) continue;
+
+				return $key;
+			}
 		}
 
 		protected static function compareStrength($a, $b) {
-			if (fieldMemberPassword::$_strength_map[$a] >= fieldMemberPassword::$_strength_map[$b]) return true;
+			if (array_sum(fieldMemberPassword::$_strength_map[$a]) >= array_sum(fieldMemberPassword::$_strength_map[$b])) return true;
 
 			return false;
 		}
@@ -359,7 +358,6 @@
 				$help = new XMLElement('p');
 				$help->setAttribute('class', 'help');
 				$help->setValue(__('Leave new password field blank to keep the current password'));
-
 
 			}
 			else {

@@ -231,9 +231,6 @@
 			if(isset($_REQUEST['redirect'])) {
 				redirect($_REQUEST['redirect']);
 			}
-			else {
-				redirect(URL);
-			}
 		}
 
 	}
