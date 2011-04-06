@@ -546,7 +546,7 @@
 			if(trim($action) == 'logout') {
 				$this->Member->logout();
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-				redirect(URL.'/');
+				redirect(Frontend::instance()->_param['current-url']);
 			}
 
 			// Login
@@ -559,7 +559,7 @@
 
 				if($this->Member->login($_POST['fields'])) {
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
-					redirect(URL.'/');
+					redirect(Frontend::instance()->_param['current-url']);
 				}
 
 				self::$_failed_login_attempt = true;

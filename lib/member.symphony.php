@@ -231,6 +231,9 @@
 			if(isset($_REQUEST['redirect'])) {
 				redirect($_REQUEST['redirect']);
 			}
+			else {
+				redirect(Frontend::instance()->_param['current-url']);
+			}
 		}
 
 	}
