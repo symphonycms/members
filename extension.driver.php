@@ -227,11 +227,6 @@
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'appendFilter'
 				),
-				array(
-					'page'		=> '/backend/',
-					'delegate'	=> 'InitaliseAdminPageHead',
-					'callback'	=> 'initializeAdmin'
-				),
 			);
 		}
 
@@ -390,25 +385,6 @@
 					__('Members: Update Password')
 				);
 			}
-		}
-
-
-	/*-------------------------------------------------------------------------
-		Assets:
-	-------------------------------------------------------------------------*/
-
-		/**
-		 * Append CSS/JS assets to backend pages
-		 */
-		public function initializeAdmin($context) {
-			$page = $context['parent']->Page;
-
-			$callback = Administration::instance()->getPageCallback();
-
-			if ($page instanceof contentPublish and in_array($page->_context['page'], array('new', 'edit'))) {
-				$page->addStylesheetToHead(URL . '/extensions/members/assets/members.publish.css', 'screen', 1234);
-			}
-
 		}
 
 	/*-------------------------------------------------------------------------
