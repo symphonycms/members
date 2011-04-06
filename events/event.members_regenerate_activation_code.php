@@ -73,9 +73,8 @@
 			$activation->purgeCodes();
 
 			// Check that a member exists first before proceeding.
-			$errors = array();
 			$identity = SymphonyMember::setIdentityField($fields);
-			$member_id = $identity->fetchMemberIDBy($fields, $errors);
+			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');

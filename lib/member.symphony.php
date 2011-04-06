@@ -51,7 +51,7 @@
 			if(!$identity instanceof Field) return null;
 
 			// Member from Identity
-			$member_id = $identity->fetchMemberIDBy($credentials, $errors);
+			$member_id = $identity->fetchMemberIDBy($credentials);
 
 			if(is_null($member_id)) return null;
 

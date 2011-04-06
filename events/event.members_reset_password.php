@@ -28,17 +28,19 @@
 
 		public static function documentation() {
 			return '
-				<p>This event takes a member\'s email address to validate the existence of the Member before,
-				resetting their password and generating a recovery code for the user.<br /> This recovery code be seen
+				<p>This event takes a member\'s email address or username to validate the existence of the Member before,
+				resetting their password and generating a recovery code for the member.<br /> This recovery code be seen
 				by outputting the Member: Password field in a datasource once this event has completed, or by outputting
 				the event result.</p>
-				<p>You can set the Email Template Filter for this event from the <a href="' . SYMPHONY_URL . '/system/preferences/">Preferences</a>
+				<p>You can set the Email Template for this event from the <a href="' . SYMPHONY_URL . '/system/preferences/">Preferences</a>
 				page</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
-				accepts the member\'s email address.</p>
+				accepts either the member\'s email address or username.</p>
 				<pre class="XML"><code>
 				&lt;form method="post"&gt;
+					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
+					or
 					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
 					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Reset Password"/&gt;
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
@@ -71,9 +73,9 @@
 				);
 			}
 
-			// Check that this Email has an Entry
-			$email = extension_Members::$fields['email'];
-			$member_id = $email->fetchMemberIDBy($fields[$email->get('element_name')]);
+			// Check that a member exists first before proceeding.
+			$identity = SymphonyMember::setIdentityField($fields);
+			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
