@@ -105,7 +105,7 @@
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
 
 			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
-			// uses to send emails.
+			// and EmailTemplateManager use to send emails.
 			$filter_errors = array();
 			$entryManager = new EntryManager(Frontend::instance());
 			$entry = $entryManager->fetch($member_id);

@@ -11,10 +11,6 @@ For testing purposes this extension currently requires the Symphony 2 integratio
 the latest code that will be packaged into the 2.2.1 release. This extension should not be used in production
 environments and is provided solely for the purpose of testing and feedback at this stage.
 
-## Known Issues
-
-- The styling of the Member: Password field, and the Role creation page will change from with the help of the WG's
-
 ## Installation and Setup
 
 1.	Upload the 'members' folder to your Symphony 'extensions' folder.
@@ -49,8 +45,8 @@ Event information will be returned in the XML similar to the following example:
 			<member-login-info logged-in="yes" id="72" />
 		</events>
 
-The `$member-id` and `$member-role` parameters will be added to the Page 
-Parameters for you to use in your datasources to get information about the 
+The `$member-id` and `$member-role` parameters will be added to the Page
+Parameters for you to use in your datasources to get information about the
 logged in member.
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
@@ -77,21 +73,43 @@ This extension provides four additional events:
 - Members: Reset Password
 - Members: Recover Account
 
-Go to Blueprints > Components and click on the event name to view 
+Go to Blueprints > Components and click on the event name to view
 documentation for that event.
 
 This extension provides three event filters that you can add to your events to
  make them useful to Members:
 
+- Members: Activation
 - Members: Register
 - Members: Update Password
-- Members: Activation
+
+#### Members: Activation
+
+The Members: Activation filter is to be attached to your own Registration event
+to force a Member's activated state to be 'no' when a Member is registering for your
+site. This prevents any DOM hacking to make users activate themselves. If you do
+not use the Member: Activation field, then you don't this filter on your Registration
+event.
+
+#### Members: Register
+
+The Members: Register filter should be used as an additional security measure to
+ensure that the user cannot DOM hack their own Role. This filter ensures a newly
+registered user will always be of the Default Role. If you do not use the Member: Role
+field, you don't need this filter on your Registration event.
+
+#### Members: Update Password
+
+The Members: Update Password filter is useful on Events where the user may update
+some of their profile information, and updating their password is optional. It
+essentially tells the extension that if the user hasn't provided their password,
+yet it's set to required, it's ok, just remember their current password details.
 
 ### Roles and Permissions
 
-The Members extension comes with a single default Role, Public. This role 
-cannot be deleted, but it can be renamed and modified to suit your 
-installation. This Role is assumed by any Frontend user who is not 
+The Members extension comes with a single default Role, Public. This role
+cannot be deleted, but it can be renamed and modified to suit your
+installation. This Role is assumed by any Frontend user who is not
 authenticated. Roles allow you to set Frontend event and page permissions.
 
 ### Email Templates
@@ -99,14 +117,11 @@ authenticated. Roles allow you to set Frontend event and page permissions.
 The [Email Template Filter](http://symphony-cms.com/download/extensions/view/20743/)
 or [Email Template Manager](http://symphony-cms.com/download/extensions/view/64322/)
 can be used to email information specific to the Members extension such as Member
-Registration, Password Reset and Activation Codes. These extensions allow Email 
-Templates to be added as Event Filters to your events. Check the documentation 
+Registration, Password Reset and Activation Codes. These extensions allow Email
+Templates to be added as Event Filters to your events. Check the documentation
 for either extension to evaluate them for your situation. All bugs relating to
-those extensions should be reported to the respective extension, not the 
+those extensions should be reported to the respective extension, not the
 Members extension.
 
-Please note that the Password Reset event is unique and requires that it's 
+Please note that the Password Reset event is unique and requires that it's
 template be set through the System > Preferences page.
-
-The Members extension requires a Member: Email field to work with the Email 
-Template Filter or Email Template Manager.
