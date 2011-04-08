@@ -107,7 +107,7 @@
 				$timezones = DateTimeZone::listIdentifiers();
 
 				foreach($timezones as $index => $timezone) {
-					if(stripos($timezone, "AUSTRALIA") === false) unset($timezones[$index]);
+					if(stripos($timezone, $zone) === false) unset($timezones[$index]);
 				}
 
 				return $timezones;
