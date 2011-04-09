@@ -18,7 +18,7 @@ environments and is provided solely for the purpose of testing and feedback at t
 2.	Enable it by selecting the "Members", choose Enable from the with-selected menu, then click Apply.
 
 3.	Create a new Section to hold your Members entries, and add a Member: Password, Member: Role
-and either a Member: Email or Member: Username field. If you wish to email your users, you can add both.
+and either a Member: Email or Member: Username field. If you wish to email your members, you can add both.
 
 4.	Go to System > Preferences and select your 'Active Members Section'.
 
@@ -51,9 +51,7 @@ logged in member.
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
-## Usage
-
-### Fields
+## Fields
 
 This extension provides six additional fields:
 
@@ -61,10 +59,88 @@ This extension provides six additional fields:
 - Member: Email
 - Member: Password
 - Member: Role
-- Member: Timezone
 - Member: Activation
+- Member: Timezone
 
-### Events
+
+### Member: Username
+
+The Member: Username field ensures all usernames are unique in the system. You can
+set a validator to ensure a username follows a particular pattern. Member's can 
+login by providing their username and password (see Member: Password).
+
+### Member: Email
+
+The Member: Email field accepts only an email address and ensures that all email's
+are unique in the system. This field outputs an MD5 hash of the email address in
+the XML so that it be used as Gravatar hash. Like the Member: Username field, members
+can login by providing their email address and password (see Member: Password).
+
+### Member: Password
+
+The Member: Password field has a couple of additional settings to help improve the
+security of the member's password. Setting a password Salt can be done only once, and
+is used to provide some randomness when hashing the member's password. You can also set
+a minimum length required for a password and then there is three possible options for 
+a minimum password strength, Weak, Good and Strong.
+
+- Weak: This password is all lowercase, all uppercase, all numbers or all punctuation
+- Good: The password must be a mixture of two of the following: lowercase, uppercase, numbers or punctuation
+- Strong: The password must be a mixture of three or more of the following: lowercase, uppercase, numbers or punctuation
+
+Passwords must be set with two fields, one to capture the password and one to confirm
+the password.
+
+#### Events
+
+- Members: Reset Password
+- Members: Recover Account
+
+#### Filters
+
+- Members: Update Password
+
+
+### Member: Role
+
+The Member: Role field allows you to assign members with different Roles to allow them
+to access pages or execute particular events. The Members extension installs with one
+default Role that cannot be deleted, Public. This Public Role is the default Role that
+all members of your website will fall under (ie. all unregistered members). This field allows
+you to set a default role, which the role that a member will take on when they register.
+
+#### Filters
+
+- Members: Register
+
+
+### Member: Activation
+
+The Member: Activation field enforces that all members who register to your site must
+first activate their account before they are treated as an authenticated member. This 
+field allows you set a code expiry time, which is how long an activation code is valid
+for until it expires and a Member will have to request a new one (see Members: Regenerate Activation Code event)
+and an activation role. The activation role is given to a member when they register to your
+site, but haven't completed activation. Once they complete activation, they will be
+set to the default role as defined by the Member: Role field.
+
+#### Events
+
+- Members: Activate Account
+- Members: Regenerate Activation Code
+
+#### Filters
+
+- Members: Activation
+
+
+### Member: Timezone
+
+The Member: Timezone field allows members to have times displayed in their own timezone
+when on the site. It has one setting, Available Zones which allows you to set up what
+timezones, grouped by 'Zone',  are available for members to pick from. 
+
+## Events
 
 This extension provides four additional events:
 
@@ -83,36 +159,36 @@ This extension provides three event filters that you can add to your events to
 - Members: Register
 - Members: Update Password
 
-#### Members: Activation
+### Members: Activation
 
 The Members: Activation filter is to be attached to your own Registration event
 to force a Member's activated state to be 'no' when a Member is registering for your
-site. This prevents any DOM hacking to make users activate themselves. If you do
+site. This prevents any DOM hacking to make members activate themselves. If you do
 not use the Member: Activation field, then you don't this filter on your Registration
 event.
 
-#### Members: Register
+### Members: Register
 
 The Members: Register filter should be used as an additional security measure to
-ensure that the user cannot DOM hack their own Role. This filter ensures a newly
-registered user will always be of the Default Role. If you do not use the Member: Role
+ensure that the member cannot DOM hack their own Role. This filter ensures a newly
+registered member will always be of the Default Role. If you do not use the Member: Role
 field, you don't need this filter on your Registration event.
 
-#### Members: Update Password
+### Members: Update Password
 
-The Members: Update Password filter is useful on Events where the user may update
+The Members: Update Password filter is useful on Events where the member may update
 some of their profile information, and updating their password is optional. It
-essentially tells the extension that if the user hasn't provided their password,
+essentially tells the extension that if the member hasn't provided their password,
 yet it's set to required, it's ok, just remember their current password details.
 
-### Roles and Permissions
+## Roles and Permissions
 
 The Members extension comes with a single default Role, Public. This role
 cannot be deleted, but it can be renamed and modified to suit your
-installation. This Role is assumed by any Frontend user who is not
+installation. This Role is assumed by any Frontend member who is not
 authenticated. Roles allow you to set Frontend event and page permissions.
 
-### Email Templates
+## Email Templates
 
 The [Email Template Filter](http://symphony-cms.com/download/extensions/view/20743/)
 or [Email Template Manager](http://symphony-cms.com/download/extensions/view/64322/)

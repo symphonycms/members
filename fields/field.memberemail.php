@@ -130,7 +130,7 @@
 
 			$email = trim($data);
 
-			//	If the field is required, we should have both a $username and $password.
+			//	If the field is required, we should have both a `$email`
 			if($required && empty($email)) {
 				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
@@ -146,7 +146,7 @@
 				// We need to make sure the value doesn't already exist in the Section.
 				$existing = $this->fetchMemberIDBy($email);
 
-				// If there is an existing username, and it's not the current object (editing), error.
+				// If there is an existing email, and it's not the current object (editing), error.
 				if(!is_null($existing) && $existing != $entry_id) {
 					$message = __('That %s is already taken.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
