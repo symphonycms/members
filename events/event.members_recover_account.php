@@ -59,6 +59,16 @@
 		protected function __trigger(){
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_REQUEST['fields'];
+			
+			if(!isset($fields['recovery-code']) or empty($fields['recovery-code'])) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', __('Recovery code is a required field.'), array(
+						'type' => 'missing'
+					))
+				);
+				return $result;
+			}
 
 			// Check that there is a row with this recovery code and that they
 			// request a password reset
@@ -75,7 +85,9 @@
 			if(empty($row)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('No recovery code found'))
+					new XMLElement('error', __('No recovery code found'), array(
+						'type' => 'invalid'
+					))
 				);
 
 				return $result;
@@ -89,7 +101,9 @@
 				if(!$entry instanceof Entry) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement('error', __('Member not found'))
+						new XMLElement('error', __('Member not found.'), array(
+							'type' => 'invalid'
+						))
 					);
 
 					return $result;
@@ -98,10 +112,13 @@
 				// Create new password using the auth field so simulate the checkPostFieldData
 				// and processRawFieldData functions.
 				$message = '';
-				if(Field::__OK__ != $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id'])) {
+				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id']);
+				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement('error', $message)
+						new XMLElement('error', $message, array(
+							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid'
+						))
 					);
 
 					return $result;

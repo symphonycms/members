@@ -63,7 +63,19 @@
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('No Activation field found'))
+					new XMLElement('error', __('No Activation field found'), array(
+						'type' => 'invalid'
+					))
+				);
+				return $result;
+			}
+			
+			if(!isset($fields['activation-code']) or empty($fields['activation-code'])) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', __('Activation code is a required field.'), array(
+						'type' => 'missing'
+					))
 				);
 				return $result;
 			}
@@ -78,7 +90,9 @@
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Member not found.'))
+					new XMLElement('error', __('Member not found.'), array(
+						'type' => 'invalid'
+					))
 				);
 				return $result;
 			}
@@ -87,7 +101,9 @@
 			if($code['code'] != $fields['activation-code']) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Activation error. Code was invalid or has expired.'))
+					new XMLElement('error', __('Activation error. Code was invalid or has expired.'), array(
+						'type' => 'invalid'
+					))
 				);
 				return $result;
 			}

@@ -75,12 +75,24 @@
 
 			// Check that a member exists first before proceeding.
 			$identity = SymphonyMember::setIdentityField($fields);
+			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', __('%s is a required field.', array($identity->get('label'))), array(
+						'type' => 'missing'
+					))
+				);
+				return $result;
+			}
+
 			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Member not found.'))
+					new XMLElement('error', __('Member not found.'), array(
+						'type' => 'invalid'
+					))
 				);
 				return $result;
 			}
