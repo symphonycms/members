@@ -67,13 +67,41 @@
 			// Check that if there's activiation, that this Member is activated.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$entry = self::$driver->em->fetch($member_id);
+
+				// If the member isn't activated and a Role field doesn't exist
+				// just return false.
 				if($entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
-					extension_Members::$_errors['activation'] = __('Not activated.');
-					return false;
+					if(is_null(extension_Members::getConfigVar('role'))) {
+						extension_Members::$_errors['activation'] = __('Not activated.');
+						return false;
+					}
 				}
 			}
 
 			return $member_id;
+		}
+
+
+		public function fetchMemberFromID($member_id = null) {
+			$member = parent::fetchMemberFromID($member_id);
+
+			if(is_null($member)) return null;
+
+			// If the member isn't activated and a Role field exists, we need to override
+			// the current Role with the Activation Role. This may allow Members to view certain
+			// things until they active their account.
+			if(!is_null(extension_Members::getConfigVar('activation'))) {
+				if($member->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
+					if(!is_null(extension_Members::getConfigVar('role'))) {
+						$member->setData(
+							extension_Members::getConfigVar('role'),
+							extension_Members::$fields['activation']->get('activation_role_id')
+						);
+					}
+				}
+			}
+
+			return $member;
 		}
 
 	/*-------------------------------------------------------------------------

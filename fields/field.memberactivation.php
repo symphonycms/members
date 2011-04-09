@@ -255,7 +255,8 @@
 
 			$fields = array(
 				'field_id' => $id,
-				'code_expiry' => $this->get('code_expiry')
+				'code_expiry' => $this->get('code_expiry'),
+				'activation_role_id' => $this->get('activation_role_id')
 			);
 
 			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {

@@ -55,7 +55,7 @@
 
 		public function initialiseMemberObject($member_id = null) {
 			if(is_null($this->Member)) {
-				$this->Member = self::fetchMemberFromID($member_id);
+				$this->Member = $this->fetchMemberFromID($member_id);
 			}
 
 			return $this->Member;
@@ -115,12 +115,18 @@
 
 			$context['params']['member-id'] = $this->Member->get('id');
 
-			if(is_null(extension_Members::getConfigVar('role'))) return;
+			if(!is_null(extension_Members::getConfigVar('role'))) {
+				$role_data = $this->Member->getData(extension_Members::getConfigVar('role'));
+				$role = RoleManager::fetch($role_data['role_id']);
+				if($role instanceof Role) {
+					$context['params']['member-role'] = $role->get('name');
+				}
+			}
 
-			$role_data = $this->Member->getData(extension_Members::getConfigVar('role'));
-			$role = RoleManager::fetch($role_data['role_id']);
-			if($role instanceof Role) {
-				$context['params']['member-role'] = $role->get('name');
+			if(!is_null(extension_Members::getConfigVar('activation'))) {
+				if($this->Member->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
+					$context['params']['member-activated'] = 'no';
+				}
 			}
 		}
 
