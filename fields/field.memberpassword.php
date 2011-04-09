@@ -119,7 +119,10 @@
 
 				// If we didn't get an entry_id back, then it's because it was expired
 				if(is_null($valid_id)) {
-					extension_Members::$_errors[$this->get('element_name')] = __('Password has expired');
+					extension_Members::$_errors[$this->get('element_name')] = array(
+						'message' => __('Recovery password has expired'),
+						'type' => 'invalid'
+					);
 				}
 				// Otherwise, we found the entry_id, so lets remove the reset and expires as this password
 				// has now been used by the user.
@@ -131,7 +134,10 @@
 
 			if(!empty($data)) return $member_id;
 
-			extension_Members::$_errors[$this->get('element_name')] = __('Invalid password');
+			extension_Members::$_errors[$this->get('element_name')] = array(
+				'message' => __('Invalid password'),
+				'type' => 'invalid'
+			);
 
 			return null;
 		}

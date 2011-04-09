@@ -16,7 +16,7 @@
 			$this->_required = true;
 			$this->set('required', 'yes');
 		}
-		
+
 		public function isSortable(){
 			return true;
 		}
@@ -67,7 +67,10 @@
 			));
 
 			if(is_null($member_id)) {
-				extension_Members::$_errors[$this->get('element_name')] = __("Member not found");
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __("Member not found"),
+					'type' => 'invalid'
+				);
 				return null;
 			}
 			else return $member_id;
