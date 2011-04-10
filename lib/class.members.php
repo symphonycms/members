@@ -153,8 +153,9 @@
 				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
 					foreach(extension_Members::$_errors as $type => $error) {
 						$result->appendChild(
-							new XMLElement($type, $error['message'], array(
-								'type' => $error['type']
+							new XMLElement($type, null, array(
+								'type' => $error['type'],
+								'message' => $error['message']
 							))
 						);
 					}
