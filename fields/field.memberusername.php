@@ -147,7 +147,7 @@
 
 			$username = trim($data);
 
-			//	If the field is required, we should have both a `$username`
+			//	If the field is required
 			if(($this->get('required') == "yes") && empty($username)) {
 				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;

@@ -135,7 +135,7 @@
 
 			$email = trim($data);
 
-			//	If the field is required, we should have both a `$email`
+			//	If the field is required
 			if($required && empty($email)) {
 				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
