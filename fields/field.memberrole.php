@@ -107,7 +107,9 @@
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
-			$this->appendShowColumnCheckbox($wrapper);
+			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$this->appendShowColumnCheckbox($div);
+			$wrapper->appendChild($div);
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates=true) {
