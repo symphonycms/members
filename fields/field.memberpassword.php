@@ -420,12 +420,12 @@
 			//	Check password
 			if(!empty($password)) {
 				if($confirm !== $password) {
-					$message = __('Passwords do not match.');
+					$message = __('%s do not match.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
 
 				if(strlen($password) < (int)$this->get('length')) {
-					$message = __('Password is too short. It must be at least %d characters.', array($this->get('length')));
+					$message = __('%s is too short. It must be at least %d characters.', array($this->get('label'), $this->get('length')));
 					return self::__INVALID_FIELDS__;
 				}
 
