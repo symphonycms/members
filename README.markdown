@@ -66,7 +66,7 @@ This extension provides six additional fields:
 ### Member: Username
 
 The Member: Username field ensures all usernames are unique in the system. You can
-set a validator to ensure a username follows a particular pattern. Member's can 
+set a validator to ensure a username follows a particular pattern. Member's can
 login by providing their username and password (see Member: Password).
 
 ### Member: Email
@@ -81,7 +81,7 @@ can login by providing their email address and password (see Member: Password).
 The Member: Password field has a couple of additional settings to help improve the
 security of the member's password. Setting a password Salt can be done only once, and
 is used to provide some randomness when hashing the member's password. You can also set
-a minimum length required for a password and then there is three possible options for 
+a minimum length required for a password and then there is three possible options for
 a minimum password strength, Weak, Good and Strong.
 
 - Weak: This password is all lowercase, all uppercase, all numbers or all punctuation
@@ -117,7 +117,7 @@ you to set a default role, which the role that a member will take on when they r
 ### Member: Activation
 
 The Member: Activation field enforces that all members who register to your site must
-first activate their account before they are treated as an authenticated member. This 
+first activate their account before they are treated as an authenticated member. This
 field allows you set a code expiry time, which is how long an activation code is valid
 for until it expires and a Member will have to request a new one (see Members: Regenerate Activation Code event)
 and an activation role. The activation role is given to a member when they register to your
@@ -138,20 +138,49 @@ set to the default role as defined by the Member: Role field.
 
 The Member: Timezone field allows members to have times displayed in their own timezone
 when on the site. It has one setting, Available Zones which allows you to set up what
-timezones, grouped by 'Zone',  are available for members to pick from. 
+timezones, grouped by 'Zone',  are available for members to pick from.
 
 ## Events
 
-This extension provides four additional events:
+This extension provides four additional events that can be added to your page:
 
 - Members: Activate Account
 - Members: Regenerate Activation Code
 - Members: Reset Password
 - Members: Recover Account
 
-Go to Blueprints > Components and click on the event name to view 
-documentation for that event. In addition to this event documentation, there is
-a number of additional return values from the fields that may be useful to you.
+Go to Blueprints > Components and click on the event name to view
+documentation for that event.
+
+There are two global events that are available on any page your website:
+
+### Members: Login
+
+	<form method="post" autocomplete='off'>
+		<label>Username
+			<input name="fields[username]" type="text" />
+		</label>
+		<label>Password
+			<input name="fields[password]" type="password" />
+		</label>
+
+		<input type='hidden' name='redirect' value='{$redirect-url}' />
+		<input name="member-action[login]" type="submit" value="Submit" />
+	</form>
+
+### Members: Logout
+
+	<form method="post" autocomplete='off'>
+		<input type='hidden' name='redirect' value='{$redirect-url}' />
+		<input name="member-action[action]" type="submit" value="Logout" />
+	</form>
+
+or
+
+	<a href='?member-action=logout&redirect={$redirect-url}'>Logout</a>
+
+In addition to event documentation, there is a number of additional return values
+from the fields that may be useful to you.
 
 ### Members: Username
 ### Members: Email
@@ -169,6 +198,9 @@ a number of additional return values from the fields that may be useful to you.
 - `$label` is too short. It must be at least %d characters.
 - `$label` is not strong enough.
 - `$label` cannot be blank.
+
+
+## Filters
 
 This extension provides three event filters that you can add to your events to
 make them useful to Members:
