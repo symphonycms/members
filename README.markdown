@@ -165,7 +165,7 @@ a number of additional return values from the fields that may be useful to you.
 
 - Recovery `$label` has expired.
 - Invalid `$label`.
-- `$label` do not match.
+- `$label` confirmation does not match.
 - `$label` is too short. It must be at least %d characters.
 - `$label` is not strong enough.
 - `$label` cannot be blank.
