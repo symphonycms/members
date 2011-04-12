@@ -223,10 +223,6 @@
 			$EventManager = new EventManager(Administration::instance());
 			$events = $EventManager->listAll();
 
-			if(is_array($events) && !empty($events)) foreach($events as $handle => $e) {
-				if(!$e['can_parse']) unset($events[$handle]);
-			}
-
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
 			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));
