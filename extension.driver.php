@@ -658,7 +658,7 @@
 					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
 					$role_id = $role_data['role_id'];
 
-					if($action == 'edit') {
+					if($action == 'edit' && method_exists($context['event'], 'getSource')) {
 						$section_id = $context['event']->getSource();
 						$member_id = false;
 
