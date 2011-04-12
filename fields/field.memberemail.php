@@ -60,6 +60,15 @@
 			else {
 				$email = $needle;
 			}
+			
+			if(empty($email)) {
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __('%s is a required field.', array($this->get('label'))),
+					'type' => 'missing',
+					'label' => $this->get('label')
+				);
+				return null;
+			}
 
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
 				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
@@ -69,7 +78,8 @@
 			if(is_null($member_id)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
 					'message' => __("Member not found"),
-					'type' => 'invalid'
+					'type' => 'invalid',
+					'label' => $this->get('label')
 				);
 				return null;
 			}

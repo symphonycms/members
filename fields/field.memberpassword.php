@@ -95,6 +95,15 @@
 				$password = $needle;
 			}
 
+			if(empty($password)) {
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __('%s is a required field.', array($this->get('label'))),
+					'type' => 'missing',
+					'label' => $this->get('label')
+				);
+				return null;
+			}
+
 			$data = Symphony::Database()->fetchRow(0, sprintf("
 					SELECT `entry_id`, `reset`
 					FROM `tbl_entries_data_%d`
@@ -121,7 +130,8 @@
 				if(is_null($valid_id)) {
 					extension_Members::$_errors[$this->get('element_name')] = array(
 						'message' => __('Recovery password has expired'),
-						'type' => 'invalid'
+						'type' => 'invalid',
+						'label' => $this->get('label')
 					);
 				}
 				// Otherwise, we found the entry_id, so lets remove the reset and expires as this password
@@ -136,7 +146,8 @@
 
 			extension_Members::$_errors[$this->get('element_name')] = array(
 				'message' => __('Invalid password'),
-				'type' => 'invalid'
+				'type' => 'invalid',
+				'label' => $this->get('label')
 			);
 
 			return null;
@@ -276,7 +287,7 @@
 			}
 
 			$wrapper->appendChild($label);
-			
+
 			$div = new XMLElement('div', null, array('class' => 'compact'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);

@@ -53,15 +53,14 @@
 			// Member from Identity
 			$member_id = $identity->fetchMemberIDBy($credentials);
 
-			if(is_null($member_id)) return null;
-
 			// Validate against Password
 			$auth = extension_Members::$fields['authentication'];
+			if(!is_null($auth)) {
+				$member_id = $auth->fetchMemberIDBy($credentials, $member_id);
+			}
 
-			if(is_null($auth)) return $member_id;
-
-			$member_id = $auth->fetchMemberIDBy($credentials, $member_id);
-
+			// No Member found, can't even begin to check Activation
+			// Return null
 			if(is_null($member_id)) return null;
 
 			// Check that if there's activiation, that this Member is activated.
@@ -74,7 +73,8 @@
 					if(is_null(extension_Members::getConfigVar('role'))) {
 						extension_Members::$_errors['activation'] = array(
 							'message' => __('Not activated.'),
-							'type' => 'invalid'
+							'type' => 'invalid',
+							'label' => extension_Members::$fields['activation']->get('label')
 						);
 						return false;
 					}
@@ -151,7 +151,12 @@
 				$password = $credentials[extension_Members::$handles['authentication']];
 
 				// Use normalised handles for the fields
-				$data['password'] = $isHashed ? $password : extension_Members::$fields['authentication']->encodePassword($password);
+				if(!empty($password)) {
+					$data['password'] = $isHashed ? $password : extension_Members::$fields['authentication']->encodePassword($password);
+				}
+				else {
+					$data['password'] = '';
+				}
 			}
 
 			if($id = $this->findMemberIDFromCredentials($data)) {

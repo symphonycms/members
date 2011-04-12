@@ -13,7 +13,7 @@
 			$this->_name = __('Member: Username');
 			$this->set('required', 'yes');
 		}
-		
+
 		public function isSortable(){
 			return true;
 		}
@@ -67,6 +67,15 @@
 				$username = $needle;
 			}
 
+			if(empty($username)) {
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __('%s is a required field.', array($this->get('label'))),
+					'type' => 'missing',
+					'label' => $this->get('label')
+				);
+				return null;
+			}
+
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
 				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
 				$this->get('id'), Symphony::Database()->cleanValue($username)
@@ -75,7 +84,8 @@
 			if(is_null($member_id)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
 					'message' => __("Member not found"),
-					'type' => 'invalid'
+					'type' => 'invalid',
+					'label' => $this->get('label')
 				);
 				return null;
 			}
@@ -96,7 +106,7 @@
 			$group->appendChild($div);
 
 			$wrapper->appendChild($group);
-			
+
 			$div = new XMLElement('div', null, array('class' => 'compact'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);

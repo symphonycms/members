@@ -559,8 +559,9 @@
 				if($this->Member->login($_POST['fields'])) {
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
 				}
-
-				self::$_failed_login_attempt = true;
+				else {
+					self::$_failed_login_attempt = true;
+				}
 			}
 
 			$this->Member->initialiseMemberObject();

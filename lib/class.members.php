@@ -137,27 +137,38 @@
 				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
 				$result->setAttributeArray(array(
 					'logged-in' => 'yes',
-					'id' => $this->Member->get('id')
+					'id' => $this->Member->get('id'),
+					'result' => 'success'
 				));
 			}
 			else {
 				$result->setAttribute('logged-in','no');
-
 				if(extension_Members::$_failed_login_attempt) {
-					$result->setAttribute('failed-login-attempt','yes');
-				}
-				else {
-					$result->setAttribute('failed-login-attempt','no');
+					$result->setAttribute('result', 'error');
 				}
 
+				// Append error messages
 				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
 					foreach(extension_Members::$_errors as $type => $error) {
 						$result->appendChild(
 							new XMLElement($type, null, array(
 								'type' => $error['type'],
-								'message' => $error['message']
+								'message' => $error['message'],
+								'label' => General::sanitize($error['label'])
 							))
 						);
+					}
+				}
+
+				// Append post values to simulate a real Symphony event
+				$post_values = new XMLElement('post-values');
+				$post = General::getPostData();
+
+				// Create the post data cookie element
+				if (is_array($post['fields']) && !empty($post['fields'])) {
+					General::array_to_xml($post_values, $post['fields'], true);
+					if($post_values->getNumberOfChildren()) {
+						$result->appendChild($post_values);
 					}
 				}
 			}
