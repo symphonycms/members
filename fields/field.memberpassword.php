@@ -145,7 +145,7 @@
 			if(!empty($data)) return $member_id;
 
 			extension_Members::$_errors[$this->get('element_name')] = array(
-				'message' => __('Invalid %s.', $this->get('label')),
+				'message' => __('Invalid %s.', array($this->get('label'))),
 				'type' => 'invalid',
 				'label' => $this->get('label')
 			);
