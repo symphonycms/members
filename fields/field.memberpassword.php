@@ -129,7 +129,7 @@
 				// If we didn't get an entry_id back, then it's because it was expired
 				if(is_null($valid_id)) {
 					extension_Members::$_errors[$this->get('element_name')] = array(
-						'message' => __('Recovery password has expired'),
+						'message' => __('Recovery %s has expired.', array($this->get('label'))),
 						'type' => 'invalid',
 						'label' => $this->get('label')
 					);
@@ -145,7 +145,7 @@
 			if(!empty($data)) return $member_id;
 
 			extension_Members::$_errors[$this->get('element_name')] = array(
-				'message' => __('Invalid password'),
+				'message' => __('Invalid %s.', $this->get('label')),
 				'type' => 'invalid',
 				'label' => $this->get('label')
 			);

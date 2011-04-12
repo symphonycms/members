@@ -83,7 +83,7 @@
 
 			if(is_null($member_id)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
-					'message' => __("Member not found"),
+					'message' => __("Member not found."),
 					'type' => 'invalid',
 					'label' => $this->get('label')
 				);

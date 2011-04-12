@@ -149,11 +149,29 @@ This extension provides four additional events:
 - Members: Reset Password
 - Members: Recover Account
 
-Go to Blueprints > Components and click on the event name to view
-documentation for that event.
+Go to Blueprints > Components and click on the event name to view 
+documentation for that event. In addition to this event documentation, there is
+a number of additional return values from the fields that may be useful to you.
+
+### Members: Username
+### Members: Email
+
+- Member not found.
+- `$label` is a required field.
+- `$label` contains invalid characters.
+- That `$label` is already taken.
+
+### Members: Password
+
+- Recovery `$label` has expired.
+- Invalid `$label`.
+- `$label` do not match.
+- `$label` is too short. It must be at least %d characters.
+- `$label` is not strong enough.
+- `$label` cannot be blank.
 
 This extension provides three event filters that you can add to your events to
- make them useful to Members:
+make them useful to Members:
 
 - Members: Activation
 - Members: Register

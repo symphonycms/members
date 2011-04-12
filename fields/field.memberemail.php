@@ -60,7 +60,7 @@
 			else {
 				$email = $needle;
 			}
-			
+
 			if(empty($email)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
 					'message' => __('%s is a required field.', array($this->get('label'))),
@@ -77,7 +77,7 @@
 
 			if(is_null($member_id)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
-					'message' => __("Member not found"),
+					'message' => __("Member not found."),
 					'type' => 'invalid',
 					'label' => $this->get('label')
 				);
