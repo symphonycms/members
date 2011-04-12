@@ -46,6 +46,8 @@
 				<h3>Example Error XML</h3>
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
+					&lt;error&gt;No Authentication field found&lt;/error&gt;
+					&lt;error&gt;Recovery code is a required field&lt;/error&gt;
 					&lt;error&gt;No recovery code found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
 					&lt;error&gt;Passwords do not match.&lt;/error&gt;
@@ -59,20 +61,33 @@
 		protected function __trigger(){
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_REQUEST['fields'];
-			
-			if(!isset($fields['recovery-code']) or empty($fields['recovery-code'])) {
+
+			// Check that there is a row with this recovery code and that they
+			// request a password reset
+			$auth = extension_Members::$fields['authentication'];
+			if(!$auth instanceof fieldMemberPassword) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Recovery code is a required field.'), array(
-						'type' => 'missing'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Authentication field found')
 					))
 				);
 				return $result;
 			}
 
-			// Check that there is a row with this recovery code and that they
-			// request a password reset
-			$auth = extension_Members::$fields['authentication'];
+			if(!isset($fields['recovery-code']) or empty($fields['recovery-code'])) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'missing',
+						'message' =>  __('Recovery code is a required field.'),
+						'label' => $auth->get('label')
+					))
+				);
+				return $result;
+			}
+
 			$row = Symphony::Database()->fetchRow(0, sprintf("
 					SELECT `entry_id`, `recovery-code`
 					FROM tbl_entries_data_%d
@@ -85,8 +100,10 @@
 			if(empty($row)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('No recovery code found'), array(
-						'type' => 'invalid'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No recovery code found'),
+						'label' => $auth->get('label')
 					))
 				);
 
@@ -101,8 +118,9 @@
 				if(!$entry instanceof Entry) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement('error', __('Member not found.'), array(
-							'type' => 'invalid'
+						new XMLElement('error', null, array(
+							'type' => 'invalid',
+							'message' =>  __('Member not found.')
 						))
 					);
 
@@ -116,8 +134,10 @@
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement('error', $message, array(
-							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid'
+						new XMLElement('error', null, array(
+							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid',
+							'message' => $message,
+							'label' => $auth->get('label')
 						))
 					);
 
@@ -127,7 +147,7 @@
 				// processRawFieldData will encode the user's new password with the current one
 				$status = Field::__OK__;
 				$data = $auth->processRawFieldData(array(
-					'password' => $fields[$auth->get('element_name')]['password'],
+					'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password']),
 					'recovery-code' => null,
 					'reset' => 'no'
 				), $status);

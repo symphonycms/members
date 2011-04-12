@@ -48,6 +48,7 @@
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
 					&lt;error&gt;No Activation field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
+					&lt;error&gt;Activation code is a required field&lt;/error&gt;
 					&lt;error&gt;Activation error. Code was invalid or has expired.&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>
@@ -63,18 +64,21 @@
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('No Activation field found'), array(
-						'type' => 'invalid'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Activation field found')
 					))
 				);
 				return $result;
 			}
-			
+
 			if(!isset($fields['activation-code']) or empty($fields['activation-code'])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Activation code is a required field.'), array(
-						'type' => 'missing'
+					new XMLElement('error', null, array(
+						'type' => 'missing',
+						'message' => __('Activation code is a required field.'),
+						'label' => $activation->get('label')
 					))
 				);
 				return $result;
@@ -90,8 +94,10 @@
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Member not found.'), array(
-						'type' => 'invalid'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('Member not found.'),
+						'label' => $identity->get('label')
 					))
 				);
 				return $result;
@@ -101,8 +107,10 @@
 			if($code['code'] != $fields['activation-code']) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Activation error. Code was invalid or has expired.'), array(
-						'type' => 'invalid'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('Activation error. Code was invalid or has expired.'),
+						'label' => $activation->get('label')
 					))
 				);
 				return $result;

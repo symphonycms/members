@@ -64,8 +64,9 @@
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('No Activation field found'), array(
-						'type' => 'invalid'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Activation field found')
 					))
 				);
 				return $result;
@@ -79,8 +80,10 @@
 			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('%s is a required field.', array($identity->get('label'))), array(
-						'type' => 'missing'
+					new XMLElement('error', null, array(
+						'type' => 'missing',
+						'message' => __('%s is a required field.', array($identity->get('label'))),
+						'label' => $identity->get('label')
 					))
 				);
 				return $result;
@@ -91,8 +94,10 @@
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', __('Member not found.'), array(
-						'type' => 'invalid'
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('Member not found.'),
+						'label' => $identity->get('label')
 					))
 				);
 				return $result;
