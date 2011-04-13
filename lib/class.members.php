@@ -143,9 +143,6 @@
 			}
 			else {
 				$result->setAttribute('logged-in','no');
-				if(extension_Members::$_failed_login_attempt) {
-					$result->setAttribute('result', 'error');
-				}
 
 				// Append error messages
 				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
@@ -161,14 +158,18 @@
 				}
 
 				// Append post values to simulate a real Symphony event
-				$post_values = new XMLElement('post-values');
-				$post = General::getPostData();
+				if(extension_Members::$_failed_login_attempt) {
+					$result->setAttribute('result', 'error');
 
-				// Create the post data cookie element
-				if (is_array($post['fields']) && !empty($post['fields'])) {
-					General::array_to_xml($post_values, $post['fields'], true);
-					if($post_values->getNumberOfChildren()) {
-						$result->appendChild($post_values);
+					$post_values = new XMLElement('post-values');
+					$post = General::getPostData();
+
+					// Create the post data cookie element
+					if (is_array($post['fields']) && !empty($post['fields'])) {
+						General::array_to_xml($post_values, $post['fields'], true);
+						if($post_values->getNumberOfChildren()) {
+							$result->appendChild($post_values);
+						}
 					}
 				}
 			}
