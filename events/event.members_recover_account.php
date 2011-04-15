@@ -162,7 +162,7 @@
 				$driver->Member->filter_UpdatePasswordLogin(array(
 					'entry' => $entry,
 					'fields' => array(
-						'password' => array(
+						extension_Members::$handles['authentication'] => array(
 							'password' => $data['password']
 						)
 					)

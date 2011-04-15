@@ -34,7 +34,7 @@
 					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
 					or
 					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
-					&lt;label&gt;Activation Code: &lt;input name="fields[activation-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
+					&lt;label&gt;Activation: &lt;input name="fields[activation]" type="text" value="{$code}"/&gt;&lt;/label&gt;
 					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Activate Account"/&gt;
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;
@@ -48,7 +48,7 @@
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
 					&lt;error&gt;No Activation field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
-					&lt;error&gt;Activation code is a required field&lt;/error&gt;
+					&lt;error&gt;Activation is a required field&lt;/error&gt;
 					&lt;error&gt;Activation error. Code was invalid or has expired.&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>
@@ -72,16 +72,19 @@
 				return $result;
 			}
 
-			if(!isset($fields['activation-code']) or empty($fields['activation-code'])) {
+			if(!isset($fields[$activation->get('element_name')]) or empty($fields[$activation->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'missing',
-						'message' => __('Activation code is a required field.'),
+						'message' => __('%s is a required field.', array($activation->get('label'))),
 						'label' => $activation->get('label')
 					))
 				);
 				return $result;
+			}
+			else {
+				$fields[$activation->get('element_name')] = trim($fields[$activation->get('element_name')]);
 			}
 
 			// Make sure we dont accidently use an expired code
@@ -104,7 +107,7 @@
 			}
 
 			$code = $activation->isCodeActive($member_id);
-			if($code['code'] != $fields['activation-code']) {
+			if($code['code'] != $fields[$activation->get('element_name')]) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', null, array(
@@ -133,7 +136,7 @@
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
-				'password' => $entry[0]->getData(extension_Members::getConfigVar('authentication'), true)->password
+				extension_Members::$handles['authentication'] => $entry[0]->getData(extension_Members::getConfigVar('authentication'), true)->password
 			));
 
 			$driver = Symphony::ExtensionManager()->create('members');
