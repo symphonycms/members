@@ -236,7 +236,8 @@
 				$td_name = Widget::TableData($event['name'], 'name');
 
 				$td_permission_create = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User can create new entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][create]",
 							'1',
@@ -249,7 +250,8 @@
 				);
 
 				$td_permission_none = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User cannot edit existing entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
 							EventPermissions::NO_PERMISSIONS,
@@ -261,7 +263,8 @@
 				);
 
 				$td_permission_own = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User can edit their own entries only'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
 							EventPermissions::OWN_ENTRIES,
@@ -273,7 +276,8 @@
 				);
 
 				$td_permission_all = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User can edit all entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
 							EventPermissions::ALL_ENTRIES,
@@ -284,22 +288,26 @@
 					)
 				);
 
-				$aTableBody[] = Widget::TableRow(array(
-					$td_name,
-					$td_permission_create,
-					$td_permission_none,
-					$td_permission_own,
-					$td_permission_all
-				));
+				$aTableBody[] = Widget::TableRow(
+					array(
+						$td_name,
+						$td_permission_create,
+						$td_permission_none,
+						$td_permission_own,
+						$td_permission_all
+					),
+					($event['can_parse'] == true) ? '' : 'inactive'
+				);
+				
 			}
 
 			$thead = Widget::TableHead(
 				array(
 					array(__('Event'), 'col', array('class' => 'name')),
-					array(__('Create New'), 'col', array('class' => 'new')),
-					array(__('No Edit'), 'col', array('class' => 'edit')),
-					array(__('Edit Own'), 'col', array('class' => 'edit')),
-					array(__('Edit All'), 'col', array('class' => 'edit'))
+					array(__('Create New'), 'col', array('class' => 'new', 'title'=> __('Toggle all'))),
+					array(__('No Edit'), 'col', array('class' => 'edit', 'title'=> __('Toggle all'))),
+					array(__('Edit Own'), 'col', array('class' => 'edit', 'title'=> __('Toggle all'))),
+					array(__('Edit All'), 'col', array('class' => 'edit', 'title'=> __('Toggle all')))
 				)
 			);
 
