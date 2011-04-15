@@ -80,7 +80,7 @@
 			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($identity->get('element_name'), null, array(
 						'type' => 'missing',
 						'message' => __('%s is a required field.', array($identity->get('label'))),
 						'label' => $identity->get('label')
@@ -94,7 +94,7 @@
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($identity->get('element_name'), null, array(
 						'type' => 'invalid',
 						'message' => __('Member not found.'),
 						'label' => $identity->get('label')
@@ -111,6 +111,30 @@
 
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
+
+			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
+			// and EmailTemplateManager use to send emails.
+			$filter_errors = array();
+			$driver = Symphony::ExtensionManager()->create('members');
+			$entry = $driver->Member->fetchMemberFromID($member_id);
+
+			/**
+			 * @delegate EventFinalSaveFilter
+			 * @param string $context
+			 * '/frontend/'
+			 * @param array $fields
+			 * @param string $event
+			 * @param array $filter_errors
+			 * @param Entry $entry
+			 */
+			Symphony::ExtensionManager()->notifyMembers(
+				'EventFinalSaveFilter', '/frontend/', array(
+					'fields'	=> $fields,
+					'event'		=> &$this,
+					'errors'	=> &$filter_errors,
+					'entry'		=> $entry
+				)
+			);
 
 			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 

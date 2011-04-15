@@ -79,7 +79,7 @@
 			if(!isset($fields['recovery-code']) or empty($fields['recovery-code'])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($auth->get('element_name'), null, array(
 						'type' => 'missing',
 						'message' =>  __('Recovery code is a required field.'),
 						'label' => $auth->get('label')
@@ -100,7 +100,7 @@
 			if(empty($row)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($auth->get('element_name'), null, array(
 						'type' => 'invalid',
 						'message' => __('No recovery code found'),
 						'label' => $auth->get('label')
@@ -111,14 +111,13 @@
 			}
 			else {
 				// Retrieve Member Entry record
-				$entryManager = new EntryManager(Frontend::instance());
-				$entry = $entryManager->fetch($row['entry_id']);
-				$entry = $entry[0];
+				$driver = Symphony::ExtensionManager()->create('members');
+				$entry = $driver->Member->fetchMemberFromID($row['entry_id']);
 
 				if(!$entry instanceof Entry) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement('error', null, array(
+						new XMLElement($auth->get('element_name'), null, array(
 							'type' => 'invalid',
 							'message' =>  __('Member not found.')
 						))
@@ -134,7 +133,7 @@
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement('error', null, array(
+						new XMLElement($auth->get('element_name'), null, array(
 							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid',
 							'message' => $message,
 							'label' => $auth->get('label')
@@ -158,7 +157,6 @@
 
 				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
 				// handle relogging in the user.
-				$driver = Symphony::ExtensionManager()->create('members');
 				$driver->Member->filter_UpdatePasswordLogin(array(
 					'entry' => $entry,
 					'fields' => array(

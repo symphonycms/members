@@ -71,7 +71,7 @@
 				// just return false.
 				if($entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
 					if(is_null(extension_Members::getConfigVar('role'))) {
-						extension_Members::$_errors['activation'] = array(
+						extension_Members::$_errors[extension_Members::$fields['activation']->get('element_name')] = array(
 							'message' => __('Not activated.'),
 							'type' => 'invalid',
 							'label' => extension_Members::$fields['activation']->get('label')

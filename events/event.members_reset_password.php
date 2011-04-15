@@ -78,7 +78,7 @@
 			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($identity->get('element_name'), null, array(
 						'type' => 'missing',
 						'message' => __('%s is a required field.', array($identity->get('label'))),
 						'label' => $identity->get('label')
@@ -88,11 +88,10 @@
 			}
 
 			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
-
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($identity->get('element_name'), null, array(
 						'type' => 'invalid',
 						'message' => __('Member not found.'),
 						'label' => $identity->get('label')
@@ -123,8 +122,8 @@
 			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 			// and EmailTemplateManager use to send emails.
 			$filter_errors = array();
-			$entryManager = new EntryManager(Frontend::instance());
-			$entry = $entryManager->fetch($member_id);
+			$driver = Symphony::ExtensionManager()->create('members');
+			$entry = $driver->Member->fetchMemberFromID($member_id);
 
 			/**
 			 * @delegate EventFinalSaveFilter
@@ -140,7 +139,7 @@
 					'fields'	=> $fields,
 					'event'		=> &$this,
 					'errors'	=> &$filter_errors,
-					'entry'		=> $entry[0]
+					'entry'		=> $entry
 				)
 			);
 

@@ -75,7 +75,7 @@
 			if(!isset($fields[$activation->get('element_name')]) or empty($fields[$activation->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($activation->get('element_name'), null, array(
 						'type' => 'missing',
 						'message' => __('%s is a required field.', array($activation->get('label'))),
 						'label' => $activation->get('label')
@@ -97,7 +97,7 @@
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($identity->get('element_name'), null, array(
 						'type' => 'invalid',
 						'message' => __('Member not found.'),
 						'label' => $identity->get('label')
@@ -110,7 +110,7 @@
 			if($code['code'] != $fields[$activation->get('element_name')]) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement($activation->get('element_name'), null, array(
 						'type' => 'invalid',
 						'message' => __('Activation error. Code was invalid or has expired.'),
 						'label' => $activation->get('label')
@@ -131,15 +131,14 @@
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
 
 			// Retrieve Member Entry record
-			$entryManager = new EntryManager(Frontend::instance());
-			$entry = $entryManager->fetch($member_id);
+			$driver = Symphony::ExtensionManager()->create('members');
+			$entry = $driver->Member->fetchMemberFromID($member_id);
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
-				extension_Members::$handles['authentication'] => $entry[0]->getData(extension_Members::getConfigVar('authentication'), true)->password
+				extension_Members::$handles['authentication'] => $entry->getData(extension_Members::getConfigVar('authentication'), true)->password
 			));
 
-			$driver = Symphony::ExtensionManager()->create('members');
 			if($driver->Member->login($data_fields, true)) {
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
