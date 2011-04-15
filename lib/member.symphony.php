@@ -15,10 +15,26 @@
 		 * $_POST data.
 		 *
 		 * @param array $credentials
+		 * @param boolean $simplified
+		 *  If true, this function assumes that the $credentials array contains a
+		 *  username and email key, otherwise, it will attempt to map a value using
+		 *  the field handles to a normalised username/email.
 		 * @return Field
 		 */
-		public static function setIdentityField(Array $credentials) {
-			extract($credentials);
+		public static function setIdentityField(Array $credentials, $simplified = true) {
+			if($simplified) {
+				extract($credentials);
+			}
+			else {
+				// Map POST data to simple terms
+				if(isset($credentials[extension_Members::$handles['identity']])) {
+					$username = $credentials[extension_Members::$handles['identity']];
+				}
+
+				if(isset($credentials[extension_Members::$handles['email']])) {
+					$email = $credentials[extension_Members::$handles['email']];
+				}
+			}
 
 			// Login with username
 			if(is_null($email)) {
@@ -30,6 +46,7 @@
 
 			return $identity_field;
 		}
+
 	/*-------------------------------------------------------------------------
 		Finding:
 	-------------------------------------------------------------------------*/

@@ -74,7 +74,7 @@
 			}
 
 			// Check that a member exists first before proceeding.
-			$identity = SymphonyMember::setIdentityField($fields);
+			$identity = SymphonyMember::setIdentityField($fields, false);
 			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
