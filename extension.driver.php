@@ -313,7 +313,7 @@
 
 		public static function getConfigVar($handle) {
 			$value = Symphony::Configuration()->get($handle, 'members');
-			return ($value == 0 || is_null($value) || empty($value)) ? NULL : $value;
+			return ((is_numeric($value) && $value == 0) || is_null($value) || empty($value)) ? NULL : $value;
 		}
 
 		public static function getMembersSection() {
@@ -496,7 +496,6 @@
 				}
 			}
 			catch(Exception $ex) {
-
 			}
 
 			// Only append if there is any Templates.
