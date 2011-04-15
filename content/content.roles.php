@@ -288,6 +288,9 @@
 					)
 				);
 
+				// Create an Event instance
+				$ev = $EventManager->create($event_handle, array());
+
 				$aTableBody[] = Widget::TableRow(
 					array(
 						$td_name,
@@ -296,9 +299,10 @@
 						$td_permission_own,
 						$td_permission_all
 					),
-					($event['can_parse'] == true) ? '' : 'inactive'
+					(method_exists($ev, 'ignoreRolePermissions') && $ev->ignoreRolePermissions() == true) ? 'inactive' : ''
 				);
 
+				unset($ev);
 			}
 
 			$thead = Widget::TableHead(

@@ -627,14 +627,20 @@
 		 *   similar field, the `entry_id` of the linked entry matches the logged in
 		 *   user's id, process the event.
 		 * - All Entries: The user can update any entry in Symphony.
-		 * If there are no Roles in this system, it will immediately proceed to
-		 * processing any of the Filters attached to the event before returning.
+		 * If there are no Roles in this system, or the event is set to ignore permissions
+		 * (by including a function, `ignoreRolePermissions` that returns `true`, it will
+		 * immediately proceed to processing any of the Filters attached to the event
+		 * before returning.
 		 *
 		 * @uses checkEventPermissions
 		 */
 		public function checkEventPermissions(Array &$context){
-			// If this system has no Roles, continue straight to processing the Filters
-			if(is_null(extension_Members::getConfigVar('role'))) {
+			// If this system has no Roles, or the event is set to ignore role permissions
+			// continue straight to processing the Filters
+			if(
+				is_null(extension_Members::getConfigVar('role')) ||
+				(method_exists($context['event'], 'ignoreRolePermissions') && $context['event']->ignoreRolePermissions() == true)
+			) {
 				return $this->__processEventFilters($context);
 			}
 
