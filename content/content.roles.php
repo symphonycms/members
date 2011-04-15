@@ -298,7 +298,7 @@
 					),
 					($event['can_parse'] == true) ? '' : 'inactive'
 				);
-				
+
 			}
 
 			$thead = Widget::TableHead(
@@ -321,6 +321,7 @@
 			$fieldset->appendChild($table);
 			$this->Form->appendChild($fieldset);
 
+			// Add Page Permissions [simple Deny/Allow]
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
 			$fieldset->appendChild(new XMLElement('legend', __('Page Level Permissions')));
@@ -330,7 +331,7 @@
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
 
 			$options = array();
-			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY `title` ASC");
+			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY sortorder ASC");
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],
