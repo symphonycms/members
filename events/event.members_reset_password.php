@@ -55,6 +55,7 @@
 				<h3>Example Error XML</h3>
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
+					&lt;error&gt;No Identity field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>

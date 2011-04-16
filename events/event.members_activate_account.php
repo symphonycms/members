@@ -47,7 +47,9 @@
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
 					&lt;error&gt;No Activation field found&lt;/error&gt;
+					&lt;error&gt;No Identity field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
+					&lt;error&gt;Member is already activated&lt;/error&gt;
 					&lt;error&gt;Activation is a required field&lt;/error&gt;
 					&lt;error&gt;Activation error. Code was invalid or has expired.&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
@@ -71,6 +73,20 @@
 				return $result;
 			}
 
+			// Check that either a Member: Username or Member: Password field
+			// has been detected
+			$identity = SymphonyMember::setIdentityField($fields, false);
+			if(!$identity instanceof Identity) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Identity field found')
+					))
+				);
+				return $result;
+			}
+
 			if(!isset($fields[$activation->get('element_name')]) or empty($fields[$activation->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -86,23 +102,6 @@
 				$fields[$activation->get('element_name')] = trim($fields[$activation->get('element_name')]);
 			}
 
-			// Make sure we dont accidently use an expired code
-			$activation->purgeCodes();
-
-			// Check that either a Member: Username or Member: Password field
-			// has been detected
-			$identity = SymphonyMember::setIdentityField($fields, false);
-			if(!$identity instanceof Identity) {
-				$result->setAttribute('result', 'error');
-				$result->appendChild(
-					new XMLElement('error', null, array(
-						'type' => 'invalid',
-						'message' => __('No Identity field found')
-					))
-				);
-				return $result;
-			}
-
 			// Check that a member exists first before proceeding.
 			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 			if(is_null($member_id)) {
@@ -116,6 +115,25 @@
 				);
 				return $result;
 			}
+
+			// Retrieve Member Entry record
+			$driver = Symphony::ExtensionManager()->create('members');
+			$entry = $driver->Member->fetchMemberFromID($member_id);
+
+			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement($activation->get('element_name'), null, array(
+						'type' => 'invalid',
+						'message' => __('Member is already activated.'),
+						'label' => $activation->get('label')
+					))
+				);
+				return $result;
+			}
+
+			// Make sure we dont accidently use an expired code
+			$activation->purgeCodes();
 
 			$code = $activation->isCodeActive($member_id);
 			if($code['code'] != $fields[$activation->get('element_name')]) {
@@ -140,10 +158,6 @@
 
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
-
-			// Retrieve Member Entry record
-			$driver = Symphony::ExtensionManager()->create('members');
-			$entry = $driver->Member->fetchMemberFromID($member_id);
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(

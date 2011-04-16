@@ -51,7 +51,9 @@
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
 					&lt;error&gt;No Activation field found&lt;/error&gt;
+					&lt;error&gt;No Identity field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
+					&lt;error&gt;Member is already activated&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>
 			';
@@ -120,6 +122,23 @@
 						'type' => 'invalid',
 						'message' => __('Member not found.'),
 						'label' => $identity->get('label')
+					))
+				);
+				return $result;
+			}
+
+			// Check that the current member isn't already activated. If they
+			// are, no point in regenerating the code.
+			$driver = Symphony::ExtensionManager()->create('members');
+			$entry = $driver->Member->fetchMemberFromID($member_id);
+
+			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement($activation->get('element_name'), null, array(
+						'type' => 'invalid',
+						'message' => __('Member is already activated.'),
+						'label' => $activation->get('label')
 					))
 				);
 				return $result;
