@@ -72,11 +72,20 @@
 				return $result;
 			}
 
-			// Make sure we dont accidently use an expired code
-			$activation->purgeCodes();
-
-			// Check that a member exists first before proceeding.
+			// Check that either a Member: Username or Member: Password field
+			// has been detected
 			$identity = SymphonyMember::setIdentityField($fields, false);
+			if(!$identity instanceof Identity) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Identity field found')
+					))
+				);
+				return $result;
+			}
+
 			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -89,6 +98,10 @@
 				return $result;
 			}
 
+			// Make sure we dont accidently use an expired code
+			$activation->purgeCodes();
+			
+			// Check that a member exists first before proceeding.
 			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 
 			if(is_null($member_id)) {

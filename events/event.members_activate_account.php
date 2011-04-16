@@ -60,7 +60,6 @@
 			$fields = $_POST['fields'];
 
 			$activation = extension_Members::$fields['activation'];
-
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -90,10 +89,22 @@
 			// Make sure we dont accidently use an expired code
 			$activation->purgeCodes();
 
-			// Check that a member exists first before proceeding.
+			// Check that either a Member: Username or Member: Password field
+			// has been detected
 			$identity = SymphonyMember::setIdentityField($fields, false);
-			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
+			if(!$identity instanceof Identity) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Identity field found')
+					))
+				);
+				return $result;
+			}
 
+			// Check that a member exists first before proceeding.
+			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(

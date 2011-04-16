@@ -36,10 +36,16 @@
 				}
 			}
 
-			// Login with username
+			// Check to see if neither can be found, just return null
+			if(is_null($username) && is_null($email)) {
+				return null;
+			}
+
+			// If email is ommited, use the Username field
 			if(is_null($email)) {
 				$identity_field = extension_Members::$fields['identity'];
 			}
+			// If username is ommited, use the Email field
 			else if (is_null($username)) {
 				$identity_field = extension_Members::$fields['email'];
 			}
