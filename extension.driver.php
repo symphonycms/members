@@ -353,6 +353,27 @@
 		}
 
 		/**
+		 * Given an array of grouped options ready for use in `Widget::Select`
+		 * loop over all the options and compare the value to configuration value
+		 * (as specified by `$handle`) and if it matches, set that option to true
+		 *
+		 * @param array $options
+		 * @param string $handle
+		 * @return array
+		 */
+		public static function setActiveTemplate(Array $options, $handle) {
+			foreach($options as $index => $ext) {
+				foreach($ext['options'] as $key => $opt) {
+					if($opt[0] == extension_Members::getConfigVar($handle)) {
+						$options[$index]['options'][$key][1] = true;
+					}
+				}
+			}
+
+			return $options;
+		}
+
+		/**
 		 * The Members extension provides a number of filters for users to add their
 		 * events to do various functionality. This negates the need for custom events
 		 *
@@ -440,10 +461,11 @@
 			}
 
 			$group->appendChild($label);
+			$fieldset->appendChild($group);
 
-			$label = new XMLElement('label', __('Reset Password Email Template'));
+			$group = new XMLElement('div', null, array('class' => 'group'));
+
 			$options = array();
-
 			// Email Template Filter
 			// @link http://symphony-cms.com/download/extensions/view/20743/
 			try {
@@ -455,7 +477,7 @@
 					$group_options = array();
 
 					foreach($templates as $template) {
-						$group_options[] = array('etf-'.$template['id'], ('etf-'.$template['id'] == extension_Members::getConfigVar('reset-password-template')), $template['name']);
+						$group_options[] = array('etf-'.$template['id'], false, $template['name']);
 					}
 					$g['options'] = $group_options;
 
@@ -464,9 +486,7 @@
 					}
 				}
 			}
-			catch(Exception $ex) {
-
-			}
+			catch(Exception $ex) {}
 
 			// Email Template Manager
 			// @link http://symphony-cms.com/download/extensions/view/64322/
@@ -484,9 +504,8 @@
 						$group_options = array();
 
 						foreach($templates as $template) {
-							$group_options[] = array('etm-'.$template->getHandle(), ('etm-'.$template->getHandle() == extension_Members::getConfigVar('reset-password-template')), $template->getName());
+							$group_options[] = array('etm-'.$template->getHandle(), false, $template->getName());
 						}
-
 						$g['options'] = $group_options;
 
 						if(!empty($g['options'])) {
@@ -495,13 +514,27 @@
 					}
 				}
 			}
-			catch(Exception $ex) {
-			}
+			catch(Exception $ex) {}
 
 			// Only append if there is any Templates.
 			if(!empty($options)) {
-				$label->appendChild(Widget::Select('settings[members][reset-password-template]', $options));
-				$group->appendChild($label);
+				if(!is_null(extension_Members::$fields['authentication'])) {
+					// Reset Password
+					$label = new XMLElement('label', __('Reset Password Email Template'));
+					$reset_password_templates = extension_Members::setActiveTemplate($options, 'reset-password-template');
+					$label->appendChild(Widget::Select('settings[members][reset-password-template]', $reset_password_templates));
+					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Reset Password</code> event'), array('class' => 'help')));
+					$group->appendChild($label);
+				}
+
+				if(!is_null(extension_Members::$fields['activation'])) {
+					// Regenerate Activation Code
+					$label = new XMLElement('label', __('Regenerate Activation Code Template'));
+					$regenerate_activation_code_templates = extension_Members::setActiveTemplate($options, 'regenerate-activation-code-template');
+					$label->appendChild(Widget::Select('settings[members][regenerate-activation-code-template]', $regenerate_activation_code_templates));
+					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
+					$group->appendChild($label);
+				}
 			}
 
 			$fieldset->appendChild($group);
@@ -516,8 +549,20 @@
 		public function savePreferences(){
 			$settings = $_POST['settings'];
 
+			// Active Section
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
-			Symphony::Configuration()->set('section', $settings['members']['reset-password-template'], 'members');
+
+			// Email Templates
+			// Reset Password
+			if(isset($settings['members']['reset-password-template'])) {
+				Symphony::Configuration()->set('section', $settings['members']['reset-password-template'], 'members');
+			}
+
+			// Regenerate Activation Code
+			if(isset($settings['members']['regenerate-activation-code-template'])) {
+				Symphony::Configuration()->set('section', $settings['members']['regenerate-activation-code-template'], 'members');
+			}
+
 			Administration::instance()->saveConfig();
 		}
 

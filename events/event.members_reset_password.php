@@ -66,7 +66,7 @@
 			$fields = $_POST['fields'];
 
 			// Read the password template from the Configuration if it exists
-			// This is required for the Email Template Filter.
+			// This is required for the Email Template Filter/Email Template Manager
 			if(!is_null(extension_Members::getConfigVar('reset-password-template'))) {
 				$this->eParamFILTERS = array(
 					extension_Members::getConfigVar('reset-password-template')
