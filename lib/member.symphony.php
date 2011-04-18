@@ -41,13 +41,13 @@
 				return null;
 			}
 
-			// If email is ommited, use the Username field
-			if(is_null($email)) {
-				$identity_field = extension_Members::$fields['identity'];
-			}
-			// If username is ommited, use the Email field
-			else if (is_null($username)) {
+			// If email is supplied, use the Email field
+			if(!is_null($email) && (isset($email) && !empty($email))) {
 				$identity_field = extension_Members::$fields['email'];
+			}
+			// If username is supplied, use the Username field
+			else if (!is_null($username) && (isset($username) && !empty($username))) {
+				$identity_field = extension_Members::$fields['identity'];
 			}
 
 			return $identity_field;
