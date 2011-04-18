@@ -93,8 +93,8 @@ the password.
 
 #### Events
 
+- Members: Generate Recovery Code
 - Members: Reset Password
-- Members: Recover Account
 
 #### Filters
 
@@ -146,8 +146,8 @@ This extension provides four additional events that can be added to your page:
 
 - Members: Activate Account
 - Members: Regenerate Activation Code
+- Members: Generate Recovery Code
 - Members: Reset Password
-- Members: Recover Account
 
 Go to Blueprints > Components and click on the event name to view
 documentation for that event.

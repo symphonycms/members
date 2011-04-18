@@ -504,16 +504,9 @@
 		public function prepareTableValue($data, XMLElement $link=NULL){
 			if(empty($data)) return __('None');
 
-			if($data['reset'] == 'yes') {
-				return parent::prepareTableValue(array(
-					'value' => __('Password Reset')
-				), $link);
-			}
-			else {
-				return parent::prepareTableValue(array(
-					'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
-				), $link);
-			}
+			return parent::prepareTableValue(array(
+				'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
+			), $link);
 		}
 
 	/*-------------------------------------------------------------------------

@@ -2,13 +2,9 @@
 
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
 
-	Class eventMembers_Reset_Password extends Event{
+	Class eventMembers_Reset_Password extends Event {
 
 		const ROOTELEMENT = 'members-reset-password';
-
-		public $eParamFILTERS = array(
-
-		);
 
 		public static function about(){
 			return array(
@@ -18,7 +14,7 @@
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
 				'version' => '1.0',
-				'release-date' => '2011-03-12'
+				'release-date' => '2011-03-07'
 			);
 		}
 
@@ -26,145 +22,156 @@
 			if(isset($_POST['action'][self::ROOTELEMENT])) return $this->__trigger();
 		}
 
-		public static function documentation() {
+		public static function documentation(){
 			return '
-				<p>This event takes a member\'s email address or username to validate the existence of the Member before,
-				resetting their password and generating a recovery code for the member.<br /> This recovery code be seen
-				by outputting the Member: Password field in a datasource once this event has completed, or by outputting
-				the event result.</p>
-				<p>You can set the Email Template for this event from the <a href="' . SYMPHONY_URL . '/system/preferences/">Preferences</a>
-				page</p>
+				<p>This event takes a recovery code and a new password for a member. Should the recovery code
+				be correct and the new password validate,  the member\'s password is changed to their new password.<br />
+				A recovery code is available by outputting the
+				Member: Password field after the Member: Generate Recovery Code event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
-				accepts either the member\'s email address or username.</p>
+				accepts the member\'s recovery code, two password fields (one for password, one to confirm)
+				will allow the user to change their password.</p>
 				<pre class="XML"><code>
 				&lt;form method="post"&gt;
-					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
-					or
-					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
-					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Reset Password"/&gt;
+					&lt;label&gt;Recovery Code: &lt;input name="fields[recovery-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
+					&lt;label&gt;Password: &lt;input name="fields[password][password]" type="password" /&gt;&lt;/label&gt;
+					&lt;label&gt;Confirm Password: &lt;input name="fields[password][confirm]" type="password" /&gt;&lt;/label&gt;
+					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Recover Account"/&gt;
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;
 				</code></pre>
 				<h3>Example Success XML</h3>
 				<pre class="XML"><code>
-				&lt;' . self::ROOTELEMENT . ' result="success"&gt;
-					&lt;recovery-code&gt;{$code}&lt;/recovery-code&gt;
-				&lt;/' . self::ROOTELEMENT . '&gt;
+				&lt;' . self::ROOTELEMENT . ' result="success"/&gt;
 				</code></pre>
 				<h3>Example Error XML</h3>
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
-					&lt;error&gt;No Identity field found&lt;/error&gt;
+					&lt;error&gt;No Authentication field found&lt;/error&gt;
+					&lt;error&gt;Recovery code is a required field&lt;/error&gt;
+					&lt;error&gt;No recovery code found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
+					&lt;error&gt;Passwords do not match.&lt;/error&gt;
+					&lt;error&gt;Password is too short. It must be at least %d characters.&lt;/error&gt;
+					&lt;error&gt;Password is not strong enough.&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
 				</code></pre>
 			';
 		}
 
-		protected function __trigger() {
+		protected function __trigger(){
 			$result = new XMLElement(self::ROOTELEMENT);
-			$fields = $_POST['fields'];
+			$fields = $_REQUEST['fields'];
 
-			// Read the password template from the Configuration if it exists
-			// This is required for the Email Template Filter/Email Template Manager
-			if(!is_null(extension_Members::getConfigVar('reset-password-template'))) {
-				$this->eParamFILTERS = array(
-					extension_Members::getConfigVar('reset-password-template')
-				);
-			}
-
-			// Check that either a Member: Username or Member: Password field
-			// has been detected
-			$identity = SymphonyMember::setIdentityField($fields, false);
-			if(!$identity instanceof Identity) {
+			// Check that there is a row with this recovery code and that they
+			// request a password reset
+			$auth = extension_Members::$fields['authentication'];
+			if(!$auth instanceof fieldMemberPassword) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'invalid',
-						'message' => __('No Identity field found')
+						'message' => __('No Authentication field found')
 					))
 				);
 				return $result;
 			}
 
-			// Check that a member exists first before proceeding.
-			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
+			if(!isset($fields['recovery-code']) or empty($fields['recovery-code'])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement($identity->get('element_name'), null, array(
+					new XMLElement($auth->get('element_name'), null, array(
 						'type' => 'missing',
-						'message' => __('%s is a required field.', array($identity->get('label'))),
-						'label' => $identity->get('label')
+						'message' =>  __('Recovery code is a required field.'),
+						'label' => $auth->get('label')
 					))
 				);
 				return $result;
 			}
 
-			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
-			if(is_null($member_id)) {
+			$row = Symphony::Database()->fetchRow(0, sprintf("
+					SELECT `entry_id`, `recovery-code`
+					FROM tbl_entries_data_%d
+					WHERE reset = 'yes'
+					AND `recovery-code` = '%s'
+				", $auth->get('id'), Symphony::Database()->cleanValue($fields['recovery-code'])
+			));
+
+			if(empty($row)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement($identity->get('element_name'), null, array(
+					new XMLElement($auth->get('element_name'), null, array(
 						'type' => 'invalid',
-						'message' => __('Member not found.'),
-						'label' => $identity->get('label')
+						'message' => __('No recovery code found'),
+						'label' => $auth->get('label')
 					))
 				);
+
 				return $result;
 			}
+			else {
+				// Retrieve Member Entry record
+				$driver = Symphony::ExtensionManager()->create('members');
+				$entry = $driver->Member->fetchMemberFromID($row['entry_id']);
 
-			// Generate new password
-			$newPassword = General::generatePassword();
+				if(!$entry instanceof Entry) {
+					$result->setAttribute('result', 'error');
+					$result->appendChild(
+						new XMLElement($auth->get('element_name'), null, array(
+							'type' => 'invalid',
+							'message' =>  __('Member not found.')
+						))
+					);
 
-			// Set the Entry password to be reset and the current timestamp
-			$auth = extension_Members::$fields['authentication'];
-			$status = Field::__OK__;
-			$data = $auth->processRawFieldData(array(
-				'password' => General::hash($newPassword . $member_id, 'sha1'),
-			), $status);
+					return $result;
+				}
 
-			$data['recovery-code'] = $data['password'];
-			$data['password'] = null;
-			$data['length'] = 0;
-			$data['strength'] = 'weak';
-			$data['reset'] = 'yes';
-			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
+				// Create new password using the auth field so simulate the checkPostFieldData
+				// and processRawFieldData functions.
+				$message = '';
+				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id']);
+				if(Field::__OK__ != $status) {
+					$result->setAttribute('result', 'error');
+					$result->appendChild(
+						new XMLElement($auth->get('element_name'), null, array(
+							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid',
+							'message' => $message,
+							'label' => $auth->get('label')
+						))
+					);
 
-			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
+					return $result;
+				}
 
-			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
-			// and EmailTemplateManager use to send emails.
-			$filter_errors = array();
-			$driver = Symphony::ExtensionManager()->create('members');
-			$entry = $driver->Member->fetchMemberFromID($member_id);
+				// processRawFieldData will encode the user's new password with the current one
+				$status = Field::__OK__;
+				$data = $auth->processRawFieldData(array(
+					'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password']),
+					'recovery-code' => null,
+					'reset' => 'no',
+					'expires' => null
+				), $status);
 
-			/**
-			 * @delegate EventFinalSaveFilter
-			 * @param string $context
-			 * '/frontend/'
-			 * @param array $fields
-			 * @param string $event
-			 * @param array $filter_errors
-			 * @param Entry $entry
-			 */
-			Symphony::ExtensionManager()->notifyMembers(
-				'EventFinalSaveFilter', '/frontend/', array(
-					'fields'	=> $fields,
-					'event'		=> &$this,
-					'errors'	=> &$filter_errors,
-					'entry'		=> $entry
-				)
-			);
+				// Update the database with the new password, removing the recovery code and setting
+				// reset to no.
+				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $row['entry_id']);
 
-			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
+				// handle relogging in the user.
+				$driver->Member->filter_UpdatePasswordLogin(array(
+					'entry' => $entry,
+					'fields' => array(
+						extension_Members::$handles['authentication'] => array(
+							'password' => $data['password']
+						)
+					)
+				));
 
-			$result->setAttribute('result', 'success');
-			$result->appendChild(
-				new XMLElement('recovery-code', General::hash($newPassword . $member_id, 'sha1'))
-			);
+				$result->setAttribute('result', 'success');
+			}
 
 			return $result;
 		}
-
 	}
+
