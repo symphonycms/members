@@ -181,7 +181,7 @@
 		Filters:
 	-------------------------------------------------------------------------*/
 
-		public function filter_Register(Array &$context) {
+		public function filter_LockRole(Array &$context) {
 			return true;
 		}
 

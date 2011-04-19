@@ -111,7 +111,7 @@ you to set a default role, which the role that a member will take on when they r
 
 #### Filters
 
-- Members: Register
+- Members: Lock Role
 
 
 ### Member: Activation
@@ -206,7 +206,7 @@ This extension provides three event filters that you can add to your events to
 make them useful to Members:
 
 - Members: Activation
-- Members: Register
+- Members: Lock Role
 - Members: Update Password
 
 ### Members: Activation
@@ -217,12 +217,16 @@ site. This prevents any DOM hacking to make members activate themselves. If you 
 not use the Member: Activation field, then you don't this filter on your Registration
 event.
 
-### Members: Register
+### Members: Lock Role
 
-The Members: Register filter should be used as an additional security measure to
+The Members: Lock Role filter should be used as an additional security measure to
 ensure that the member cannot DOM hack their own Role. This filter ensures a newly
-registered member will always be of the Default Role. If you do not use the Member: Role
-field, you don't need this filter on your Registration event.
+registered member will always be of the Default Role or if updating a Member record,
+the filter ensures the Role doesn't change from the Member's current role. If you do
+ not use the Member: Role field, you don't need this filter on your Registration event.
+If you want to elevate a Member between Roles, this can be done in the backend, or don't
+use this filter. Care will need to be taken that a Member is not able to change their Role
+to whatever they please.
 
 ### Members: Update Password
 

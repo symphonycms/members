@@ -382,11 +382,11 @@
 		public function appendFilter($context) {
 			$selected = !is_array($context['selected']) ? array() : $context['selected'];
 
-			// Add Member: Register filter
+			// Add Member: Lock Role filter
 			$context['options'][] = array(
-				'member-register',
-				in_array('member-register', $selected),
-				__('Members: Register')
+				'member-lock-role',
+				in_array('member-lock-role', $selected),
+				__('Members: Lock Role')
 			);
 
 			if(!is_null(extension_Members::getConfigVar('activation')) && !is_null(extension_Members::getConfigVar('email'))) {
@@ -794,9 +794,9 @@
 		 * requested this event has permission to actually do so.
 		 */
 		private function __processEventFilters(Array &$context) {
-			// Process the Member Register
-			if (in_array('member-register', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_Register(&$context);
+			// Process the Member Lock Role
+			if (in_array('member-lock-role', $context['event']->eParamFILTERS)) {
+				$this->Member->filter_LockRole(&$context);
 			}
 
 			// Process the Member Activation

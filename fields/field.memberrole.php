@@ -368,5 +368,26 @@
 			return $groups;
 		}
 
+	/*-------------------------------------------------------------------------
+		Events:
+	-------------------------------------------------------------------------*/
+
+		public function getExampleFormMarkup(){
+			$states = $this->getToggleStates();
+			foreach($states as $role_id => $role_name){
+				$options[] = array(
+					$role_id,
+					$role_id == $data['role_id'],
+					$role_name
+				);
+			}
+
+			$label = Widget::Label($this->get('label'));
+			$label->appendChild(Widget::Select(
+				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
+			);
+
+			return $label;
+		}
 	}
 

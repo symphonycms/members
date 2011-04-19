@@ -245,10 +245,23 @@
 		Filters:
 	-------------------------------------------------------------------------*/
 
-		public function filter_Register(Array &$context) {
+		public function filter_LockRole(Array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
 			if(!is_null(extension_Members::getConfigVar('role'))) {
-				$context['fields'][extension_Members::$handles['role']] = extension_Members::$fields['role']->get('default_role');
+				// Can't use `$context` as `$fields` only contains $_POST['fields']
+				if(isset($_POST['id'])) {
+					$member = parent::fetchMemberFromID($_POST['id']);
+
+					if(!$member instanceof Entry) return;
+
+					// If there is a Role set to this Member, lock the `$fields` role to the same value
+					$role_id = $member->getData(extension_Members::getConfigVar('role'), true)->role_id;
+					$context['fields'][extension_Members::$handles['role']] = $role_id;
+				}
+				// New Member, so use the default Role
+				else {
+					$context['fields'][extension_Members::$handles['role']] = extension_Members::$fields['role']->get('default_role');
+				}
 			}
 		}
 
