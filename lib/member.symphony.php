@@ -250,7 +250,9 @@
 			if(!is_null(extension_Members::getConfigVar('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
-					$member = parent::fetchMemberFromID($_POST['id']);
+					$member = parent::fetchMemberFromID(
+						Symphony::Database()->cleanValue($_POST['id'])
+					);
 
 					if(!$member instanceof Entry) return;
 
@@ -268,7 +270,22 @@
 		public function filter_LockActivation(Array &$context) {
 			// If there is an Activation field, this will force it to be no.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
-				$context['fields'][extension_Members::$handles['activation']] = 'no';
+				// Can't use `$context` as `$fields` only contains $_POST['fields']
+				if(isset($_POST['id'])) {
+					$member = parent::fetchMemberFromID(
+						Symphony::Database()->cleanValue($_POST['id'])
+					);
+
+					if(!$member instanceof Entry) return;
+
+					// Lock the `$fields` activation to the same value as what is set to the Member
+					$activated = $member->getData(extension_Members::getConfigVar('activation'), true)->activated;
+					$context['fields'][extension_Members::$handles['activation']] = $activated;
+				}
+				// New Member, so use the default Role
+				else {
+					$context['fields'][extension_Members::$handles['activation']] = 'no';
+				}
 			}
 		}
 

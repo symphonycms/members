@@ -213,20 +213,21 @@ make them useful to Members:
 
 The Members: Lock Activation filter is to be attached to your own Registration event
 to force a Member's activated state to be 'no' when a Member is registering for your
-site. This prevents any DOM hacking to make members activate themselves. If you do
-not use the Member: Activation field, then you don't this filter on your Registration
-event.
+site. If the Member already exists, using this filter on your event will ensure the
+Member's activation value cannot be changed. This prevents any DOM hacking to make
+members activate themselves. If you do not use the Member: Activation field, then
+you don't this filter on your Registration event.
 
 ### Members: Lock Role
 
 The Members: Lock Role filter should be used as an additional security measure to
 ensure that the member cannot DOM hack their own Role. This filter ensures a newly
 registered member will always be of the Default Role or if updating a Member record,
-the filter ensures the Role doesn't change from the Member's current role. If you do
- not use the Member: Role field, you don't need this filter on your Registration event.
-If you want to elevate a Member between Roles, this can be done in the backend, or don't
-use this filter. Care will need to be taken that a Member is not able to change their Role
-to whatever they please.
+the filter ensures the Role doesn't change from the Member's current role. If you
+do not use the Member: Role field, you don't need this filter on your Registration
+event. If you want to elevate a Member between Roles, this can be done in the backend,
+or don't use this filter. Care will need to be taken that a Member is not able to
+change their Role to whatever they please.
 
 ### Members: Update Password
 
