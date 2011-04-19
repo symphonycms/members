@@ -390,11 +390,11 @@
 			);
 
 			if(!is_null(extension_Members::getConfigVar('activation')) && !is_null(extension_Members::getConfigVar('email'))) {
-				// Add Member: Activation filter
+				// Add Member: Lock Activation filter
 				$context['options'][] = array(
-					'member-activation',
-					in_array('member-activation', $selected),
-					__('Members: Activation')
+					'member-lock-activation',
+					in_array('member-lock-activation', $selected),
+					__('Members: Lock Activation')
 				);
 			}
 
@@ -799,9 +799,9 @@
 				$this->Member->filter_LockRole(&$context);
 			}
 
-			// Process the Member Activation
-			if (in_array('member-activation', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_Activation(&$context);
+			// Process the Member Lock Activation
+			if (in_array('member-lock-activation', $context['event']->eParamFILTERS)) {
+				$this->Member->filter_LockActivation(&$context);
 			}
 
 			// Process updating a Member's Password

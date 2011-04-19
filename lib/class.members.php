@@ -185,7 +185,7 @@
 			return true;
 		}
 
-		public function filter_Activation(Array &$context) {
+		public function filter_LockActivation(Array &$context) {
 			return true;
 		}
 

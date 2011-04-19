@@ -265,7 +265,7 @@
 			}
 		}
 
-		public function filter_Activation(Array &$context) {
+		public function filter_LockActivation(Array &$context) {
 			// If there is an Activation field, this will force it to be no.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$context['fields'][extension_Members::$handles['activation']] = 'no';

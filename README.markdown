@@ -131,7 +131,7 @@ set to the default role as defined by the Member: Role field.
 
 #### Filters
 
-- Members: Activation
+- Members: Lock Activation
 
 
 ### Member: Timezone
@@ -205,13 +205,13 @@ from the fields that may be useful to you.
 This extension provides three event filters that you can add to your events to
 make them useful to Members:
 
-- Members: Activation
+- Members: Lock Activation
 - Members: Lock Role
 - Members: Update Password
 
-### Members: Activation
+### Members: Lock Activation
 
-The Members: Activation filter is to be attached to your own Registration event
+The Members: Lock Activation filter is to be attached to your own Registration event
 to force a Member's activated state to be 'no' when a Member is registering for your
 site. This prevents any DOM hacking to make members activate themselves. If you do
 not use the Member: Activation field, then you don't this filter on your Registration
