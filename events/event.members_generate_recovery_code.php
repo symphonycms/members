@@ -67,6 +67,14 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
 
+			// Add POST values to the Event XML
+			$post_values = new XMLElement('post-values');
+
+			// Create the post data cookie element
+			if (is_array($fields) && !empty($fields)) {
+				General::array_to_xml($post_values, $fields, true);
+			}
+
 			// Read the password template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
 			if(!is_null(extension_Members::getConfigVar('reset-password-template'))) {
@@ -86,6 +94,7 @@
 						'message' => __('No Identity field found')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -99,6 +108,7 @@
 						'label' => $identity->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -112,6 +122,7 @@
 						'label' => $identity->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -172,6 +183,8 @@
 			$result->appendChild(
 				new XMLElement('recovery-code', $data['recovery-code'])
 			);
+
+			$result->appendChild($post_values);
 
 			return $result;
 		}
