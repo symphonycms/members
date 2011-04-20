@@ -64,6 +64,14 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_REQUEST['fields'];
 
+			// Add POST values to the Event XML
+			$post_values = new XMLElement('post-values');
+
+			// Create the post data cookie element
+			if (is_array($fields) && !empty($fields)) {
+				General::array_to_xml($post_values, $fields, true);
+			}
+
 			// Check that there is a row with this recovery code and that they
 			// request a password reset
 			$auth = extension_Members::$fields['authentication'];
@@ -75,6 +83,7 @@
 						'message' => __('No Authentication field found')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -87,6 +96,8 @@
 						'label' => $auth->get('label')
 					))
 				);
+
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -107,8 +118,6 @@
 						'label' => $auth->get('label')
 					))
 				);
-
-				return $result;
 			}
 			else {
 				// Retrieve Member Entry record
@@ -123,7 +132,7 @@
 							'message' =>  __('Member not found.')
 						))
 					);
-
+					$result->appendChild($post_values);
 					return $result;
 				}
 
@@ -140,7 +149,7 @@
 							'label' => $auth->get('label')
 						))
 					);
-
+					$result->appendChild($post_values);
 					return $result;
 				}
 
@@ -170,6 +179,8 @@
 
 				$result->setAttribute('result', 'success');
 			}
+
+			$result->appendChild($post_values);
 
 			return $result;
 		}
