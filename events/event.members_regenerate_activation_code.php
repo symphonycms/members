@@ -63,6 +63,14 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
 
+			// Add POST values to the Event XML
+			$post_values = new XMLElement('post-values');
+
+			// Create the post data cookie element
+			if (is_array($fields) && !empty($fields)) {
+				General::array_to_xml($post_values, $fields, true);
+			}
+
 			// Read the activation code template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
 			if(!is_null(extension_Members::getConfigVar('regenerate-activation-code-template'))) {
@@ -80,6 +88,7 @@
 						'message' => __('No Activation field found')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -94,6 +103,7 @@
 						'message' => __('No Identity field found')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -106,6 +116,7 @@
 						'label' => $identity->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -124,6 +135,7 @@
 						'label' => $identity->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -141,6 +153,7 @@
 						'label' => $activation->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -183,6 +196,8 @@
 			$result->appendChild(
 				new XMLElement('activation-code', $data['code'])
 			);
+
+			$result->appendChild($post_values);
 
 			return $result;
 		}
