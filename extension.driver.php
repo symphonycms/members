@@ -523,7 +523,7 @@
 					$label = new XMLElement('label', __('Reset Password Email Template'));
 					$reset_password_templates = extension_Members::setActiveTemplate($options, 'reset-password-template');
 					$label->appendChild(Widget::Select('settings[members][reset-password-template]', $reset_password_templates));
-					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Reset Password</code> event'), array('class' => 'help')));
+					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Generate Recovery Code</code> event'), array('class' => 'help')));
 					$group->appendChild($label);
 				}
 
