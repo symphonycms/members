@@ -61,6 +61,14 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
 
+			// Add POST values to the Event XML
+			$post_values = new XMLElement('post-values');
+
+			// Create the post data cookie element
+			if (is_array($fields) && !empty($fields)) {
+				General::array_to_xml($post_values, $fields, true);
+			}
+
 			$activation = extension_Members::$fields['activation'];
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
@@ -70,6 +78,7 @@
 						'message' => __('No Activation field found')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -84,6 +93,7 @@
 						'message' => __('No Identity field found')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -96,6 +106,7 @@
 						'label' => $activation->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 			else {
@@ -113,6 +124,7 @@
 						'label' => $identity->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -129,6 +141,7 @@
 						'label' => $activation->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -145,6 +158,7 @@
 						'label' => $activation->get('label')
 					))
 				);
+				$result->appendChild($post_values);
 				return $result;
 			}
 
@@ -175,6 +189,8 @@
 
 				$result->setAttribute('result', 'error');
 			}
+
+			$result->appendChild($post_values);
 
 			return $result;
 		}
