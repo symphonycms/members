@@ -547,7 +547,7 @@
 
 				if(!is_null(extension_Members::$fields['activation'])) {
 					// Regenerate Activation Code
-					$label = new XMLElement('label', __('Regenerate Activation Code Template'));
+					$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
 					$regenerate_activation_code_templates = extension_Members::setActiveTemplate($options, 'regenerate-activation-code-template');
 					$label->appendChild(Widget::Select('settings[members][regenerate-activation-code-template]', $regenerate_activation_code_templates));
 					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
