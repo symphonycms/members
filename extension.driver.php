@@ -800,7 +800,7 @@
 				$context['messages'][] = array(
 					'permission',
 					$success,
-					($success === false) ? __('You are not authorised to perform this action') : null
+					($success === false) ? __('You are not authorised to perform this action.') : null
 				);
 			}
 			catch (Exception $ex) {

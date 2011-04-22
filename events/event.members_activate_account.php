@@ -75,7 +75,7 @@
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'invalid',
-						'message' => __('No Activation field found')
+						'message' => __('No Activation field found.')
 					))
 				);
 				$result->appendChild($post_values);
@@ -90,7 +90,7 @@
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'invalid',
-						'message' => __('No Identity field found')
+						'message' => __('No Identity field found.')
 					))
 				);
 				$result->appendChild($post_values);
