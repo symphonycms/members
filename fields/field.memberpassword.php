@@ -120,16 +120,16 @@
 						SELECT `entry_id`
 						FROM `tbl_entries_data_%d`
 						WHERE `entry_id` = %d
-						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
+						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now + 1 hour'))
+					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - 1 hour'))
 				));
 
 				// If we didn't get an entry_id back, then it's because it was expired
 				if(is_null($valid_id)) {
 					extension_Members::$_errors[$this->get('element_name')] = array(
-						'message' => __('Recovery %s has expired.', array($this->get('label'))),
+						'message' => __('Recovery code has expired.'),
 						'type' => 'invalid',
 						'label' => $this->get('label')
 					);

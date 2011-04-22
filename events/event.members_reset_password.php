@@ -136,6 +136,28 @@
 					return $result;
 				}
 
+				// Check that the recovery code is still valid and has not expired
+				if(is_null(Symphony::Database()->fetchVar('entry_id', 0, sprintf("
+						SELECT `entry_id`
+						FROM `tbl_entries_data_%d`
+						WHERE `entry_id` = %d
+						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
+						LIMIT 1
+					",
+					$auth->get('id'), $row['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - 1 hour'))
+				)))) {
+					$result->setAttribute('result', 'error');
+					$result->appendChild(
+						new XMLElement($auth->get('element_name'), null, array(
+							'type' => 'invalid',
+							'message' => __('Recovery code has expired.'),
+							'label' => $auth->get('label')
+						))
+					);
+					$result->appendChild($post_values);
+					return $result;
+				}
+
 				// Create new password using the auth field so simulate the checkPostFieldData
 				// and processRawFieldData functions.
 				$message = '';
