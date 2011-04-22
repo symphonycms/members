@@ -56,6 +56,7 @@
 				<h3>Example Error XML</h3>
 				<pre class="XML"><code>
 				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
+					&lt;error&gt;You cannot generate a recovery code while being logged in&lt;/error&gt;
 					&lt;error&gt;No Identity field found&lt;/error&gt;
 					&lt;error&gt;Member not found&lt;/error&gt;
 				&lt;/' . self::ROOTELEMENT . '&gt;
@@ -66,6 +67,7 @@
 		protected function __trigger() {
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
+			$driver = Symphony::ExtensionManager()->create('members');
 
 			// Add POST values to the Event XML
 			$post_values = new XMLElement('post-values');
@@ -73,6 +75,18 @@
 			// Create the post data cookie element
 			if (is_array($fields) && !empty($fields)) {
 				General::array_to_xml($post_values, $fields, true);
+			}
+
+			if($driver->Member->isLoggedIn()) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('You cannot generate a recovery code while being logged in')
+					))
+				);
+				$result->appendChild($post_values);
+				return $result;
 			}
 
 			// Read the password template from the Configuration if it exists
@@ -133,7 +147,6 @@
 			$auth = extension_Members::$fields['authentication'];
 			$status = Field::__OK__;
 
-			$driver = Symphony::ExtensionManager()->create('members');
 			$entry = $driver->Member->fetchMemberFromID($member_id);
 			$entry_data = $entry->getData();
 
