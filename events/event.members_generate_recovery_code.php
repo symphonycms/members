@@ -157,27 +157,42 @@
 
 			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 			// and EmailTemplateManager use to send emails.
+			$filter_results = array();
 			$filter_errors = array();
-
 			/**
 			 * @delegate EventFinalSaveFilter
 			 * @param string $context
 			 * '/frontend/'
 			 * @param array $fields
 			 * @param string $event
-			 * @param array $filter_errors
+			 * @param array $messages
+			 * @param array $errors
 			 * @param Entry $entry
 			 */
 			Symphony::ExtensionManager()->notifyMembers(
 				'EventFinalSaveFilter', '/frontend/', array(
 					'fields'	=> $fields,
-					'event'		=> &$this,
+					'event'		=> $this,
+					'messages'	=> $filter_results,
 					'errors'	=> &$filter_errors,
 					'entry'		=> $entry
 				)
 			);
 
+			// If a redirect is set, redirect, the page won't be able to receive
+			// the Event XML anyway
 			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+			// Take the logic from `event.section.php` to append `$filter_errors`
+			if(is_array($filter_errors) && !empty($filter_errors)){
+				foreach($filter_errors as $fr){
+					list($name, $status, $message, $attributes) = $fr;
+
+					$result->appendChild(
+						extension_Members::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
+					);
+				}
+			}
 
 			$result->setAttribute('result', 'success');
 			$result->appendChild(

@@ -408,6 +408,24 @@
 			}
 		}
 
+		/**
+		 * This function is directly copied from Symphony's default event
+		 * include. It takes a result from an Event filter and generates XML
+		 * to output with the custom events
+		 */
+		public static function buildFilterElement($name, $status, $message=NULL, array $attr=NULL){
+			$ret = new XMLElement('filter', (!$message || is_object($message) ? NULL : $message), array(
+				'name' => $name,
+				'status' => $status
+			));
+
+			if(is_object($message)) $ret->appendChild($message);
+
+			if(is_array($attr)) $ret->setAttributeArray($attr);
+
+			return $ret;
+		}
+
 	/*-------------------------------------------------------------------------
 		Preferences:
 	-------------------------------------------------------------------------*/

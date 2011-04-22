@@ -2,7 +2,7 @@
 
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
 
-	Class eventMembers_Regenerate_Activation_Code extends Event{
+	Class eventMembers_Regenerate_Activation_Code extends Event {
 
 		const ROOTELEMENT = 'members-regenerate-activation-code';
 
@@ -168,35 +168,50 @@
 
 			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 			// and EmailTemplateManager use to send emails.
-			$filter_errors = array();
 			$driver = Symphony::ExtensionManager()->create('members');
 			$entry = $driver->Member->fetchMemberFromID($member_id);
 
+			$filter_results = array();
+			$filter_errors = array();
 			/**
 			 * @delegate EventFinalSaveFilter
 			 * @param string $context
 			 * '/frontend/'
 			 * @param array $fields
 			 * @param string $event
-			 * @param array $filter_errors
+			 * @param array $messages
+			 * @param array $errors
 			 * @param Entry $entry
 			 */
 			Symphony::ExtensionManager()->notifyMembers(
 				'EventFinalSaveFilter', '/frontend/', array(
 					'fields'	=> $fields,
-					'event'		=> &$this,
+					'event'		=> $this,
+					'messages'	=> $filter_results,
 					'errors'	=> &$filter_errors,
 					'entry'		=> $entry
 				)
 			);
 
+			// If a redirect is set, redirect, the page won't be able to receive
+			// the Event XML anyway
 			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+			// Take the logic from `event.section.php` to append `$filter_errors`
+			if(is_array($filter_errors) && !empty($filter_errors)){
+				foreach($filter_errors as $fr){
+					list($name, $status, $message, $attributes) = $fr;
+
+					$result->appendChild(
+						extension_Members::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
+					);
+				}
+			}
 
 			$result->setAttribute('result', 'success');
 			$result->appendChild(
 				new XMLElement('activation-code', $data['code'])
 			);
-
 			$result->appendChild($post_values);
 
 			return $result;
