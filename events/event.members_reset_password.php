@@ -34,7 +34,7 @@
 				will allow the user to change their password.</p>
 				<pre class="XML"><code>
 				&lt;form method="post"&gt;
-					&lt;label&gt;Recovery Code: &lt;input name="fields[recovery-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
+					&lt;label&gt;Recovery Code: &lt;input name="fields[password][recovery-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
 					&lt;label&gt;Password: &lt;input name="fields[password][password]" type="password" /&gt;&lt;/label&gt;
 					&lt;label&gt;Confirm Password: &lt;input name="fields[password][confirm]" type="password" /&gt;&lt;/label&gt;
 					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Recover Account"/&gt;
@@ -87,7 +87,7 @@
 				return $result;
 			}
 
-			if(!isset($fields['recovery-code']) or empty($fields['recovery-code'])) {
+			if(!isset($fields[extension_Members::$handles['authentication']]['recovery-code']) or empty($fields[extension_Members::$handles['authentication']]['recovery-code'])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
@@ -106,7 +106,7 @@
 					FROM tbl_entries_data_%d
 					WHERE reset = 'yes'
 					AND `recovery-code` = '%s'
-				", $auth->get('id'), Symphony::Database()->cleanValue($fields['recovery-code'])
+				", $auth->get('id'), Symphony::Database()->cleanValue($fields[extension_Members::$handles['authentication']]['recovery-code'])
 			));
 
 			if(empty($row)) {
@@ -139,7 +139,7 @@
 				// Create new password using the auth field so simulate the checkPostFieldData
 				// and processRawFieldData functions.
 				$message = '';
-				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $row['entry_id']);
+				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], &$message, $row['entry_id']);
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
