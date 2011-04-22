@@ -538,20 +538,26 @@
 			if(!empty($options)) {
 				if(!is_null(extension_Members::$fields['authentication'])) {
 					// Reset Password
+					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Reset Password Email Template'));
 					$reset_password_templates = extension_Members::setActiveTemplate($options, 'reset-password-template');
 					$label->appendChild(Widget::Select('settings[members][reset-password-template]', $reset_password_templates));
-					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Generate Recovery Code</code> event'), array('class' => 'help')));
-					$group->appendChild($label);
+
+					$div->appendChild($label);
+					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Generate Recovery Code</code> event'), array('class' => 'help')));
+					$group->appendChild($div);
 				}
 
 				if(!is_null(extension_Members::$fields['activation'])) {
 					// Regenerate Activation Code
+					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
 					$regenerate_activation_code_templates = extension_Members::setActiveTemplate($options, 'regenerate-activation-code-template');
 					$label->appendChild(Widget::Select('settings[members][regenerate-activation-code-template]', $regenerate_activation_code_templates));
-					$label->appendChild(new XMLElement('i', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
-					$group->appendChild($label);
+
+					$div->appendChild($label);
+					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
+					$group->appendChild($div);
 				}
 			}
 
