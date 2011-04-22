@@ -315,7 +315,7 @@
 			$this->login(array(
 				extension_Members::$handles['authentication'] => $context['fields'][extension_Members::$handles['authentication']]['password'],
 				extension_Members::$handles['identity'] => $context['entry']->getData(extension_Members::getConfigVar('identity'), true)->value
-			));
+			), true);
 
 			if(isset($_REQUEST['redirect'])) {
 				redirect($_REQUEST['redirect']);

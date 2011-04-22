@@ -156,11 +156,12 @@
 				// processRawFieldData will encode the user's new password with the current one
 				$status = Field::__OK__;
 				$data = $auth->processRawFieldData(array(
-					'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password']),
-					'recovery-code' => null,
-					'reset' => 'no',
-					'expires' => null
+					'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password'])
 				), $status);
+
+				$data['recovery-code'] = null;
+				$data['reset'] = 'no';
+				$data['expires'] = null;
 
 				// Update the database with the new password, removing the recovery code and setting
 				// reset to no.
