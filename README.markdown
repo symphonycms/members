@@ -254,5 +254,5 @@ for either extension to evaluate them for your situation. All bugs relating to
 those extensions should be reported to the respective extension, not the
 Members extension.
 
-Please note that the Password Reset event is unique and requires that it's
-template be set through the System > Preferences page.
+Please note that the Member's custom events can have their Email Template
+preferences selected on the System > Preferences page.

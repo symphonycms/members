@@ -481,8 +481,6 @@
 			$group->appendChild($label);
 			$fieldset->appendChild($group);
 
-			$group = new XMLElement('div', null, array('class' => 'group'));
-
 			$options = array();
 			// Email Template Filter
 			// @link http://symphony-cms.com/download/extensions/view/20743/
@@ -536,6 +534,8 @@
 
 			// Only append if there is any Templates.
 			if(!empty($options)) {
+				$group = new XMLElement('div', null, array('class' => 'group'));
+
 				if(!is_null(extension_Members::$fields['authentication'])) {
 					// Reset Password
 					$div = new XMLElement('div');
@@ -548,7 +548,20 @@
 					$group->appendChild($div);
 				}
 
+				$fieldset->appendChild($group);
+				$group = new XMLElement('div', null, array('class' => 'group'));
+
 				if(!is_null(extension_Members::$fields['activation'])) {
+					// Activate Account
+					$div = new XMLElement('div');
+					$label = new XMLElement('label', __('Activate Account Email Template'));
+					$activate_account_templates = extension_Members::setActiveTemplate($options, 'activate-account-template');
+					$label->appendChild(Widget::Select('settings[members][activate-account-template]', $activate_account_templates));
+
+					$div->appendChild($label);
+					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Activate Account</code> event'), array('class' => 'help')));
+					$group->appendChild($div);
+
 					// Regenerate Activation Code
 					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
@@ -559,9 +572,10 @@
 					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
 					$group->appendChild($div);
 				}
+
+				$fieldset->appendChild($group);
 			}
 
-			$fieldset->appendChild($group);
 			$context['wrapper']->appendChild($fieldset);
 		}
 

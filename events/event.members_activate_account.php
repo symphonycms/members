@@ -69,6 +69,14 @@
 				General::array_to_xml($post_values, $fields, true);
 			}
 
+			// Read the activate account template from the Configuration if it exists
+			// This is required for the Email Template Filter/Email Template Manager
+			if(!is_null(extension_Members::getConfigVar('activate-account-template'))) {
+				$this->eParamFILTERS = array(
+					extension_Members::getConfigVar('activate-account-template')
+				);
+			}
+
 			$activation = extension_Members::$fields['activation'];
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
@@ -179,7 +187,46 @@
 			));
 
 			if($driver->Member->login($data_fields, true)) {
+				// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
+				// and EmailTemplateManager use to send emails.
+				$entry = $driver->Member->fetchMemberFromID($member_id);
+
+				$filter_results = array();
+				$filter_errors = array();
+				/**
+				 * @delegate EventFinalSaveFilter
+				 * @param string $context
+				 * '/frontend/'
+				 * @param array $fields
+				 * @param string $event
+				 * @param array $messages
+				 * @param array $errors
+				 * @param Entry $entry
+				 */
+				Symphony::ExtensionManager()->notifyMembers(
+					'EventFinalSaveFilter', '/frontend/', array(
+						'fields'	=> $fields,
+						'event'		=> $this,
+						'messages'	=> $filter_results,
+						'errors'	=> &$filter_errors,
+						'entry'		=> $entry
+					)
+				);
+
+				// If a redirect is set, redirect, the page won't be able to receive
+				// the Event XML anyway
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+				// Take the logic from `event.section.php` to append `$filter_errors`
+				if(is_array($filter_errors) && !empty($filter_errors)){
+					foreach($filter_errors as $fr){
+						list($name, $status, $message, $attributes) = $fr;
+
+						$result->appendChild(
+							extension_Members::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
+						);
+					}
+				}
 
 				$result->setAttribute('result', 'success');
 			}

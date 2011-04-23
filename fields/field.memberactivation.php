@@ -288,7 +288,7 @@
 			// has enough access to create the record in the backend anyway.
 			$options = array(
 				array('no', ($data['activated'] == 'no'), __('Not Activated')),
-				array('yes', ($isActivated || is_null($entry_id) or is_null($data)), __('Activated'))
+				array('yes', ($isActivated || is_null($entry_id) || is_null($data)), __('Activated'))
 			);
 
 			$label = Widget::Label($this->get('label'));
@@ -304,22 +304,20 @@
 			}
 
 			// Member not activated
-			if(!$isActivated) {
-				if(!is_null($data)) {
-					// If code is still live, displays when the code was generated.
-					if(strtotime($data['timestamp']) < strtotime('now + ' . $this->get('code_expiry'))) {
-						$label->appendChild(
-							new XMLElement('span', __('Activation code %s', array('<code>' . $data['code'] . '</code>')), array('class' => 'frame'))
-						);
-					}
-					// If the code is expired, displays 'Expired' w/the expiration timestamp.
-					else {
-						$label->appendChild(
-							new XMLElement('i', __('Activation code expired %s', array(
-								DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($data['timestamp']))
-							)))
-						);
-					}
+			if(!$isActivated && !is_null($data)) {
+				// If code is still live, displays when the code was generated.
+				if(strtotime($data['timestamp']) < strtotime('now + ' . $this->get('code_expiry'))) {
+					$label->appendChild(
+						new XMLElement('span', __('Activation code %s', array('<code>' . $data['code'] . '</code>')), array('class' => 'frame'))
+					);
+				}
+				// If the code is expired, displays 'Expired' w/the expiration timestamp.
+				else {
+					$label->appendChild(
+						new XMLElement('i', __('Activation code expired %s', array(
+							DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($data['timestamp']))
+						)))
+					);
 				}
 			}
 			else {
