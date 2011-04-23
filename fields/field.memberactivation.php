@@ -43,6 +43,7 @@
 				  `field_id` int(11) unsigned NOT NULL,
 				  `code_expiry` varchar(50) NOT NULL,
 				  `activation_role_id` int(11) unsigned NOT NULL,
+				  `auto_login` enum('yes','no') NOT NULL default 'yes',
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -187,6 +188,12 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
+		public function setFromPOST(Array $settings = array()) {
+			$settings['auto_login'] = (isset($settings['auto_login']) && $settings['auto_login'] == 'yes' ? 'yes' : 'no');
+
+			parent::setFromPOST($settings);
+		}
+
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
@@ -234,7 +241,23 @@
 			$wrapper->appendChild($group);
 
 			$div = new XMLElement('div', null, array('class' => 'compact'));
+
+			// Add Auto Login
+			$div->appendChild(Widget::Input("fields[{$this->get('sortorder')}][auto_login]", 'no', 'hidden'));
+
+			$label = Widget::Label();
+			$label->setAttribute('class', 'meta');
+			$input = Widget::Input("fields[{$this->get('sortorder')}][auto_login]", 'yes', 'checkbox');
+
+			if ($this->get('auto_login') == 'yes') $input->setAttribute('checked', 'checked');
+
+			$label->setValue(__('%s Automatically log the Member in after activation', array($input->generate())));
+
+			$div->appendChild($label);
+
+			// Add Show Column
 			$this->appendShowColumnCheckbox($div);
+
 			$wrapper->appendChild($div);
 		}
 
@@ -258,7 +281,8 @@
 			$fields = array(
 				'field_id' => $id,
 				'code_expiry' => $this->get('code_expiry'),
-				'activation_role_id' => $this->get('activation_role_id')
+				'activation_role_id' => $this->get('activation_role_id'),
+				'auto_login' => $this->get('auto_login') == 'yes' ? 'yes' : 'no'
 			);
 
 			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {

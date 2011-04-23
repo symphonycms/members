@@ -181,6 +181,16 @@
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
 
+			// Only login if set on the field
+			if ($activation->get('auto_login') == 'no') {
+				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+				$result->setAttribute('result', 'success');
+				$result->appendChild($post_values);
+
+				return $result;
+			}
+
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
 				extension_Members::$handles['authentication'] => $entry->getData(extension_Members::getConfigVar('authentication'), true)->password
