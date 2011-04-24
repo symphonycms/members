@@ -222,7 +222,7 @@
 		'%s contains invalid characters.' =>
 		'%s enthält ungültige Zeichen.',
 
-		'That %s is already taken.' =>
+		'%s is already taken.' =>
 		'%s ist bereits einem Benutzer zugeordnet.',
 
 		'Member: Password' =>
