@@ -45,7 +45,7 @@
 		'Email Template Manager' =>
 		false,
 
-		'Reset Password Email Template' =>
+		'Generate Recovery Code Email Template' =>
 		false,
 
 		'Used by the <code>Members: Generate Recovery Code</code> event' =>

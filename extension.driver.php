@@ -551,11 +551,11 @@
 				$group = new XMLElement('div', null, array('class' => 'group'));
 
 				if(!is_null(extension_Members::$fields['authentication'])) {
-					// Reset Password
+					// Generate Recovery Code
 					$div = new XMLElement('div');
-					$label = new XMLElement('label', __('Reset Password Email Template'));
-					$reset_password_templates = extension_Members::setActiveTemplate($options, 'reset-password-template');
-					$label->appendChild(Widget::Select('settings[members][reset-password-template]', $reset_password_templates));
+					$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
+					$generate_recovery_code_templates = extension_Members::setActiveTemplate($options, 'generate-recovery-code-template');
+					$label->appendChild(Widget::Select('settings[members][generate-recovery-code-template]', $generate_recovery_code_templates));
 
 					$div->appendChild($label);
 					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Generate Recovery Code</code> event'), array('class' => 'help')));
@@ -605,9 +605,9 @@
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
 
 			// Email Templates
-			// Reset Password
-			if(isset($settings['members']['reset-password-template'])) {
-				Symphony::Configuration()->set('section', $settings['members']['reset-password-template'], 'members');
+			// Generate Recovery Code
+			if(isset($settings['members']['generate-recovery-code-template'])) {
+				Symphony::Configuration()->set('section', $settings['members']['generate-recovery-code-template'], 'members');
 			}
 
 			// Regenerate Activation Code
