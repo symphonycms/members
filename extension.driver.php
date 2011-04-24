@@ -303,6 +303,15 @@
 			");
 		}
 
+		public function update($previousVersion) {
+			if(version_compare($previousVersion, '1.0 Beta 3', '<')) {
+				Symphony::Database()->import("
+					ALTER TABLE `tbl_fields_memberactivation` ADD `auto_login` ENUM('yes','no') NULL DEFAULT 'yes';
+					ALTER TABLE `tbl_fields_memberactivation` ADD `deny_login` ENUM('yes','no') NULL DEFAULT 'yes';
+				");
+			}
+		}
+
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
