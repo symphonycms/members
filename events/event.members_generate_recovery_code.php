@@ -82,7 +82,7 @@
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'invalid',
-						'message' => __('You cannot generate a recovery code while being logged in')
+						'message' => __('You cannot generate a recovery code while being logged in.')
 					))
 				);
 				$result->appendChild($post_values);
@@ -105,7 +105,7 @@
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'invalid',
-						'message' => __('No Identity field found')
+						'message' => __('No Identity field found.')
 					))
 				);
 				$result->appendChild($post_values);
