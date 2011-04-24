@@ -205,7 +205,7 @@
 		'Aktiviert',
 
 		'Activation code %s' =>
-		'Aktivierungscode $s',
+		'Aktivierungscode %s',
 
 		'Activation code expired %s' =>
 		'Aktivierungscode abgelaufen %s',
