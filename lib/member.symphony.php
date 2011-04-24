@@ -193,6 +193,36 @@
 				}
 			}
 
+			// Check to ensure that we actually have some data to try and log a user in with.
+			if(empty($data['password'])) {
+				extension_Members::$_errors[extension_Members::$fields['authentication']->get('element_name')] = array(
+					'message' => __('%s is a required field.', array(extension_Members::$fields['authentication']->get('label'))),
+					'type' => 'missing',
+					'label' => extension_Members::$fields['authentication']->get('label')
+				);
+			}
+
+			if(isset($data['username']) && empty($data['username'])) {
+				extension_Members::$_errors[extension_Members::$fields['identity']->get('element_name')] = array(
+					'message' => __('%s is a required field.', array(extension_Members::$fields['identity']->get('label'))),
+					'type' => 'missing',
+					'label' => extension_Members::$fields['identity']->get('label')
+				);
+			}
+
+			if(isset($data['email']) && empty($data['email'])) {
+				extension_Members::$_errors[extension_Members::$fields['email']->get('element_name')] = array(
+					'message' => __('%s is a required field.', array(extension_Members::$fields['email']->get('label'))),
+					'type' => 'missing',
+					'label' => extension_Members::$fields['email']->get('label')
+				);
+			}
+
+			// If there is errors already, no point continuing, return false
+			if(!empty(extension_Members::$_errors)) {
+				return false;
+			}
+
 			if($id = $this->findMemberIDFromCredentials($data)) {
 				try{
 					self::$member_id = $id;

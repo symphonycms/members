@@ -167,9 +167,7 @@
 					// Create the post data cookie element
 					if (is_array($post['fields']) && !empty($post['fields'])) {
 						General::array_to_xml($post_values, $post['fields'], true);
-						if($post_values->getNumberOfChildren()) {
-							$result->appendChild($post_values);
-						}
+						$result->appendChild($post_values);
 					}
 				}
 			}
