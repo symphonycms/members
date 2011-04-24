@@ -160,7 +160,7 @@
 		'Benutzer nicht gefunden.',
 
 		'Member is already activated.' =>
-		'Benutzer ist bereits aktiviert.',
+		'Mitglied ist bereits aktiviert.',
 
 		'Activation error. Code was invalid or has expired.' =>
 		'Aktivierungsfehler. Dieser Code ist ungültig oder abgelaufen.',
