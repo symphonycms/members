@@ -48,6 +48,7 @@
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
 				  `salt` varchar(255) default NULL,
+				  `code_expiry` varchar(50) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -123,7 +124,7 @@
 						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - 1 hour'))
+					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
 				));
 
 				// If we didn't get an entry_id back, then it's because it was expired
@@ -230,6 +231,25 @@
 			");
 		}
 
+		public static function findCodeExpiry() {
+			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
+
+			try {
+				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
+					SELECT DISTINCT(code_expiry) FROM `tbl_fields_memberpassword`
+				"));
+
+				if(is_array($used) && !empty($used)) {
+					$default = array_merge($default, array_combine($used, $used));
+				}
+			}
+			catch (DatabaseException $ex) {
+				// Table doesn't exist yet, it's ok we have defaults.
+			}
+
+			return $default;
+		}
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -268,6 +288,9 @@
 
 		// Salt ---------------------------------------------------------------
 
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+
 			$label = Widget::Label(__('Password Salt'));
 			$label->appendChild(
 				new XMLElement('i', __('A salt gives your passwords extra security. It cannot be changed once set'))
@@ -286,8 +309,36 @@
 				$label = Widget::wrapFormElementWithError($label, $errors['salt']);
 			}
 
-			$wrapper->appendChild($label);
+			$group->appendChild($label);
 
+			// Add Activiation Code Expiry
+			$div = new XMLElement('div');
+
+			$label = Widget::Label(__('Recovery Code Expiry'));
+			$label->appendChild(
+				new XMLElement('i', __('How long a member\'s recovery code will be valid for before it expires'))
+			);
+			$label->appendChild(Widget::Input(
+				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
+			));
+
+			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
+			$tags = fieldMemberPassword::findCodeExpiry();
+			foreach($tags as $name => $time) {
+				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
+			}
+
+			if (isset($errors['code_expiry'])) {
+				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
+			}
+
+			$div->appendChild($label);
+			$div->appendChild($ul);
+
+			$group->appendChild($div);
+			$wrapper->appendChild($group);
+
+			// Add checkboxes
 			$div = new XMLElement('div', null, array('class' => 'compact'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
@@ -301,6 +352,10 @@
 
 			if (trim($this->get('salt')) == '') {
 				$errors['salt'] = __('This is a required field.');
+			}
+
+			if (trim($this->get('code_expiry')) == '') {
+				$errors['code_expiry'] = __('This is a required field.');
 			}
 		}
 
@@ -319,7 +374,8 @@
 				'field_id' => $id,
 				'length' => $this->get('length'),
 				'strength' => $this->get('strength'),
-				'salt' => $this->get('salt')
+				'salt' => $this->get('salt'),
+				'code_expiry' => $this->get('code_expiry')
 			);
 
 			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {

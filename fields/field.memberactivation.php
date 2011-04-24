@@ -207,7 +207,7 @@
 
 			$label = Widget::Label(__('Activation Code Expiry'));
 			$label->appendChild(
-				new XMLElement('i', __('How long a user\'s activation code will be valid for before it expires'))
+				new XMLElement('i', __('How long a member\'s activation code will be valid for before it expires'))
 			);
 			$label->appendChild(Widget::Input(
 				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
@@ -217,6 +217,10 @@
 			$tags = fieldMemberActivation::findCodeExpiry();
 			foreach($tags as $name => $time) {
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
+			}
+
+			if (isset($errors['code_expiry'])) {
+				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
 			}
 
 			$div->appendChild($label);

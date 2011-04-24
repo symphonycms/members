@@ -144,7 +144,7 @@
 						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$auth->get('id'), $row['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - 1 hour'))
+					$auth->get('id'), $row['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $auth->get('code_expiry')))
 				)))) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
