@@ -80,7 +80,7 @@
 				$result->appendChild(
 					new XMLElement('error', null, array(
 						'type' => 'invalid',
-						'message' => __('No Authentication field found')
+						'message' => __('No Authentication field found.')
 					))
 				);
 				$result->appendChild($post_values);
@@ -114,7 +114,7 @@
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
 						'type' => 'invalid',
-						'message' => __('No recovery code found'),
+						'message' => __('No recovery code found.'),
 						'label' => $auth->get('label')
 					))
 				);
