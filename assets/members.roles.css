@@ -1,0 +1,87 @@
+/* Role Permissions */
+
+table.role-permissions {
+	text-align: center;
+	width: 100%;
+	margin-bottom: 2em;
+	padding: 0;
+}
+
+table.role-permissions th {
+	text-align: center;
+}
+
+table.role-permissions th {
+	padding: 3px 6px;
+	white-space: nowrap;
+}
+
+table.role-permissions th.name {
+	text-align: left;
+}
+
+table.role-permissions th.new,
+table.role-permissions th.edit {
+	cursor: pointer;
+}
+
+table.role-permissions th span {
+	padding: 0 0 1px 0;
+	border-bottom: 1px dotted #666;
+}
+
+table.role-permissions th.new:hover,
+table.role-permissions th.edit:hover {
+	color: #333;
+}
+
+table.role-permissions tr td {
+	padding: 0 6px;
+	width: 1px;
+}
+
+table.role-permissions tr td.name {
+	width: auto;
+}
+
+table.role-permissions td:first-child {
+	text-align: left;
+	border-left: 1px solid #E6E6E5;
+}
+
+table.role-permissions td:last-child {
+	border-right: 1px solid #E6E6E5;
+}
+
+table.role-permissions label {
+	padding: 6px 25px;
+	margin: 0;
+	width: auto;
+	display: inline-block;
+}
+
+table.role-permissions td.create label {
+	padding: 6px 50px;
+}
+
+table.role-permissions input {
+	float: none;
+	margin: 0;
+	padding: 0;
+	width: auto;
+}
+
+table.role-permissions td label span {
+	color: #666;
+	margin-left: 0.25em;
+	display: none;
+}
+
+table.role-permissions td.create span {
+	display: none;
+}
+
+table.role-permissions td.create {
+	/*border-left: 1px solid #E6E6E5;
+	border-right: 1px solid #E6E6E5;*/
+}
