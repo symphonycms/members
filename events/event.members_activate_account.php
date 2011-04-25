@@ -181,25 +181,18 @@
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
 
-			// Only login if set on the field
-			if ($activation->get('auto_login') == 'no') {
-				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-
-				$result->setAttribute('result', 'success');
-				$result->appendChild($post_values);
-
-				return $result;
-			}
+			// Update our `$entry` object with the new activation data
+			$entry->setData($activation->get('id'), $data);
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
 				extension_Members::$handles['authentication'] => $entry->getData(extension_Members::getConfigVar('authentication'), true)->password
 			));
 
-			if($driver->Member->login($data_fields, true)) {
+			// Only login if the Activation field allows auto login.
+			if($activation->get('auto_login') == 'no' || $driver->Member->login($data_fields, true)) {
 				// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 				// and EmailTemplateManager use to send emails.
-				$entry = $driver->Member->fetchMemberFromID($member_id);
 
 				$filter_results = array();
 				$filter_errors = array();
@@ -241,7 +234,7 @@
 				$result->setAttribute('result', 'success');
 			}
 			// User didn't login, unknown error.
-			else {
+			else if($activation->get('auto_login') == 'yes') {
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
 				$result->setAttribute('result', 'error');

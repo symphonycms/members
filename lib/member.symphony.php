@@ -90,8 +90,10 @@
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
 				$entry = self::$driver->em->fetch($member_id);
 
+				$isActivated = $entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated == "yes";
+
 				// If we are denying login for non activated members, lets do so now
-				if(extension_Members::$fields['activation']->get('deny_login') == 'yes') {
+				if(extension_Members::$fields['activation']->get('deny_login') == 'yes' && !$isActivated) {
 					extension_Members::$_errors[extension_Members::$fields['activation']->get('element_name')] = array(
 						'message' => __('Member is not activated.'),
 						'type' => 'invalid',
@@ -103,10 +105,10 @@
 
 				// If the member isn't activated and a Role field doesn't exist
 				// just return false.
-				if($entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
+				if(!$isActivated) {
 					if(is_null(extension_Members::getConfigVar('role'))) {
 						extension_Members::$_errors[extension_Members::$fields['activation']->get('element_name')] = array(
-							'message' => __('Not activated.'),
+							'message' => __('Member is not activated.'),
 							'type' => 'invalid',
 							'label' => extension_Members::$fields['activation']->get('label')
 						);
