@@ -166,19 +166,19 @@
 		'Aktivierungsfehler. Dieser Code ist ungültig oder abgelaufen.',
 
 		'You cannot generate a recovery code while being logged in.' =>
-		'Ein Rettungscode kann nicht erzeugt werden wenn man angemeldet ist.',
+		'Ein Notfallcode kann nicht erzeugt werden wenn man angemeldet ist.',
 
 		'No Authentication field found.' =>
 		'Kein Authentifizierungsfeld gefunden.',
 
 		'Recovery code is a required field.' =>
-		'Rettungscode ist ein Pflichtfeld.',
+		'Notfallcode ist ein Pflichtfeld.',
 
 		'No recovery code found.' =>
-		'Kein Rettungscode gefunden.',
+		'Kein Notfallcode gefunden.',
 
 		'Recovery code has expired.' =>
-		'Rettungscode ist verfallen.',
+		'Notfallcode ist verfallen.',
 
 		'Member: Activation' =>
 		'Mitglied: Aktivierung',
@@ -244,10 +244,10 @@
 		'Ein Salz sorgt für zusätzliche Sicherheit der Passwörter. Es kann nicht mehr geändert werden wenn es einmal festgelegt wurde',
 
 		'Recovery Code Expiry' =>
-		'Verfall des Rettungscodes',
+		'Verfall des Notfallcodes',
 
 		'How long a member\'s recovery code will be valid for before it expires' =>
-		'Gültigkeitsdauer des Rettungscodes eines Mitglieds bevor er verfällt',
+		'Gültigkeitsdauer des Notfallcodes eines Mitglieds bevor er verfällt',
 
 		'Leave new password field blank to keep the current password' =>
 		'Lassen Sie das Feld für ein neues Passwort leer um das aktuelle Passwort zu behalten',
