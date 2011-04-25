@@ -90,7 +90,7 @@
 				return $result;
 			}
 
-			// Check that either a Member: Username or Member: Password field
+			// Check that either a Member: Username or Member: Email field
 			// has been detected
 			$identity = SymphonyMember::setIdentityField($fields, false);
 			if(!$identity instanceof Identity) {

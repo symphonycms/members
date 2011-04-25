@@ -25,15 +25,18 @@
 		public static function documentation(){
 			return '
 				<p>This event takes a recovery code and a new password for a member. Should the recovery code
-				be correct and the new password validate,  the member\'s password is changed to their new password.<br />
+				be correct and the new password validate, the member\'s password is changed to their new password.<br />
 				A recovery code is available by outputting the
 				Member: Password field after the Member: Generate Recovery Code event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
-				accepts the member\'s recovery code, two password fields (one for password, one to confirm)
-				will allow the user to change their password.</p>
+				accepts the member\'s recovery code, either the member\'s email address or username and two password
+				fields (one for password, one to confirm) will allow the member to change their password.</p>
 				<pre class="XML"><code>
 				&lt;form method="post"&gt;
+					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
+					or
+					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
 					&lt;label&gt;Recovery Code: &lt;input name="fields[password][recovery-code]" type="text" value="{$code}"/&gt;&lt;/label&gt;
 					&lt;label&gt;Password: &lt;input name="fields[password][password]" type="password" /&gt;&lt;/label&gt;
 					&lt;label&gt;Confirm Password: &lt;input name="fields[password][confirm]" type="password" /&gt;&lt;/label&gt;
@@ -87,6 +90,21 @@
 				return $result;
 			}
 
+			// Check that either a Member: Username or Member: Email field
+			// has been detected
+			$identity = SymphonyMember::setIdentityField($fields, false);
+			if(!$identity instanceof Identity) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('No Identity field found.')
+					))
+				);
+				$result->appendChild($post_values);
+				return $result;
+			}
+
 			if(!isset($fields[extension_Members::$handles['authentication']]['recovery-code']) or empty($fields[extension_Members::$handles['authentication']]['recovery-code'])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -124,7 +142,11 @@
 				$driver = Symphony::ExtensionManager()->create('members');
 				$entry = $driver->Member->fetchMemberFromID($row['entry_id']);
 
-				if(!$entry instanceof Entry) {
+				// Check that the given Identity data matches the Member that the
+				// recovery code is for
+				$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
+
+				if(!$entry instanceof Entry || $member_id != $row['entry_id']) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
 						new XMLElement($auth->get('element_name'), null, array(
@@ -144,7 +166,7 @@
 						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$auth->get('id'), $row['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $auth->get('code_expiry')))
+					$auth->get('id'), $member_id, DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $auth->get('code_expiry')))
 				)))) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
@@ -161,7 +183,7 @@
 				// Create new password using the auth field so simulate the checkPostFieldData
 				// and processRawFieldData functions.
 				$message = '';
-				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], &$message, $row['entry_id']);
+				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], &$message, $member_id);
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
@@ -187,7 +209,7 @@
 
 				// Update the database with the new password, removing the recovery code and setting
 				// reset to no.
-				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $row['entry_id']);
+				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
 
 				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
 				// handle relogging in the user.
