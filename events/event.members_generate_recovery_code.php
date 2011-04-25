@@ -91,9 +91,9 @@
 
 			// Read the password template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
-			if(!is_null(extension_Members::getConfigVar('reset-password-template'))) {
+			if(!is_null(extension_Members::getConfigVar('generate-recovery-code-template'))) {
 				$this->eParamFILTERS = array(
-					extension_Members::getConfigVar('reset-password-template')
+					extension_Members::getConfigVar('generate-recovery-code-template')
 				);
 			}
 

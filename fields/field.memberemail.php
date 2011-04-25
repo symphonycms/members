@@ -163,7 +163,7 @@
 
 				// If there is an existing email, and it's not the current object (editing), error.
 				if(!is_null($existing) && $existing != $entry_id) {
-					$message = __('That %s is already taken.', array($this->get('label')));
+					$message = __('%s is already taken.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
 			}
