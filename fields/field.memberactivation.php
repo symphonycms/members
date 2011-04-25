@@ -60,7 +60,8 @@
 				  `timestamp` DATETIME default NULL,
 				  `code` varchar(40) default NULL,
 				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`)
+				  KEY `entry_id` (`entry_id`),
+				  UNIQUE KEY `code` (`code`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -123,7 +124,7 @@
 				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
 			));
 
-			if(is_array($code) && !empty($code)) {
+			if(is_array($code) && !empty($code) && !is_null($code['code'])) {
 				return $code;
 			}
 			else {
