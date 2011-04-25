@@ -70,7 +70,8 @@
 				  KEY `entry_id` (`entry_id`),
 				  KEY `length` (`length`),
 				  KEY `password` (`password`),
-				  KEY `expires` (`expires`)
+				  KEY `expires` (`expires`),
+				  UNIQUE KEY `recovery-code` (`recovery-code`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -548,6 +549,10 @@
 				$pw->appendChild(
 					new XMLElement('recovery-code', $data['recovery-code'])
 				);
+				// Add expiry timestamp, including how long the code is valid for
+				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry')), 'expires');
+				$expiry->setAttribute('expiry', $this->get('code_expiry'));
+				$pw->appendChild($expiry);
 			}
 			// Output the hash of the password.
 			else if($data['password']) {
