@@ -3,9 +3,9 @@
 	Class fieldMemberPassword extends Field{
 
 		protected static $_strengths = array(
-			array('weak', false, 'Weak'),
-			array('good', false, 'Good'),
-			array('strong', false, 'Strong')
+			array('weak', false, __('Weak')),
+			array('good', false, __('Good')),
+			array('strong', false, __('Strong'))
 		);
 
 		protected static $_strength_map = array(
@@ -233,7 +233,7 @@
 		}
 
 		public static function findCodeExpiry() {
-			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
+			$default = array('1 hour' => __('1 hour'), '24 hours' => __('24 hours'));
 
 			try {
 				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("

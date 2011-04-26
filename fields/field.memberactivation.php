@@ -151,7 +151,7 @@
 		}
 
 		public static function findCodeExpiry() {
-			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
+			$default = array('1 hour' => __('1 hour'), '24 hours' => __('24 hours'));
 
 			try {
 				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
