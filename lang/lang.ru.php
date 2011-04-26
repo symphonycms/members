@@ -46,6 +46,9 @@
 
 		'Email Template Manager' => 
 		false,
+		
+		'Generate Recovery Code Email Template' =>
+		'Email Шаблон для кода восстановления пароля',
 
 		'Reset Password Email Template' => 
 		'Email Шаблон для сброса пароля',
