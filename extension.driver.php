@@ -384,6 +384,8 @@
 				}
 			}
 
+			array_unshift($options, array(null,false,null));
+
 			return $options;
 		}
 
