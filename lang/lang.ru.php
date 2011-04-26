@@ -46,6 +46,9 @@
 
 		'Email Template Manager' => 
 		false,
+		
+		'Generate Recovery Code Email Template' =>
+		'Email Шаблон для кода восстановления пароля',
 
 		'Reset Password Email Template' => 
 		'Email Шаблон для сброса пароля',
@@ -223,6 +226,21 @@
 
 		'Activated %s' => 
 		'Активированы: %s',
+		
+		'1 hour' => 
+		'1 час',
+
+		'24 hours' => 
+		'24 часа',
+		
+		'Weak' =>
+		'Слабый',
+		
+		'Good' => 
+		'Хороший',
+		
+		'Strong' =>
+		'Сильный',
 
 		'Member: Email' => 
 		'Пользователь: Электронная почта',
