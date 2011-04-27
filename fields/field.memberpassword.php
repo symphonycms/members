@@ -2,11 +2,7 @@
 
 	Class fieldMemberPassword extends Field{
 
-		protected static $_strengths = array(
-			array('weak', false, __('Weak')),
-			array('good', false, __('Good')),
-			array('strong', false, __('Strong'))
-		);
+		protected static $_strengths = array();
 
 		protected static $_strength_map = array(
 			'weak' => array(0,1),
@@ -26,6 +22,12 @@
 			$this->set('required', 'yes');
 			$this->set('length', '6');
 			$this->set('strength', 'good');
+
+			fieldMemberPassword::$_strengths = array(
+				array('weak', false, __('Weak')),
+				array('good', false, __('Good')),
+				array('strong', false, __('Strong'))
+			);
 		}
 
 		public function canFilter(){
