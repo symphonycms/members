@@ -305,15 +305,20 @@
 
 		public function update($previousVersion) {
 			if(version_compare($previousVersion, '1.0 Beta 3', '<')) {
-				Symphony::Database()->query("
-					ALTER TABLE `tbl_fields_memberactivation` ADD `auto_login` ENUM('yes','no') NULL DEFAULT 'yes';
-				");
-				Symphony::Database()->query("
-					ALTER TABLE `tbl_fields_memberactivation` ADD `deny_login` ENUM('yes','no') NULL DEFAULT 'yes';
-				");
-				Symphony::Database()->query("
-					ALTER TABLE `tbl_fields_memberpassword` ADD `code_expiry` VARCHAR(50) NOT NULL;
-				");
+				$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+				if(!empty($activation_table)) {
+					Symphony::Database()->import("
+						ALTER TABLE `tbl_fields_memberactivation` ADD `auto_login` ENUM('yes','no') NULL DEFAULT 'yes';
+						ALTER TABLE `tbl_fields_memberactivation` ADD `deny_login` ENUM('yes','no') NULL DEFAULT 'yes';
+					");
+				}
+
+				$password_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberpassword';");
+				if(!empty($password_table)) {
+					Symphony::Database()->query("
+						ALTER TABLE `tbl_fields_memberpassword` ADD `code_expiry` VARCHAR(50) NOT NULL;
+					");
+				}
 			}
 		}
 
@@ -440,6 +445,29 @@
 			if(is_array($attr)) $ret->setAttributeArray($attr);
 
 			return $ret;
+		}
+
+		public static function findCodeExpiry($table) {
+			$default = array('1 hour' => __('1 hour'), '24 hours' => __('24 hours'));
+
+			try {
+				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
+					SELECT DISTINCT(code_expiry) FROM `%s`
+				", $table));
+
+				if(is_array($used) && !empty($used)) {
+					foreach($used as &$tag) {
+						$tag = __($tag);
+					}
+
+					$default = array_merge($default, array_combine($used, $used));
+				}
+			}
+			catch (DatabaseException $ex) {
+				// Table doesn't exist yet, it's ok we have defaults.
+			}
+
+			return $default;
 		}
 
 	/*-------------------------------------------------------------------------

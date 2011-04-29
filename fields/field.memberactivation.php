@@ -151,22 +151,7 @@
 		}
 
 		public static function findCodeExpiry() {
-			$default = array('1 hour' => __('1 hour'), '24 hours' => __('24 hours'));
-
-			try {
-				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
-					SELECT DISTINCT(code_expiry) FROM `tbl_fields_memberactivation`
-				"));
-
-				if(is_array($used) && !empty($used)) {
-					$default = array_merge($default, array_combine($used, $used));
-				}
-			}
-			catch (DatabaseException $ex) {
-				// Table doesn't exist yet, it's ok we have defaults.
-			}
-
-			return $default;
+			return extension_Members::findCodeExpiry('tbl_fields_memberactivation');
 		}
 
 		public function getToggleStates() {
