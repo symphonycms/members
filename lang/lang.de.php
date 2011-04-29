@@ -7,7 +7,7 @@
 			'email' => 'info@michael-eichelsdoerfer.de',
 			'website' => ''
 		),
-		'release-date' => '2011-04-24'
+		'release-date' => '2011-04-27'
 	);
 
 	/**
@@ -216,6 +216,21 @@
 		'Activated %s' =>
 		'Aktiviert %s',
 
+		'1 hour' =>
+		'1 Stunde',
+
+		'24 hours' =>
+		'24 Stunden',
+
+		'Weak' =>
+		'Schwach',
+
+		'Good' =>
+		'Gut',
+
+		'Strong' =>
+		'Stark',
+
 		'Member: Email' =>
 		'Benutzer: E-Mail',
 
@@ -284,8 +299,5 @@
 
 		'Member is not activated.' =>
 		'Mitglied ist nicht aktiviert.',
-
-		'Not activated.' =>
-		'Nicht aktiviert.',
 
 	);
