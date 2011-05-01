@@ -244,7 +244,7 @@
 		'Benutzer: Passwort',
 
 		'Invalid %s.' =>
-		'% ungültig.',
+		'%s ungültig.',
 
 		'Minimum Length' =>
 		'Mindestlänge',
