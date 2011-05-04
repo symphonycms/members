@@ -221,7 +221,7 @@
 					'entry' => $entry,
 					'fields' => array(
 						extension_Members::$handles['authentication'] => array(
-							'password' => $data['password']
+							'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password'])
 						)
 					)
 				));
