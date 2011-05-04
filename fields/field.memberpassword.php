@@ -553,7 +553,7 @@
 			if(empty($data)) return __('None');
 
 			return parent::prepareTableValue(array(
-				'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
+				'value' => __(ucwords($data['strength'])) . ' (' . $data['length'] . ')'
 			), $link);
 		}
 
