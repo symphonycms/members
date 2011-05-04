@@ -178,16 +178,16 @@
 		'Kein Notfallcode gefunden.',
 
 		'Recovery code has expired.' =>
-		'Notfallcode ist verfallen.',
+		'Notfallcode ist abgelaufen.',
 
 		'Member: Activation' =>
 		'Mitglied: Aktivierung',
 
 		'Activation Code Expiry' =>
-		'Verfall des Aktivierungscodes',
+		'Ablauf des Aktivierungscodes',
 
 		'How long a member\'s activation code will be valid for before it expires' =>
-		'Gültigkeitsdauer des Aktivierungscodes eines Mitglieds bevor er verfällt',
+		'Wie lange der Aktivierungscode eines Mitglieds gültig ist bevor er erlischt',
 
 		'Role for Members who are awaiting activation' =>
 		'Rolle für Mitglieder die auf die Aktivierung warten',
@@ -244,7 +244,7 @@
 		'Benutzer: Passwort',
 
 		'Invalid %s.' =>
-		'% ungültig.',
+		'%s ungültig.',
 
 		'Minimum Length' =>
 		'Mindestlänge',
@@ -259,10 +259,10 @@
 		'Ein Salz sorgt für zusätzliche Sicherheit der Passwörter. Es kann nicht mehr geändert werden wenn es einmal festgelegt wurde',
 
 		'Recovery Code Expiry' =>
-		'Verfall des Notfallcodes',
+		'Ablauf des Notfallcodes',
 
 		'How long a member\'s recovery code will be valid for before it expires' =>
-		'Gültigkeitsdauer des Notfallcodes eines Mitglieds bevor er verfällt',
+		'Wie lange der Notfallcode eines Mitglieds gültig ist bevor er erlischt',
 
 		'Leave new password field blank to keep the current password' =>
 		'Lassen Sie das Feld für ein neues Passwort leer um das aktuelle Passwort zu behalten',
