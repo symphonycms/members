@@ -671,7 +671,12 @@
 			// Logout
 			if(trim($action) == 'logout') {
 				$this->Member->logout();
+
+				// If a redirect is provided, redirect to that, otherwise return the user
+				// to the index of the site. Issue #51 & #121
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
+
+				redirect(URL);
 			}
 
 			// Login
