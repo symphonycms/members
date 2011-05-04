@@ -216,12 +216,6 @@
 		'Activated %s' =>
 		'Aktiviert %s',
 
-		'1 hour' =>
-		'1 Stunde',
-
-		'24 hours' =>
-		'24 Stunden',
-
 		'Weak' =>
 		'Schwach',
 

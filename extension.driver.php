@@ -448,7 +448,7 @@
 		}
 
 		public static function findCodeExpiry($table) {
-			$default = array('1 hour' => __('1 hour'), '24 hours' => __('24 hours'));
+			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
 
 			try {
 				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
@@ -456,10 +456,6 @@
 				", $table));
 
 				if(is_array($used) && !empty($used)) {
-					foreach($used as &$tag) {
-						$tag = __($tag);
-					}
-
 					$default = array_merge($default, array_combine($used, $used));
 				}
 			}
