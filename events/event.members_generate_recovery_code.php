@@ -6,9 +6,9 @@
 
 		const ROOTELEMENT = 'members-generate-recovery-code';
 
-		public $eParamFILTERS = array(
-
-		);
+		public function ignoreRolePermissions() {
+			return true;
+		}
 
 		public static function about(){
 			return array(

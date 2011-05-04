@@ -6,6 +6,10 @@
 
 		const ROOTELEMENT = 'members-activate-account';
 
+		public function ignoreRolePermissions() {
+			return true;
+		}
+
 		public static function about(){
 			return array(
 				'name' => 'Members: Activate Account',

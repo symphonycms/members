@@ -6,6 +6,10 @@
 
 		const ROOTELEMENT = 'members-reset-password';
 
+		public function ignoreRolePermissions() {
+			return true;
+		}
+
 		public static function about(){
 			return array(
 				'name' => 'Members: Reset Password',

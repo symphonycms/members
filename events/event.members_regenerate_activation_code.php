@@ -6,6 +6,10 @@
 
 		const ROOTELEMENT = 'members-regenerate-activation-code';
 
+		public function ignoreRolePermissions() {
+			return true;
+		}
+
 		public static function about(){
 			return array(
 				'name' => 'Members: Regenerate Activation Code',
