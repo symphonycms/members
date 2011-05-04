@@ -793,19 +793,21 @@
 
 					if($action == 'edit' && method_exists($context['event'], 'getSource')) {
 						$section_id = $context['event']->getSource();
-						$member_id = false;
+						$isOwner = false;
 
 						// If the event is the same section as the Members section, then for `$isOwner`
 						// to be true, the `$entry_id` must match the currently logged in user.
 						if($section_id == extension_Members::getMembersSection()) {
-							$member_id = $entry_id;
+							// Check the logged in member is the same as the `entry_id` that is about to
+							// be updated. If so the user is the Owner and can modify EventPermissions::OWN_ENTRIES
+							$isOwner = ($this->Member->Member->get('id') == $entry_id);
 						}
 
 						// If the $section_id !== members_section, check the section associations table
 						// for any links to either of the Member fields that my be used for linking,
 						// that is the Username or Email field.
 						else {
-							$field_id = array();
+							$field_ids = array();
 
 							// Get the ID's of the fields that may be used for Linking (Username/Email)
 							if(!is_null(extension_Members::getConfigVar('identity'))) {
@@ -818,7 +820,7 @@
 
 							// Query for the `field_id` of any linking fields that link to the members
 							// section AND to one of the linking fields (Username/Email)
-							$field_id = Symphony::Database()->fetchVar('child_section_field_id', 0, sprintf("
+							$fields = Symphony::Database()->fetchCol('child_section_field_id', sprintf("
 									SELECT `child_section_field_id`
 									FROM `tbl_sections_association`
 									WHERE `parent_section_id` = %d
@@ -832,17 +834,23 @@
 
 							// If there was a link found, get the `relation_id`, which is the `member_id` of
 							// an entry in the active Members section.
-							if($field_id) {
-								$member_id = Symphony::Database()->fetchVar('relation_id', 0, sprintf(
-									"SELECT `relation_id` FROM `tbl_entries_data_%d` WHERE `entry_id` = %d LIMIT 1",
-									$field_id, $entry_id
-								));
+							if(!empty($fields)) {
+								foreach($fields as $field_id) {
+									if($isOwner === true) break;
+									$field = $this->em->fieldManager->fetch($field_id);
+									if($field instanceof Field) {
+										// So we are trying to find all entries that have selected the Member entry
+										// to determine ownership. This check will use the `fetchAssociatedEntryIDs`
+										// function, which typically works backwards, by accepting the `entry_id` (in
+										// this case, our logged in Member ID). This will return an array of all the
+										// linked entries, so we then just check that the current entry that is going to
+										// be updated is in that array
+										$member_id = $field->fetchAssociatedEntryIDs($this->Member->Member->get('id'));
+										$isOwner = in_array($entry_id, $member_id);
+									}
+								}
 							}
 						}
-
-						// Check the logged in member is the same as the `$member_id` for the Entry we are editing
-						// then this user is the Owner, and can modify EventPermissions::OWN_ENTRIES
-						$isOwner = ($this->Member->Member->get('id') == $member_id);
 
 						// User is not the owner, so they can edit EventPermissions::ALL_ENTRIES
 						if($isOwner === false) $required_level = EventPermissions::ALL_ENTRIES;
