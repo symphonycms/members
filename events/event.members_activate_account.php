@@ -76,9 +76,7 @@
 			// Read the activate account template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
 			if(!is_null(extension_Members::getConfigVar('activate-account-template'))) {
-				$this->eParamFILTERS = array(
-					extension_Members::getConfigVar('activate-account-template')
-				);
+				$this->eParamFILTERS = explode(',', extension_Members::getConfigVar('activate-account-template'));
 			}
 
 			$activation = extension_Members::$fields['activation'];

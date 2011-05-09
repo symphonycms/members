@@ -381,9 +381,11 @@
 		 * @return array
 		 */
 		public static function setActiveTemplate(Array $options, $handle) {
+			$templates = explode(',', extension_Members::getConfigVar($handle));
+
 			foreach($options as $index => $ext) {
 				foreach($ext['options'] as $key => $opt) {
-					if($opt[0] == extension_Members::getConfigVar($handle)) {
+					if(in_array($opt[0], $templates)) {
 						$options[$index]['options'][$key][1] = true;
 					}
 				}
@@ -581,7 +583,7 @@
 					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
 					$generate_recovery_code_templates = extension_Members::setActiveTemplate($options, 'generate-recovery-code-template');
-					$label->appendChild(Widget::Select('settings[members][generate-recovery-code-template]', $generate_recovery_code_templates));
+					$label->appendChild(Widget::Select('settings[members][generate-recovery-code-template][]', $generate_recovery_code_templates, array('multiple' => 'multiple')));
 
 					$div->appendChild($label);
 					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Generate Recovery Code</code> event'), array('class' => 'help')));
@@ -596,7 +598,7 @@
 					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Activate Account Email Template'));
 					$activate_account_templates = extension_Members::setActiveTemplate($options, 'activate-account-template');
-					$label->appendChild(Widget::Select('settings[members][activate-account-template]', $activate_account_templates));
+					$label->appendChild(Widget::Select('settings[members][activate-account-template][]', $activate_account_templates, array('multiple' => 'multiple')));
 
 					$div->appendChild($label);
 					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Activate Account</code> event'), array('class' => 'help')));
@@ -606,7 +608,7 @@
 					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
 					$regenerate_activation_code_templates = extension_Members::setActiveTemplate($options, 'regenerate-activation-code-template');
-					$label->appendChild(Widget::Select('settings[members][regenerate-activation-code-template]', $regenerate_activation_code_templates));
+					$label->appendChild(Widget::Select('settings[members][regenerate-activation-code-template][]', $regenerate_activation_code_templates, array('multiple' => 'multiple')));
 
 					$div->appendChild($label);
 					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
@@ -624,8 +626,8 @@
 		 *
 		 * @uses savePreferences
 		 */
-		public function savePreferences(){
-			$settings = $_POST['settings'];
+		public function savePreferences(Array &$context){
+			$settings = $context['settings'];
 
 			// Active Section
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
@@ -633,12 +635,20 @@
 			// Email Templates
 			// Generate Recovery Code
 			if(isset($settings['members']['generate-recovery-code-template'])) {
-				Symphony::Configuration()->set('section', $settings['members']['generate-recovery-code-template'], 'members');
+				Symphony::Configuration()->set('generate-recovery-code-template', implode(',', $settings['members']['generate-recovery-code-template']), 'members');
+				unset($context['settings']['members']['generate-recovery-code-template']);
+			}
+
+			// Activate Account
+			if(isset($settings['members']['activate-account-template'])) {
+				Symphony::Configuration()->set('activate-account-template', implode(',', $settings['members']['activate-account-template']), 'members');
+				unset($context['settings']['members']['activate-account-template']);
 			}
 
 			// Regenerate Activation Code
 			if(isset($settings['members']['regenerate-activation-code-template'])) {
-				Symphony::Configuration()->set('section', $settings['members']['regenerate-activation-code-template'], 'members');
+				Symphony::Configuration()->set('regenerate-activation-code-template', implode(',', $settings['members']['regenerate-activation-code-template']), 'members');
+				unset($context['settings']['members']['regenerate-activation-code-template']);
 			}
 
 			Administration::instance()->saveConfig();

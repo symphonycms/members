@@ -92,9 +92,7 @@
 			// Read the password template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
 			if(!is_null(extension_Members::getConfigVar('generate-recovery-code-template'))) {
-				$this->eParamFILTERS = array(
-					extension_Members::getConfigVar('generate-recovery-code-template')
-				);
+				$this->eParamFILTERS = explode(',',extension_Members::getConfigVar('generate-recovery-code-template'));
 			}
 
 			// Check that either a Member: Username or Member: Password field
