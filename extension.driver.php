@@ -320,6 +320,11 @@
 					");
 				}
 			}
+
+			if(version_compare($previousVersion, '1.0RC1', '<')) {
+				Symphony::Configuration()->remove('reset-password-template', 'members');
+				Administration::instance()->saveConfig();
+			}
 		}
 
 	/*-------------------------------------------------------------------------
