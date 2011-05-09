@@ -18,7 +18,7 @@
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
 				'version' => '1.0',
-				'release-date' => '2011-03-07'
+				'release-date' => '2011-05-10'
 			);
 		}
 
@@ -142,7 +142,8 @@
 					$result->appendChild(
 						new XMLElement($identity->get('element_name'), null, array(
 							'type' => 'invalid',
-							'message' =>  __('Member not found.')
+							'message' =>  __('Member not found.'),
+							'label' => $identity->get('label')
 						))
 					);
 					$result->appendChild($post_values);

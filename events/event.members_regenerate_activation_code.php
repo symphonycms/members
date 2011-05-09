@@ -18,7 +18,7 @@
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
 				'version' => '1.0',
-				'release-date' => '2011-03-12'
+				'release-date' => '2011-05-10'
 			);
 		}
 
