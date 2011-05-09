@@ -48,22 +48,9 @@
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;
 				</code></pre>
-				<h3>Example Success XML</h3>
-				<pre class="XML"><code>
-				&lt;' . self::ROOTELEMENT . ' result="success"/&gt;
-				</code></pre>
-				<h3>Example Error XML</h3>
-				<pre class="XML"><code>
-				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
-					&lt;error&gt;No Authentication field found&lt;/error&gt;
-					&lt;error&gt;Recovery code is a required field&lt;/error&gt;
-					&lt;error&gt;No recovery code found&lt;/error&gt;
-					&lt;error&gt;Member not found&lt;/error&gt;
-					&lt;error&gt;Passwords do not match.&lt;/error&gt;
-					&lt;error&gt;Password is too short. It must be at least %d characters.&lt;/error&gt;
-					&lt;error&gt;Password is not strong enough.&lt;/error&gt;
-				&lt;/' . self::ROOTELEMENT . '&gt;
-				</code></pre>
+				<h3>More Information</h3>
+				<p>For further information about this event, including response and error XML, please refer to the
+				<a href="https://github.com/symphonycms/members/wiki/Members%3A-Reset-Password">wiki</a>.</p>
 			';
 		}
 

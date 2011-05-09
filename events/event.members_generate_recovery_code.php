@@ -47,20 +47,9 @@
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;
 				</code></pre>
-				<h3>Example Success XML</h3>
-				<pre class="XML"><code>
-				&lt;' . self::ROOTELEMENT . ' result="success"&gt;
-					&lt;recovery-code&gt;{$code}&lt;/recovery-code&gt;
-				&lt;/' . self::ROOTELEMENT . '&gt;
-				</code></pre>
-				<h3>Example Error XML</h3>
-				<pre class="XML"><code>
-				&lt;' . self::ROOTELEMENT . ' result="error"&gt;
-					&lt;error&gt;You cannot generate a recovery code while being logged in&lt;/error&gt;
-					&lt;error&gt;No Identity field found&lt;/error&gt;
-					&lt;error&gt;Member not found&lt;/error&gt;
-				&lt;/' . self::ROOTELEMENT . '&gt;
-				</code></pre>
+				<h3>More Information</h3>
+				<p>For further information about this event, including response and error XML, please refer to the
+				<a href="https://github.com/symphonycms/members/wiki/Members%3A-Generate-Recovery-Code">wiki</a>.</p>
 			';
 		}
 

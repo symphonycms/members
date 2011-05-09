@@ -93,8 +93,8 @@ the password.
 
 #### Events
 
-- Members: Generate Recovery Code
-- Members: Reset Password
+- [Members: Generate Recovery Code](https://github.com/symphonycms/members/wiki/Members%3A-Generate-Recovery-Code)
+- [Members: Reset Password](https://github.com/symphonycms/members/wiki/Members%3A-Reset-Password)
 
 #### Filters
 
@@ -126,8 +126,8 @@ set to the default role as defined by the Member: Role field.
 
 #### Events
 
-- Members: Activate Account
-- Members: Regenerate Activation Code
+- [Members: Activate Account](https://github.com/symphonycms/members/wiki/Members%3A-Activate-Account)
+- [Members: Regenerate Activation Code](https://github.com/symphonycms/members/wiki/Members%3A-Regenerate-Activation-Code)
 
 #### Filters
 
@@ -144,10 +144,10 @@ timezones, grouped by 'Zone',  are available for members to pick from.
 
 This extension provides four additional events that can be added to your page:
 
-- Members: Activate Account
-- Members: Regenerate Activation Code
-- Members: Generate Recovery Code
-- Members: Reset Password
+- [Members: Activate Account](https://github.com/symphonycms/members/wiki/Members%3A-Activate-Account)
+- [Members: Regenerate Activation Code](https://github.com/symphonycms/members/wiki/Members%3A-Regenerate-Activation-Code)
+- [Members: Generate Recovery Code](https://github.com/symphonycms/members/wiki/Members%3A-Generate-Recovery-Code)
+- [Members: Reset Password](https://github.com/symphonycms/members/wiki/Members%3A-Reset-Password)
 
 Go to Blueprints > Components and click on the event name to view
 documentation for that event.
@@ -179,26 +179,12 @@ or
 
 	<a href='?member-action=logout&redirect={$redirect-url}'>Logout</a>
 
-In addition to event documentation, there is a number of additional return values
-from the fields that may be useful to you.
+### Create a Member
 
-### Members: Username
-### Members: Email
-
-- Member not found.
-- `$label` is a required field.
-- `$label` contains invalid characters.
-- That `$label` is already taken.
-
-### Members: Password
-
-- Recovery `$label` has expired.
-- Invalid `$label`.
-- `$label` confirmation does not match.
-- `$label` is too short. It must be at least %d characters.
-- `$label` is not strong enough.
-- `$label` cannot be blank.
-
+You can create new member records using standard Symphony events on your active
+members section. The [wiki](https://github.com/symphonycms/members/wiki/Members%3A-New)
+contains information about the response XML to expect from the fields provided
+by the Members extension.
 
 ## Filters
 
