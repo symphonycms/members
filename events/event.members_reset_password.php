@@ -153,7 +153,7 @@
 				if(!$entry instanceof Entry || $member_id != $row['entry_id']) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
-						new XMLElement($auth->get('element_name'), null, array(
+						new XMLElement($identity->get('element_name'), null, array(
 							'type' => 'invalid',
 							'message' =>  __('Member not found.')
 						))
