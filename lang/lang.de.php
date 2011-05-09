@@ -271,7 +271,7 @@
 		'%s ist nicht sicher genug.',
 
 		'%s cannot be blank.' =>
-		'% darf nicht leer sein.',
+		'%s darf nicht leer sein.',
 
 		'Confirm' =>
 		'Bestätigen',
