@@ -23,7 +23,6 @@
 	Abstract Class Members implements Member {
 
 		public static $driver = null;
-
 		public static $member_id = 0;
 		public static $isLoggedIn = false;
 
@@ -67,11 +66,12 @@
 
 		public function fetchMemberFromID($member_id = null) {
 			if(!is_null($member_id)) {
-				$Member = self::$driver->em->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = extension_Members::$entryManager->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
+
 			else if(self::$member_id !== 0) {
-				$Member = self::$driver->em->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = extension_Members::$entryManager->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
 

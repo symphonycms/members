@@ -51,14 +51,9 @@
 		public static $initialised = false;
 
 		/**
-		 * @var SectionManager $sm
+		 * @var EntryManager $entryManager
 		 */
-		public $sm = null;
-
-		/**
-		 * @var EntryManager $em
-		 */
-		public $em = null;
+		public static $entryManager = null;
 
 		/**
 		 * Only create a Member object on the Frontend of the site.
@@ -67,13 +62,11 @@
 		 * not this extension.
 		 */
 		public function __construct() {
-
 			if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
 				$this->Member = new SymphonyMember($this);
 			}
 
-			$this->sm = new SectionManager(Symphony::Engine());
-			$this->em = new EntryManager(Symphony::Engine());
+			extension_Members::$entryManager = new EntryManager(Symphony::Engine());
 
 			if(!extension_Members::$initialised) {
 				extension_Members::initialise();
@@ -87,7 +80,7 @@
 		 */
 		public static function initialise() {
 			extension_Members::$initialised = true;
-			$fieldManager = new FieldManager(Symphony::Engine());
+			$fieldManager = extension_Members::$entryManager->fieldManager;
 
 			if(!is_null(extension_Members::getConfigVar('timezone'))) {
 				extension_Members::$fields['timezone'] = $fieldManager->fetch(
@@ -348,10 +341,6 @@
 			return extension_Members::$members_section;
 		}
 
-		public static function memberSectionHandle(){
-			return Symphony::Database()->fetchVar('handle', 0, "SELECT `handle` FROM `tbl_sections` WHERE `id` = " . self::getMembersSection(). " LIMIT 1");
-		}
-
 		/**
 		 * This function will adjust the locale for the currently logged in
 		 * user if the active Member section has a Member: Timezone field.
@@ -495,8 +484,10 @@
 
 			$label = new XMLElement('label', __('Active Members Section'));
 
-			$sections = $this->sm->fetch();
 			$member_sections = array();
+
+			$sectionManager = self::$entryManager->sectionManager;
+			$sections = $sectionManager->fetch();
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
 					$schema = $section->fetchFieldsSchema();
@@ -853,7 +844,7 @@
 							if(!empty($fields)) {
 								foreach($fields as $field_id) {
 									if($isOwner === true) break;
-									$field = $this->em->fieldManager->fetch($field_id);
+									$field = self::$entryManager->fieldManager->fetch($field_id);
 									if($field instanceof Field) {
 										// So we are trying to find all entries that have selected the Member entry
 										// to determine ownership. This check will use the `fetchAssociatedEntryIDs`

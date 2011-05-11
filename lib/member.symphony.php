@@ -88,7 +88,7 @@
 
 			// Check that if there's activiation, that this Member is activated.
 			if(!is_null(extension_Members::getConfigVar('activation'))) {
-				$entry = self::$driver->em->fetch($member_id);
+				$entry = extension_Members::$entryManager->fetch($member_id);
 
 				$isActivated = $entry[0]->getData(extension_Members::getConfigVar('activation'), true)->activated == "yes";
 
@@ -119,7 +119,6 @@
 
 			return $member_id;
 		}
-
 
 		public function fetchMemberFromID($member_id = null) {
 			$member = parent::fetchMemberFromID($member_id);

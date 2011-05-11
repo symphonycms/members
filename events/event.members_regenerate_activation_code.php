@@ -158,7 +158,6 @@
 
 			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 			// and EmailTemplateManager use to send emails.
-			$driver = Symphony::ExtensionManager()->create('members');
 			$entry = $driver->Member->fetchMemberFromID($member_id);
 
 			$filter_results = array();
