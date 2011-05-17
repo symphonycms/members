@@ -141,7 +141,7 @@
 
 			// Retrieve Member Entry record
 			$driver = Symphony::ExtensionManager()->create('members');
-			$entry = $driver->Member->fetchMemberFromID($member_id);
+			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
 
 			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
 				$result->setAttribute('result', 'error');
@@ -193,7 +193,7 @@
 			));
 
 			// Only login if the Activation field allows auto login.
-			if($activation->get('auto_login') == 'no' || $driver->Member->login($data_fields, true)) {
+			if($activation->get('auto_login') == 'no' || $driver->getMemberDriver()->login($data_fields, true)) {
 				// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 				// and EmailTemplateManager use to send emails.
 

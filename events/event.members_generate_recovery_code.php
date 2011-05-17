@@ -79,7 +79,7 @@
 				General::array_to_xml($post_values, $fields, true);
 			}
 
-			if($driver->Member->isLoggedIn()) {
+			if($driver->getMemberDriver()->isLoggedIn()) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', null, array(
@@ -147,7 +147,7 @@
 			$auth = extension_Members::getField('authentication');
 			$status = Field::__OK__;
 
-			$entry = $driver->Member->fetchMemberFromID($member_id);
+			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
 			$entry_data = $entry->getData();
 
 			// Generate a Recovery Code with the same logic as a normal password

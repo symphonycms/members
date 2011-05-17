@@ -145,7 +145,7 @@
 			// Check that the current member isn't already activated. If they
 			// are, no point in regenerating the code.
 			$driver = Symphony::ExtensionManager()->create('members');
-			$entry = $driver->Member->fetchMemberFromID($member_id);
+			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
 
 			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
 				$result->setAttribute('result', 'error');
@@ -171,7 +171,7 @@
 
 			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
 			// and EmailTemplateManager use to send emails.
-			$entry = $driver->Member->fetchMemberFromID($member_id);
+			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
 
 			$filter_results = array();
 			$filter_errors = array();

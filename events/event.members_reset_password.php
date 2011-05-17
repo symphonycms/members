@@ -131,7 +131,7 @@
 			else {
 				// Retrieve Member Entry record
 				$driver = Symphony::ExtensionManager()->create('members');
-				$entry = $driver->Member->fetchMemberFromID($row['entry_id']);
+				$entry = $driver->getMemberDriver()->fetchMemberFromID($row['entry_id']);
 
 				// Check that the given Identity data matches the Member that the
 				// recovery code is for
@@ -205,7 +205,7 @@
 
 				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
 				// handle relogging in the user.
-				$driver->Member->filter_UpdatePasswordLogin(array(
+				$driver->getMemberDriver()->filter_UpdatePasswordLogin(array(
 					'entry' => $entry,
 					'fields' => array(
 						extension_Members::getFieldHandle('authentication') => array(

@@ -36,9 +36,11 @@
 		);
 
 		/**
-		 * Accessible via `getLoggedInMember()`
+		 * Holds the current Member class that is in place, for this release
+		 * this will always the SymphonyMember, which extends Member and implements
+		 * the Member interface.
 		 *
-		 * @see getLoggedInMember()
+		 * @see getMemberDriver()
 		 * @var Member $Member
 		 */
 		protected $Member = null;
@@ -371,7 +373,7 @@
 		 *
 		 * @return Member
 		 */
-		public function getLoggedInMember() {
+		public function getMemberDriver() {
 			return $this->Member;
 		}
 
@@ -711,11 +713,11 @@
 			}
 
 			// Check to see a Member is already logged in.
-			$isLoggedIn = $this->Member->isLoggedIn($errors);
+			$isLoggedIn = $this->getMemberDriver()->isLoggedIn($errors);
 
 			// Logout
 			if(trim($action) == 'logout') {
-				$this->Member->logout();
+				$this->getMemberDriver()->logout();
 
 				// If a redirect is provided, redirect to that, otherwise return the user
 				// to the index of the site. Issue #51 & #121
@@ -729,10 +731,10 @@
 				// If a Member is already logged in and another Login attempt is requested
 				// log the Member out first before trying to login with new details.
 				if($isLoggedIn) {
-					$this->Member->logout();
+					$this->getMemberDriver()->logout();
 				}
 
-				if($this->Member->login($_POST['fields'])) {
+				if($this->getMemberDriver()->login($_POST['fields'])) {
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
 				}
 				else {
@@ -742,11 +744,11 @@
 
 			$this->Member->initialiseMemberObject();
 
-			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
-				$this->__updateSystemTimezoneOffset($this->Member->Member->get('id'));
+			if($isLoggedIn && $this->getMemberDriver()->getMember() instanceOf Entry) {
+				$this->__updateSystemTimezoneOffset($this->getMemberDriver()->getMember()->get('id'));
 
 				if(!is_null(extension_Members::getSetting('role'))) {
-					$role_data = $this->Member->Member->getData(extension_Members::getSetting('role'));
+					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getSetting('role'));
 				}
 			}
 
@@ -858,12 +860,12 @@
 			$required_level = $action == 'create' ? EventPermissions::OWN_ENTRIES : EventPermissions::ALL_ENTRIES;
 			$role_id = Role::PUBLIC_ROLE;
 
-			$isLoggedIn = $this->Member->isLoggedIn();
+			$isLoggedIn = $this->getMemberDriver()->isLoggedIn();
 
-			if($isLoggedIn && $this->Member->initialiseMemberObject()) {
-				if($this->Member->Member instanceOf Entry) {
+			if($isLoggedIn && $this->getMemberDriver()->initialiseMemberObject()) {
+				if($this->getMemberDriver()->getMember() instanceOf Entry) {
 					$required_level = EventPermissions::OWN_ENTRIES;
-					$role_data = $this->Member->Member->getData(extension_Members::getSetting('role'));
+					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getSetting('role'));
 					$role_id = $role_data['role_id'];
 
 					if($action == 'edit' && method_exists($context['event'], 'getSource')) {
@@ -875,7 +877,7 @@
 						if($section_id == extension_Members::getMembersSection()) {
 							// Check the logged in member is the same as the `entry_id` that is about to
 							// be updated. If so the user is the Owner and can modify EventPermissions::OWN_ENTRIES
-							$isOwner = ($this->Member->Member->get('id') == $entry_id);
+							$isOwner = ($this->getMemberDriver()->getMemberID() == $entry_id);
 						}
 
 						// If the $section_id !== members_section, check the section associations table
@@ -920,7 +922,7 @@
 										// this case, our logged in Member ID). This will return an array of all the
 										// linked entries, so we then just check that the current entry that is going to
 										// be updated is in that array
-										$member_id = $field->fetchAssociatedEntryIDs($this->Member->Member->get('id'));
+										$member_id = $field->fetchAssociatedEntryIDs($this->getMemberDriver()->getMemberID());
 										$isOwner = in_array($entry_id, $member_id);
 									}
 								}
@@ -961,17 +963,17 @@
 		private function __processEventFilters(Array &$context) {
 			// Process the Member Lock Role
 			if (in_array('member-lock-role', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_LockRole(&$context);
+				$this->getMemberDriver()->filter_LockRole(&$context);
 			}
 
 			// Process the Member Lock Activation
 			if (in_array('member-lock-activation', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_LockActivation(&$context);
+				$this->getMemberDriver()->filter_LockActivation(&$context);
 			}
 
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_UpdatePassword(&$context);
+				$this->getMemberDriver()->filter_UpdatePassword(&$context);
 			}
 		}
 
@@ -983,7 +985,7 @@
 		public function processPostSaveFilter(Array &$context) {
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
-				$this->Member->filter_UpdatePasswordLogin($context);
+				$this->getMemberDriver()->filter_UpdatePasswordLogin($context);
 			}
 		}
 
@@ -992,11 +994,11 @@
 	-------------------------------------------------------------------------*/
 
 		public function addMemberDetailsToPageParams(Array $context = null) {
-			$this->Member->addMemberDetailsToPageParams($context);
+			$this->getMemberDriver()->addMemberDetailsToPageParams($context);
 		}
 
 		public function appendLoginStatusToEventXML(Array $context = null){
-			$this->Member->appendLoginStatusToEventXML($context);
+			$this->getMemberDriver()->appendLoginStatusToEventXML($context);
 		}
 
 	}
