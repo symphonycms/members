@@ -175,6 +175,24 @@
 				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
 			);
 
+			// If the Members installation has a Activation field used, we need to make sure
+			// that this field represents accurately what Role this Member actually has
+			// because the Activation field contains a Activation Role, which is the role
+			// unassigned to Members who have registered, but not yet activated their account
+			$activation = extension_Members::getField('activation');
+			if(!is_null($activation) && !is_null($entry_id)) {
+				$entry = extension_Members::$entryManager->fetch($entry_id);
+				$entry = $entry[0];
+
+				if($entry instanceof Entry && $entry->getData($activation->get('id'), true)->activated != 'yes') {
+					$activation_role = RoleManager::fetch($activation->get('activation_role_id'));
+					if($activation_role instanceof Role) {
+						$message = __('Member is currently assuming the %s role as they are not activated. When they activate their account, the will assume the above Role', array($activation_role->get('name')));
+						$label->appendChild(new XMLElement('p', $message, array('class' => 'help')));
+					}
+				}
+			}
+
 			if(!is_null($error)) {
 				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
 			}
