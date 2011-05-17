@@ -232,7 +232,7 @@
 		'%s enthält ungültige Zeichen.',
 
 		'%s is already taken.' =>
-		'%s ist bereits einem Benutzer zugeordnet.',
+		'%s ist bereits vergeben.',
 
 		'Member: Password' =>
 		'Benutzer: Passwort',
