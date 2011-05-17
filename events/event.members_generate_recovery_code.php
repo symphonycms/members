@@ -27,6 +27,18 @@
 		}
 
 		public static function documentation() {
+			// Fetch all the Email Templates available and add to the end of the documentation
+			$templates = extension_Members::fetchEmailTemplates();
+			if(!empty($templates)) {
+				$div = new XMLElement('div');
+				$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
+				$generate_recovery_code_templates = extension_Members::setActiveTemplate($templates, 'generate-recovery-code-template');
+				$label->appendChild(Widget::Select('members[generate-recovery-code-template][]', $generate_recovery_code_templates, array('multiple' => 'multiple')));
+
+				$div->appendChild($label);
+				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));
+			}
+
 			return '
 				<p>This event takes a member\'s email address or username to validate the existence of the Member before,
 				generating a recovery code for the member. A member\'s password is not reset completely until they enter
@@ -50,6 +62,7 @@
 				<h3>More Information</h3>
 				<p>For further information about this event, including response and error XML, please refer to the
 				<a href="https://github.com/symphonycms/members/wiki/Members%3A-Generate-Recovery-Code">wiki</a>.</p>
+				' . $div->generate() . '
 			';
 		}
 

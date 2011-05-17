@@ -27,6 +27,18 @@
 		}
 
 		public static function documentation(){
+			// Fetch all the Email Templates available and add to the end of the documentation
+			$templates = extension_Members::fetchEmailTemplates();
+			if(!empty($templates)) {
+				$div = new XMLElement('div');
+				$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
+				$regenerate_activation_code_templates = extension_Members::setActiveTemplate($templates, 'regenerate-activation-code-template');
+				$label->appendChild(Widget::Select('members[regenerate-activation-code-template][]', $regenerate_activation_code_templates, array('multiple' => 'multiple')));
+
+				$div->appendChild($label);
+				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));
+			}
+
 			return '
 				<p>This event will regenerate an activation code for a user and is useful if their current
 				activation code has expired. The activation code can be sent to a Member\'s email after
@@ -48,6 +60,7 @@
 				<h3>More Information</h3>
 				<p>For further information about this event, including response and error XML, please refer to the
 				<a href="https://github.com/symphonycms/members/wiki/Members%3A-Regenerate-Activation-Code">wiki</a>.</p>
+				' . $div->generate() . '
 			';
 		}
 

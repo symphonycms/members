@@ -26,6 +26,16 @@
 		);
 
 		/**
+		 * @var array $member_events
+		 */
+		private static $member_events = array(
+			'members_regenerate_activation_code',
+			'members_activate_account',
+			'members_generate_recovery_code',
+			'members_reset_password'
+		);
+
+		/**
 		 * Accessible via `getLoggedInMember()`
 		 *
 		 * @see getLoggedInMember()
@@ -222,6 +232,11 @@
 				/*
 					BACKEND
 				*/
+				array(
+					'page' => '/backend/',
+					'delegate' => 'AdminPagePreGenerate',
+					'callback' => 'appendAssets'
+				),
 				array(
 					'page'		=> '/system/preferences/',
 					'delegate'	=> 'AddCustomPreferenceFieldsets',
@@ -553,6 +568,61 @@
 		Preferences:
 	-------------------------------------------------------------------------*/
 
+		public static function fetchEmailTemplates() {
+			$options = array();
+			// Email Template Filter
+			// @link http://symphony-cms.com/download/extensions/view/20743/
+			try {
+				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
+				if($driver instanceof Extension) {
+					$templates = $driver->getTemplates();
+
+					$g = array('label' => __('Email Template Filter'));
+					$group_options = array();
+
+					foreach($templates as $template) {
+						$group_options[] = array('etf-'.$template['id'], false, $template['name']);
+					}
+					$g['options'] = $group_options;
+
+					if(!empty($g['options'])) {
+						$options[] = $g;
+					}
+				}
+			}
+			catch(Exception $ex) {}
+
+			// Email Template Manager
+			// @link http://symphony-cms.com/download/extensions/view/64322/
+			try {
+				$handles = Symphony::ExtensionManager()->listInstalledHandles();
+				if(in_array('email_template_manager', $handles)){
+					if(file_exists(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager")) {
+						include_once(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php');
+					}
+
+					if(class_exists("EmailTemplateManager")){
+						$templates = EmailTemplateManager::listAll();
+
+						$g = array('label' => __('Email Template Manager'));
+						$group_options = array();
+
+						foreach($templates as $template) {
+							$group_options[] = array('etm-'.$template->getHandle(), false, $template->getName());
+						}
+						$g['options'] = $group_options;
+
+						if(!empty($g['options'])) {
+							$options[] = $g;
+						}
+					}
+				}
+			}
+			catch(Exception $ex) {}
+
+			return $options;
+		}
+
 		/**
 		 * Allows a user to select which section they would like to use as their
 		 * active members section. This allows developers to build multiple sections
@@ -606,101 +676,6 @@
 			$group->appendChild($label);
 			$fieldset->appendChild($group);
 
-			$options = array();
-			// Email Template Filter
-			// @link http://symphony-cms.com/download/extensions/view/20743/
-			try {
-				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
-				if($driver instanceof Extension) {
-					$templates = $driver->getTemplates();
-
-					$g = array('label' => __('Email Template Filter'));
-					$group_options = array();
-
-					foreach($templates as $template) {
-						$group_options[] = array('etf-'.$template['id'], false, $template['name']);
-					}
-					$g['options'] = $group_options;
-
-					if(!empty($g['options'])) {
-						$options[] = $g;
-					}
-				}
-			}
-			catch(Exception $ex) {}
-
-			// Email Template Manager
-			// @link http://symphony-cms.com/download/extensions/view/64322/
-			try {
-				$handles = Symphony::ExtensionManager()->listInstalledHandles();
-				if(in_array('email_template_manager', $handles)){
-					if(file_exists(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager")) {
-						include_once(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php');
-					}
-
-					if(class_exists("EmailTemplateManager")){
-						$templates = EmailTemplateManager::listAll();
-
-						$g = array('label' => __('Email Template Manager'));
-						$group_options = array();
-
-						foreach($templates as $template) {
-							$group_options[] = array('etm-'.$template->getHandle(), false, $template->getName());
-						}
-						$g['options'] = $group_options;
-
-						if(!empty($g['options'])) {
-							$options[] = $g;
-						}
-					}
-				}
-			}
-			catch(Exception $ex) {}
-
-			// Only append if there is any Templates.
-			if(!empty($options)) {
-				$group = new XMLElement('div', null, array('class' => 'group'));
-
-				if(!is_null(extension_Members::getField('authentication'))) {
-					// Generate Recovery Code
-					$div = new XMLElement('div');
-					$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
-					$generate_recovery_code_templates = extension_Members::setActiveTemplate($options, 'generate-recovery-code-template');
-					$label->appendChild(Widget::Select('settings[members][generate-recovery-code-template][]', $generate_recovery_code_templates, array('multiple' => 'multiple')));
-
-					$div->appendChild($label);
-					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Generate Recovery Code</code> event'), array('class' => 'help')));
-					$group->appendChild($div);
-				}
-
-				$fieldset->appendChild($group);
-				$group = new XMLElement('div', null, array('class' => 'group'));
-
-				if(!is_null(extension_Members::getField('activation'))) {
-					// Activate Account
-					$div = new XMLElement('div');
-					$label = new XMLElement('label', __('Activate Account Email Template'));
-					$activate_account_templates = extension_Members::setActiveTemplate($options, 'activate-account-template');
-					$label->appendChild(Widget::Select('settings[members][activate-account-template][]', $activate_account_templates, array('multiple' => 'multiple')));
-
-					$div->appendChild($label);
-					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Activate Account</code> event'), array('class' => 'help')));
-					$group->appendChild($div);
-
-					// Regenerate Activation Code
-					$div = new XMLElement('div');
-					$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
-					$regenerate_activation_code_templates = extension_Members::setActiveTemplate($options, 'regenerate-activation-code-template');
-					$label->appendChild(Widget::Select('settings[members][regenerate-activation-code-template][]', $regenerate_activation_code_templates, array('multiple' => 'multiple')));
-
-					$div->appendChild($label);
-					$div->appendChild(new XMLElement('p', __('Used by the <code>Members: Regenerate Activation Code</code> event'), array('class' => 'help')));
-					$group->appendChild($div);
-				}
-
-				$fieldset->appendChild($group);
-			}
-
 			$context['wrapper']->appendChild($fieldset);
 		}
 
@@ -715,26 +690,29 @@
 			// Active Section
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
 
-			// Email Templates
-			// Generate Recovery Code
-			if(isset($settings['members']['generate-recovery-code-template'])) {
-				Symphony::Configuration()->set('generate-recovery-code-template', implode(',', $settings['members']['generate-recovery-code-template']), 'members');
-				unset($context['settings']['members']['generate-recovery-code-template']);
-			}
-
-			// Activate Account
-			if(isset($settings['members']['activate-account-template'])) {
-				Symphony::Configuration()->set('activate-account-template', implode(',', $settings['members']['activate-account-template']), 'members');
-				unset($context['settings']['members']['activate-account-template']);
-			}
-
-			// Regenerate Activation Code
-			if(isset($settings['members']['regenerate-activation-code-template'])) {
-				Symphony::Configuration()->set('regenerate-activation-code-template', implode(',', $settings['members']['regenerate-activation-code-template']), 'members');
-				unset($context['settings']['members']['regenerate-activation-code-template']);
-			}
-
 			Administration::instance()->saveConfig();
+		}
+
+	/*-------------------------------------------------------------------------
+		Append Assets:
+	-------------------------------------------------------------------------*/
+
+		public function appendAssets(&$context) {
+			if(class_exists('Administration')
+				&& Administration::instance() instanceof Administration
+				&& Administration::instance()->Page instanceof HTMLPage
+			) {
+				$callback = Administration::instance()->getPageCallback();
+
+				// Event Info
+				if(
+					$context['oPage'] instanceof contentBlueprintsEvents &&
+					$callback['context'][0] == "info" &&
+					in_array($callback['context'][1], extension_Members::$member_events)
+				) {
+					Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.events.js', 10001, false);
+				}
+			}
 		}
 
 	/*-------------------------------------------------------------------------

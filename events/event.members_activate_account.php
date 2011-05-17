@@ -27,6 +27,18 @@
 		}
 
 		public static function documentation(){
+			// Fetch all the Email Templates available and add to the end of the documentation
+			$templates = extension_Members::fetchEmailTemplates();
+			if(!empty($templates)) {
+				$div = new XMLElement('div');
+				$label = new XMLElement('label', __('Activate Account Email Template'));
+				$activate_account_templates = extension_Members::setActiveTemplate($templates, 'activate-account-template');
+				$label->appendChild(Widget::Select('members[activate-account-template][]', $activate_account_templates, array('multiple' => 'multiple')));
+
+				$div->appendChild($label);
+				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));
+			}
+
 			return '
 				<p>This event takes an activation code and an identifier for the Member (either Email or Username) to activate their account.
 				An activation code is available by outputting your Activation field in a Datasource after the registration event has executed.</p>
@@ -46,6 +58,7 @@
 				<h3>More Information</h3>
 				<p>For further information about this event, including response and error XML, please refer to the
 				<a href="https://github.com/symphonycms/members/wiki/Members%3A-Activate-Account">wiki</a>.</p>
+				' . $div->generate() . '
 			';
 		}
 
