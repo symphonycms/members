@@ -24,9 +24,9 @@
 
 	Abstract Class Members implements Member {
 
-		public static $driver = null;
-		public static $member_id = 0;
-		public static $isLoggedIn = false;
+		protected static $driver = null;
+		protected static $member_id = 0;
+		protected static $isLoggedIn = false;
 
 		public $Member = null;
 		public $cookie = null;
@@ -41,6 +41,10 @@
 
 		public function getMemberID() {
 			return self::$member_id;
+		}
+
+		public function getMember() {
+			return $this->Member;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -116,10 +120,10 @@
 
 			$this->initialiseMemberObject();
 
-			$context['params']['member-id'] = $this->Member->get('id');
+			$context['params']['member-id'] = $this->getMemberID();
 
 			if(!is_null(extension_Members::getSetting('role'))) {
-				$role_data = $this->Member->getData(extension_Members::getSetting('role'));
+				$role_data = $this->getMember()->getData(extension_Members::getSetting('role'));
 				$role = RoleManager::fetch($role_data['role_id']);
 				if($role instanceof Role) {
 					$context['params']['member-role'] = $role->get('name');
@@ -127,7 +131,7 @@
 			}
 
 			if(!is_null(extension_Members::getSetting('activation'))) {
-				if($this->Member->getData(extension_Members::getSetting('activation'), true)->activated != "yes") {
+				if($this->getMember()->getData(extension_Members::getSetting('activation'), true)->activated != "yes") {
 					$context['params']['member-activated'] = 'no';
 				}
 			}
@@ -137,10 +141,10 @@
 			$result = new XMLElement('member-login-info');
 
 			if($this->isLoggedIn()) {
-				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
+				self::$driver->__updateSystemTimezoneOffset($this->getMemberID());
 				$result->setAttributeArray(array(
 					'logged-in' => 'yes',
-					'id' => $this->Member->get('id'),
+					'id' => $this->getMemberID(),
 					'result' => 'success'
 				));
 			}
