@@ -142,16 +142,22 @@
 		 * be removed on a per member basis, or whether it should be a global
 		 * purge.
 		 *
-		 * @todo Look whether this function needs to exist..
 		 * @param integer $entry_id
 		 * @return boolean
 		 */
 		public function purgeCodes($entry_id = null){
 			$entry_id = Symphony::Database()->cleanValue($entry_id);
 
-			return Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
-				DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))), ($entry_id ? " OR `entry_id` = $entry_id" : '')
-			));
+			return Symphony::Database()->update(
+				array(
+					'code' => null
+				),
+				"`tbl_entries_data_{$this->get('id')}`",
+				sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
+					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))),
+					($entry_id ? " OR `entry_id` = $entry_id" : '')
+				)
+			);
 		}
 
 		public static function findCodeExpiry() {
