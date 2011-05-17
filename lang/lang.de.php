@@ -48,20 +48,11 @@
 		'Generate Recovery Code Email Template' =>
 		false,
 
-		'Used by the <code>Members: Generate Recovery Code</code> event' =>
-		'Wird vom <code>Members: Generate Recovery Code</code> Event benutzt',
-
 		'Activate Account Email Template' =>
 		false,
 
-		'Used by the <code>Members: Activate Account</code> event' =>
-		'Wird vom <code>Members: Activate Account</code> Event benutzt',
-
 		'Regenerate Activation Code Email Template' =>
 		false,
-
-		'Used by the <code>Members: Regenerate Activation Code</code> event' =>
-		'Wird vom <code>Members: Regenerate Activation Code</code> Event benutzt',
 
 		'The page you have requested has restricted access permissions.' =>
 		'Die angeforderte Seite hat beschränkte Zugriffsrechte.',
@@ -100,7 +91,7 @@
 		'Symphony &ndash; Mitgliederrollen &ndash; ',
 
 		'Event Level Permissions' =>
-		'Berechtigungen auf Event-Ebene',
+		'Berechtigungen auf Ereignisebene',
 
 		'User can create new entries' =>
 		'Benutzer kann neue Einträge erstelllen',
@@ -115,7 +106,7 @@
 		'Benutzer kann alle Einträge ändern',
 
 		'Event' =>
-		false,
+		'Ereignis',
 
 		'Toggle all' =>
 		'Alle umschalten',
@@ -272,6 +263,9 @@
 
 		'%s cannot be blank.' =>
 		'%s darf nicht leer sein.',
+
+		'Save' =>
+		'Speichern',
 
 		'Confirm' =>
 		'Bestätigen',
