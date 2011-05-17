@@ -340,7 +340,7 @@
 			// Member not activated
 			if(!$isActivated && !is_null($data)) {
 				// If code is still live, displays when the code was generated.
-				if(strtotime($data['timestamp']) < strtotime('now + ' . $this->get('code_expiry'))) {
+				if($this->isCodeActive($entry_id) !== false) {
 					$label->appendChild(
 						new XMLElement('span', __('Activation code %s', array('<code>' . $data['code'] . '</code>')), array('class' => 'frame'))
 					);
