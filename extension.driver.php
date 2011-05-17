@@ -564,10 +564,6 @@
 			return $default;
 		}
 
-	/*-------------------------------------------------------------------------
-		Preferences:
-	-------------------------------------------------------------------------*/
-
 		public static function fetchEmailTemplates() {
 			$options = array();
 			// Email Template Filter
@@ -622,6 +618,10 @@
 
 			return $options;
 		}
+
+	/*-------------------------------------------------------------------------
+		Preferences:
+	-------------------------------------------------------------------------*/
 
 		/**
 		 * Allows a user to select which section they would like to use as their
@@ -691,28 +691,6 @@
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
 
 			Administration::instance()->saveConfig();
-		}
-
-	/*-------------------------------------------------------------------------
-		Append Assets:
-	-------------------------------------------------------------------------*/
-
-		public function appendAssets(&$context) {
-			if(class_exists('Administration')
-				&& Administration::instance() instanceof Administration
-				&& Administration::instance()->Page instanceof HTMLPage
-			) {
-				$callback = Administration::instance()->getPageCallback();
-
-				// Event Info
-				if(
-					$context['oPage'] instanceof contentBlueprintsEvents &&
-					$callback['context'][0] == "info" &&
-					in_array($callback['context'][1], extension_Members::$member_events)
-				) {
-					Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.events.js', 10001, false);
-				}
-			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -812,6 +790,31 @@
 	/*-------------------------------------------------------------------------
 		Events:
 	-------------------------------------------------------------------------*/
+
+		/**
+		 * Adds Javascript to the custom Members events when they are viewed in the
+		 * backend to enable developers to set the appropriate Email Templates for
+		 * each event
+		 *
+		 * @uses AdminPagePreGenerate
+		 */
+		public function appendAssets(&$context) {
+			if(class_exists('Administration')
+				&& Administration::instance() instanceof Administration
+				&& Administration::instance()->Page instanceof HTMLPage
+			) {
+				$callback = Administration::instance()->getPageCallback();
+
+				// Event Info
+				if(
+					$context['oPage'] instanceof contentBlueprintsEvents &&
+					$callback['context'][0] == "info" &&
+					in_array($callback['context'][1], extension_Members::$member_events)
+				) {
+					Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.events.js', 10001, false);
+				}
+			}
+		}
 
 		/**
 		 * This function will ensure that the user who has submitted the form (and
