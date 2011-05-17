@@ -65,11 +65,11 @@
 
 			// Read the activation code template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
-			if(!is_null(extension_Members::getConfigVar('regenerate-activation-code-template'))) {
-				$this->eParamFILTERS = explode(',', extension_Members::getConfigVar('regenerate-activation-code-template'));
+			if(!is_null(extension_Members::getSetting('regenerate-activation-code-template'))) {
+				$this->eParamFILTERS = explode(',', extension_Members::getSetting('regenerate-activation-code-template'));
 			}
 
-			$activation = extension_Members::$fields['activation'];
+			$activation = extension_Members::getField('activation');
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(

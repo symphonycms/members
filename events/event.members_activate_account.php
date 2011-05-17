@@ -63,11 +63,11 @@
 
 			// Read the activate account template from the Configuration if it exists
 			// This is required for the Email Template Filter/Email Template Manager
-			if(!is_null(extension_Members::getConfigVar('activate-account-template'))) {
-				$this->eParamFILTERS = explode(',', extension_Members::getConfigVar('activate-account-template'));
+			if(!is_null(extension_Members::getSetting('activate-account-template'))) {
+				$this->eParamFILTERS = explode(',', extension_Members::getSetting('activate-account-template'));
 			}
 
-			$activation = extension_Members::$fields['activation'];
+			$activation = extension_Members::getField('activation');
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -176,7 +176,7 @@
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
-				extension_Members::$handles['authentication'] => $entry->getData(extension_Members::getConfigVar('authentication'), true)->password
+				extension_Members::getFieldHandle('authentication') => $entry->getData(extension_Members::getSetting('authentication'), true)->password
 			));
 
 			// Only login if the Activation field allows auto login.

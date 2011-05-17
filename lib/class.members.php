@@ -8,16 +8,18 @@
 
 	Interface Member {
 		// Authentication
-		public function login(Array $credentials);
+		public function login(array $credentials);
 		public function logout();
 		public function isLoggedIn();
 
 		// Finding
-		public function findMemberIDFromCredentials(Array $credentials);
+		public static function setIdentityField(array $credentials, $simplified = true);
+		public function findMemberIDFromCredentials(array $credentials);
+		public function fetchMemberFromID($member_id = null);
 
 		// Output
-		public function addMemberDetailsToPageParams(Array $context = null);
-		public function appendLoginStatusToEventXML(Array $context = null);
+		public function addMemberDetailsToPageParams(array $context = null);
+		public function appendLoginStatusToEventXML(array $context = null);
 	}
 
 	Abstract Class Members implements Member {
@@ -44,6 +46,7 @@
 	/*-------------------------------------------------------------------------
 		Initalise:
 	-------------------------------------------------------------------------*/
+
 		public function initialiseCookie() {
 			if(is_null($this->cookie)) {
 				$this->cookie = new Cookie(
@@ -89,7 +92,7 @@
 		public function findMemberIDFromIdentity($needle = null){
 			if(is_null($needle)) return null;
 
-			$identity = extension_Members::$fields['identity'];
+			$identity = extension_Members::getField('identity');
 
 			return $identity->fetchMemberIDBy($needle);
 		}
@@ -115,16 +118,16 @@
 
 			$context['params']['member-id'] = $this->Member->get('id');
 
-			if(!is_null(extension_Members::getConfigVar('role'))) {
-				$role_data = $this->Member->getData(extension_Members::getConfigVar('role'));
+			if(!is_null(extension_Members::getSetting('role'))) {
+				$role_data = $this->Member->getData(extension_Members::getSetting('role'));
 				$role = RoleManager::fetch($role_data['role_id']);
 				if($role instanceof Role) {
 					$context['params']['member-role'] = $role->get('name');
 				}
 			}
 
-			if(!is_null(extension_Members::getConfigVar('activation'))) {
-				if($this->Member->getData(extension_Members::getConfigVar('activation'), true)->activated != "yes") {
+			if(!is_null(extension_Members::getSetting('activation'))) {
+				if($this->Member->getData(extension_Members::getSetting('activation'), true)->activated != "yes") {
 					$context['params']['member-activated'] = 'no';
 				}
 			}

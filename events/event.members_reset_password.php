@@ -68,7 +68,7 @@
 
 			// Check that there is a row with this recovery code and that they
 			// request a password reset
-			$auth = extension_Members::$fields['authentication'];
+			$auth = extension_Members::getField('authentication');
 			if(!$auth instanceof fieldMemberPassword) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -96,7 +96,7 @@
 				return $result;
 			}
 
-			if(!isset($fields[extension_Members::$handles['authentication']]['recovery-code']) or empty($fields[extension_Members::$handles['authentication']]['recovery-code'])) {
+			if(!isset($fields[extension_Members::getFieldHandle('authentication')]['recovery-code']) or empty($fields[extension_Members::getFieldHandle('authentication')]['recovery-code'])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
@@ -115,7 +115,7 @@
 					FROM tbl_entries_data_%d
 					WHERE reset = 'yes'
 					AND `recovery-code` = '%s'
-				", $auth->get('id'), Symphony::Database()->cleanValue($fields[extension_Members::$handles['authentication']]['recovery-code'])
+				", $auth->get('id'), Symphony::Database()->cleanValue($fields[extension_Members::getFieldHandle('authentication')]['recovery-code'])
 			));
 
 			if(empty($row)) {
@@ -208,7 +208,7 @@
 				$driver->Member->filter_UpdatePasswordLogin(array(
 					'entry' => $entry,
 					'fields' => array(
-						extension_Members::$handles['authentication'] => array(
+						extension_Members::getFieldHandle('authentication') => array(
 							'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password'])
 						)
 					)

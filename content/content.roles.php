@@ -9,7 +9,7 @@
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
 
-			if(is_null(extension_Members::getConfigVar('role')) && !is_null(extension_Members::getMembersSection())) {
+			if(is_null(extension_Members::getSetting('role')) && !is_null(extension_Members::getMembersSection())) {
 				$this->pageAlert(
 					__('There is no Member: Role field in the active Members section. <a href="%s%d/">Add Member: Role field?</a>',
 					array(
@@ -50,7 +50,7 @@
 			    $section = $sectionManager->fetch(extension_Members::getMembersSection());
 
 				$with_selected_roles = array();
-				$hasRoles = !is_null(extension_Members::getConfigVar('role'));
+				$hasRoles = !is_null(extension_Members::getSetting('role'));
 
 				foreach($roles as $role){
 					// Setup each cell
@@ -66,12 +66,12 @@
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
 							"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-							extension_Members::getConfigVar('role'), $role->get('id')
+							extension_Members::getSetting('role'), $role->get('id')
 						));
 
 						$td2 = Widget::TableData(Widget::Anchor(
 							"$member_count",
-							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . extension_Members::$handles['role'] . ':' . $role->get('id')
+							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . extension_Members::getFieldHandle('role') . ':' . $role->get('id')
 						));
 					}
 
@@ -376,7 +376,7 @@
 
 						Symphony::Database()->query(sprintf(
 							"UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d",
-							extension_members::getConfigVar('role'),
+							extension_members::getSetting('role'),
 							$target_role,
 							$role_id
 						));

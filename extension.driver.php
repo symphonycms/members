@@ -9,48 +9,70 @@
 	Class extension_Members extends Extension {
 
 		/**
-		 * @var SymphonyMember $Member
+		 * @var boolean $initialised
 		 */
-		public $Member = null;
+		private static $initialised = false;
 
 		/**
 		 * @var integer $members_section
 		 */
-		public static $members_section = null;
+		private static $members_section = null;
 
 		/**
 		 * @var array $member_fields
 		 */
-		public static $member_fields = array(
+		private static $member_fields = array(
 			'memberusername', 'memberemail'
 		);
 
 		/**
+		 * Accessible via `getLoggedInMember()`
+		 *
+		 * @see getLoggedInMember()
+		 * @var Member $Member
+		 */
+		protected $Member = null;
+
+		/**
+		 * Accessible via `getField()`
+		 *
+		 * @see getField()
+		 * @var array $fields
+		 */
+		protected static $fields = array();
+
+		/**
+		 * Accessible via `getFieldHandle()`
+		 *
+		 * @see getFieldHandle()
+		 * @var array $handles
+		 */
+		protected static $handles = array();
+
+		/**
+		 * Returns an associative array of errors that have occurred while
+		 * logging in or preforming a Members custom event. The key is the
+		 * field's `element_name` and the value is the error message.
+		 *
+		 * @var array $_errors
+		 */
+		public static $_errors = array();
+
+		/**
+		 * By default this is set to `false`. If a Member attempts to login
+		 * but is unsuccessful, this will be `true`. Useful in the
+		 * `appendLoginStatusToEventXML` function to determine whether to display
+		 * `extension_Members::$_errors` or not.
+		 *
 		 * @var boolean $failed_login_attempt
 		 */
 		public static $_failed_login_attempt = false;
 
 		/**
-		 * @var boolean $_errors
-		 */
-		public static $_errors = array();
-
-		/**
-		 * @var array $fields
-		 */
-		public static $fields = array();
-
-		/**
-		 * @var array $handles
-		 */
-		public static $handles = array();
-
-		/**
-		 * @var boolean $initialised
-		 */
-		public static $initialised = false;
-
-		/**
+		 * An instance of the EntryManager class. Keep in mind that the Field Manager
+		 * and Section Manager are accessible via `$entryManager->fieldManager` and
+		 * `$entryManager->sectionManager` respectively.
+		 *
 		 * @var EntryManager $entryManager
 		 */
 		public static $entryManager = null;
@@ -82,9 +104,9 @@
 			extension_Members::$initialised = true;
 			$fieldManager = extension_Members::$entryManager->fieldManager;
 
-			if(!is_null(extension_Members::getConfigVar('timezone'))) {
+			if(!is_null(extension_Members::getSetting('timezone'))) {
 				extension_Members::$fields['timezone'] = $fieldManager->fetch(
-					extension_Members::getConfigVar('timezone')
+					extension_Members::getSetting('timezone')
 				);
 
 				if(extension_Members::$fields['timezone'] instanceof Field) {
@@ -92,9 +114,9 @@
 				}
 			}
 
-			if(!is_null(extension_Members::getConfigVar('role'))) {
+			if(!is_null(extension_Members::getSetting('role'))) {
 				extension_Members::$fields['role'] = $fieldManager->fetch(
-					extension_Members::getConfigVar('role')
+					extension_Members::getSetting('role')
 				);
 
 				if(extension_Members::$fields['role'] instanceof Field) {
@@ -102,9 +124,9 @@
 				}
 			}
 
-			if(!is_null(extension_Members::getConfigVar('activation'))) {
+			if(!is_null(extension_Members::getSetting('activation'))) {
 				extension_Members::$fields['activation'] = $fieldManager->fetch(
-					extension_Members::getConfigVar('activation')
+					extension_Members::getSetting('activation')
 				);
 
 				if(extension_Members::$fields['activation'] instanceof Field) {
@@ -112,9 +134,9 @@
 				}
 			}
 
-			if(!is_null(extension_Members::getConfigVar('identity'))) {
+			if(!is_null(extension_Members::getSetting('identity'))) {
 				extension_Members::$fields['identity'] = $fieldManager->fetch(
-					extension_Members::getConfigVar('identity')
+					extension_Members::getSetting('identity')
 				);
 
 				if(extension_Members::$fields['identity'] instanceof Field) {
@@ -122,9 +144,9 @@
 				}
 			}
 
-			if(!is_null(extension_Members::getConfigVar('email'))) {
+			if(!is_null(extension_Members::getSetting('email'))) {
 				extension_Members::$fields['email'] = $fieldManager->fetch(
-					extension_Members::getConfigVar('email')
+					extension_Members::getSetting('email')
 				);
 
 				if(extension_Members::$fields['email'] instanceof Field) {
@@ -132,9 +154,9 @@
 				}
 			}
 
-			if(!is_null(extension_Members::getConfigVar('authentication'))) {
+			if(!is_null(extension_Members::getSetting('authentication'))) {
 				extension_Members::$fields['authentication'] = $fieldManager->fetch(
-					extension_Members::getConfigVar('authentication')
+					extension_Members::getSetting('authentication')
 				);
 
 				if(extension_Members::$fields['authentication'] instanceof Field) {
@@ -328,17 +350,82 @@
 			return SYMPHONY_URL . '/extension/members/';
 		}
 
-		public static function getConfigVar($handle) {
-			$value = Symphony::Configuration()->get($handle, 'members');
-			return ((is_numeric($value) && $value == 0) || is_null($value) || empty($value)) ? NULL : $value;
+		/**
+		 * Returns an instance of the currently logged in Member, which is a `Entry` object.
+		 * If there is no logged in Member, this function will return `null`
+		 *
+		 * @return Member
+		 */
+		public function getLoggedInMember() {
+			return $this->Member;
 		}
 
+		/**
+		 * Given a `$handle`, this function will return a value from the Members
+		 * configuration. Typically this is an shortcut accessor to
+		 * `Symphony::Configuration()->get($handle, 'members')`. If no `$handle`
+		 * is given this function will return all the configuration values for
+		 * the Members extension as an array.
+		 *
+		 * @param string $handle
+		 * @return mixed
+		 */
+		public static function getSetting($handle = null) {
+			if(is_null($handle)) return Symphony::Configuration()->get('members');
+
+			$value = Symphony::Configuration()->get($handle, 'members');
+			return ((is_numeric($value) && $value == 0) || is_null($value) || empty($value)) ? null : $value;
+		}
+
+		/**
+		 * Shortcut accessor for the active Members Section. This function
+		 * caches the result of the `getSetting('section')`.
+		 *
+		 * @return integer
+		 */
 		public static function getMembersSection() {
 			if(is_null(extension_Members::$members_section)) {
-				extension_Members::$members_section = extension_Members::getConfigVar('section');
+				extension_Members::$members_section = extension_Members::getSetting('section');
 			}
 
 			return extension_Members::$members_section;
+		}
+
+		/**
+		 * Where `$name` is one of the following values, `role`, `timezone`,
+		 * `email`, `activation`, `authentication` and `identity`, this function
+		 * will return a Field instance. Typically this allows extensions to access
+		 * the Fields that are currently being used in the active Members section.
+		 * If no `$name` is given, an array of all Member fields will be returned.
+		 *
+		 * @param string $name
+		 * @return Field
+		 */
+		public static function getField($name = null) {
+			if(is_null($name)) return extension_Members::$fields;
+
+			if(!isset(extension_Members::$fields[$name])) return null;
+
+			return extension_Members::$fields[$name];
+		}
+
+		/**
+		 * Where `$name` is one of the following values, `role`, `timezone`,
+		 * `email`, `activation`, `authentication` and `identity`, this function
+		 * will return the Field's `element_name`. `element_name` is a handle
+		 * of the Field's label, used most commonly by events in `$_POST` data.
+		 * If no `$name` is given, an array of all Member field handles will
+		 * be returned.
+		 *
+		 * @param string $name
+		 * @return string
+		 */
+		public static function getFieldHandle($name = null) {
+			if(is_null($name)) return extension_Members::$handles;
+
+			if(!isset(extension_Members::$handles[$name])) return null;
+
+			return extension_Members::$handles[$name];
 		}
 
 		/**
@@ -349,7 +436,7 @@
 		 * @return void
 		 */
 		public function __updateSystemTimezoneOffset($member_id) {
-			$timezone = extension_Members::$fields['timezone'];
+			$timezone = extension_Members::getField('timezone');
 
 			if(!$timezone instanceof fieldMemberTimezone) return;
 
@@ -375,7 +462,7 @@
 		 * @return array
 		 */
 		public static function setActiveTemplate(Array $options, $handle) {
-			$templates = explode(',', extension_Members::getConfigVar($handle));
+			$templates = explode(',', extension_Members::getSetting($handle));
 
 			foreach($options as $index => $ext) {
 				foreach($ext['options'] as $key => $opt) {
@@ -406,7 +493,7 @@
 				__('Members: Lock Role')
 			);
 
-			if(!is_null(extension_Members::getConfigVar('activation')) && !is_null(extension_Members::getConfigVar('email'))) {
+			if(!is_null(extension_Members::getSetting('activation')) && !is_null(extension_Members::getSetting('email'))) {
 				// Add Member: Lock Activation filter
 				$context['options'][] = array(
 					'member-lock-activation',
@@ -415,7 +502,7 @@
 				);
 			}
 
-			if(!is_null(extension_Members::getConfigVar('authentication'))) {
+			if(!is_null(extension_Members::getSetting('authentication'))) {
 				// Add Member: Update Password filter
 				$context['options'][] = array(
 					'member-update-password',
@@ -574,7 +661,7 @@
 			if(!empty($options)) {
 				$group = new XMLElement('div', null, array('class' => 'group'));
 
-				if(!is_null(extension_Members::$fields['authentication'])) {
+				if(!is_null(extension_Members::getField('authentication'))) {
 					// Generate Recovery Code
 					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
@@ -589,7 +676,7 @@
 				$fieldset->appendChild($group);
 				$group = new XMLElement('div', null, array('class' => 'group'));
 
-				if(!is_null(extension_Members::$fields['activation'])) {
+				if(!is_null(extension_Members::getField('activation'))) {
 					// Activate Account
 					$div = new XMLElement('div');
 					$label = new XMLElement('label', __('Activate Account Email Template'));
@@ -702,15 +789,15 @@
 			if($isLoggedIn && $this->Member->Member instanceOf Entry) {
 				$this->__updateSystemTimezoneOffset($this->Member->Member->get('id'));
 
-				if(!is_null(extension_Members::getConfigVar('role'))) {
-					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
+				if(!is_null(extension_Members::getSetting('role'))) {
+					$role_data = $this->Member->Member->getData(extension_Members::getSetting('role'));
 				}
 			}
 
 			// If there is no role field, or a Developer is logged in, return, as Developers
 			// should be able to access every page.
 			if(
-				is_null(extension_Members::getConfigVar('role'))
+				is_null(extension_Members::getSetting('role'))
 				|| (Frontend::instance()->Author instanceof Author && Frontend::instance()->Author->isDeveloper())
 			) return;
 
@@ -772,7 +859,7 @@
 			// If this system has no Roles, or the event is set to ignore role permissions
 			// continue straight to processing the Filters
 			if(
-				is_null(extension_Members::getConfigVar('role')) ||
+				is_null(extension_Members::getSetting('role')) ||
 				(method_exists($context['event'], 'ignoreRolePermissions') && $context['event']->ignoreRolePermissions() == true)
 			) {
 				return $this->__processEventFilters($context);
@@ -795,7 +882,7 @@
 			if($isLoggedIn && $this->Member->initialiseMemberObject()) {
 				if($this->Member->Member instanceOf Entry) {
 					$required_level = EventPermissions::OWN_ENTRIES;
-					$role_data = $this->Member->Member->getData(extension_Members::getConfigVar('role'));
+					$role_data = $this->Member->Member->getData(extension_Members::getSetting('role'));
 					$role_id = $role_data['role_id'];
 
 					if($action == 'edit' && method_exists($context['event'], 'getSource')) {
@@ -817,12 +904,12 @@
 							$field_ids = array();
 
 							// Get the ID's of the fields that may be used for Linking (Username/Email)
-							if(!is_null(extension_Members::getConfigVar('identity'))) {
-								$field_ids[] = extension_Members::getConfigVar('identity');
+							if(!is_null(extension_Members::getSetting('identity'))) {
+								$field_ids[] = extension_Members::getSetting('identity');
 							}
 
-							if(!is_null(extension_Members::getConfigVar('email'))) {
-								$field_ids[] = extension_Members::getConfigVar('email');
+							if(!is_null(extension_Members::getSetting('email'))) {
+								$field_ids[] = extension_Members::getSetting('email');
 							}
 
 							// Query for the `field_id` of any linking fields that link to the members
