@@ -66,8 +66,7 @@
 		public function findMemberIDFromCredentials(Array $credentials) {
 			extract($credentials);
 
-			// It's expected that $password is sha1'd and salted.
-			if((is_null($username) && is_null($email)) || is_null($password)) return null;
+			if((is_null($username) && is_null($email))) return null;
 
 			$identity = SymphonyMember::setIdentityField($credentials);
 
@@ -77,6 +76,7 @@
 			$member_id = $identity->fetchMemberIDBy($credentials);
 
 			// Validate against Password
+			// It's expected that $password is sha1'd and salted.
 			$auth = extension_Members::$fields['authentication'];
 			if(!is_null($auth)) {
 				$member_id = $auth->fetchMemberIDBy($credentials, $member_id);
@@ -195,7 +195,7 @@
 			}
 
 			// Check to ensure that we actually have some data to try and log a user in with.
-			if(empty($data['password'])) {
+			if(empty($data['password']) && isset($credentials[extension_Members::$handles['authentication']])) {
 				extension_Members::$_errors[extension_Members::$fields['authentication']->get('element_name')] = array(
 					'message' => __('%s is a required field.', array(extension_Members::$fields['authentication']->get('label'))),
 					'type' => 'missing',
