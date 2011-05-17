@@ -162,35 +162,49 @@
 				$data['role_id'] = $this->get('default_role');
 			}
 
-			foreach($states as $role_id => $role_name){
-				$options[] = array(
-					$role_id,
-					$role_id == $data['role_id'],
-					$role_name
-				);
-			}
-
-			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Select(
-				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
-			);
-
 			// If the Members installation has a Activation field used, we need to make sure
-			// that this field represents accurately what Role this Member actually has
-			// because the Activation field contains a Activation Role, which is the role
-			// unassigned to Members who have registered, but not yet activated their account
+			// that this field represents accurately what Role this Member actually has.
+			// The Activation field allows developers to set a Activation Role, which is the role
+			// assigned to Members who have registered, but not yet activated their account.
+			$activation_role_id = null;
 			$activation = extension_Members::getField('activation');
 			if(!is_null($activation) && !is_null($entry_id)) {
 				$entry = extension_Members::$entryManager->fetch($entry_id);
 				$entry = $entry[0];
 
 				if($entry instanceof Entry && $entry->getData($activation->get('id'), true)->activated != 'yes') {
-					$activation_role = RoleManager::fetch($activation->get('activation_role_id'));
-					if($activation_role instanceof Role) {
-						$message = __('Member is currently assuming the %s role as they are not activated. When they activate their account, the will assume the above Role', array($activation_role->get('name')));
-						$label->appendChild(new XMLElement('p', $message, array('class' => 'help')));
-					}
+					$activation_role_id = $activation->get('activation_role_id');
 				}
+			}
+
+			// Loop over states to build the Select options array
+			foreach($states as $role_id => $role_name){
+				$options[] = array(
+					$role_id,
+					!is_null($activation_role_id) ? ($role_id == $activation_role_id) : ($role_id == $data['role_id']),
+					$role_name
+				);
+			}
+
+			$label = Widget::Label($this->get('label'));
+			$label->appendChild(Widget::Select(
+				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix,
+				$options,
+				!is_null($activation_role_id) ? array('disabled' => 'disabled') : array())
+			);
+
+			// Add message about user's Role when they activate and a hidden field that
+			// contains the Default Role ID
+			if(!is_null($activation_role_id)) {
+				$default_role = RoleManager::fetch($this->get('default_role'));
+				$label->appendChild(
+					new XMLElement('p',
+					__('Member will assume the role <strong>%s</strong> when they activated.', array($default_role->get('name'))),
+					array('class' => 'help'))
+				);
+				$label->appendChild(
+					Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $data['role_id'], 'hidden')
+				);
 			}
 
 			if(!is_null($error)) {
