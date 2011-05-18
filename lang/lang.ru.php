@@ -51,20 +51,11 @@
 		'Reset Password Email Template' =>
 		'Email Шаблон для сброса пароля',
 
-		'Used by the <code>Members: Generate Recovery Code</code> event' =>
-		'Используется для <code>Пользователи: сгенерировать код восстановления</code> события',
-
 		'Activate Account Email Template' =>
 		'Email Шаблон для активация учетной записи',
 
-		'Used by the <code>Members: Activate Account</code> event' =>
-		'Используется для <code>Пользователи: Активация учетной записи</code> события',
-
 		'Regenerate Activation Code Email Template' =>
 		'Email Шаблон для повторной активации учетной записи',
-
-		'Used by the <code>Members: Regenerate Activation Code</code> event' =>
-		'Используется для <code>Пользователи: Повторная Активация учетной записи</code> события',
 
 		'The page you have requested has restricted access permissions.' =>
 		'Для просмотра страницы, которую вы запрашиваете, у вас недостаточно прав',
