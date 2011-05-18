@@ -15,7 +15,7 @@ jQuery(document).ready(function() {
 				success: function(data, response) {
 					if(response == "success") {
 						Symphony.Message.post(
-							Symphony.Language.get('Event updated at {$time}. <a href="{$new_url}">Create another?</a> <a href="{$url}">View all Events</a>', {
+							Symphony.Language.get('Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>', {
 								time: jQuery(data).find('timestamp').text(),
 								new_url: Symphony.Context.get('root') + '/symphony/blueprints/events/new/',
 								url: Symphony.Context.get('root') + '/symphony/blueprints/components/'

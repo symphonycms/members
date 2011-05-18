@@ -37,7 +37,7 @@
 				$label->appendChild(Widget::Input('members[event]', 'generate-recovery-code-template', 'hidden'));
 
 				$div->appendChild($label);
-				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));
+				$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
 			}
 
 			return '
