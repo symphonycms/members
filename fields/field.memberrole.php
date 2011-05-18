@@ -198,9 +198,9 @@
 			if(!is_null($activation_role_id)) {
 				$default_role = RoleManager::fetch($this->get('default_role'));
 				$label->appendChild(
-					new XMLElement('p',
-					__('Member will assume the role <strong>%s</strong> when they activated.', array($default_role->get('name'))),
-					array('class' => 'help'))
+					new XMLElement('span',
+					__('Member will assume the role <strong>%s</strong> when activated.', array($default_role->get('name'))),
+					array('class' => 'help frame'))
 				);
 				$label->appendChild(
 					Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $data['role_id'], 'hidden')
