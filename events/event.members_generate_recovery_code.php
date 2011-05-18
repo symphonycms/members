@@ -34,6 +34,7 @@
 				$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
 				$generate_recovery_code_templates = extension_Members::setActiveTemplate($templates, 'generate-recovery-code-template');
 				$label->appendChild(Widget::Select('members[generate-recovery-code-template][]', $generate_recovery_code_templates, array('multiple' => 'multiple')));
+				$label->appendChild(Widget::Input('members[event]', 'generate-recovery-code-template', 'hidden'));
 
 				$div->appendChild($label);
 				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));

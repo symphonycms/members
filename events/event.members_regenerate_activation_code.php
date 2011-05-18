@@ -34,6 +34,7 @@
 				$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
 				$regenerate_activation_code_templates = extension_Members::setActiveTemplate($templates, 'regenerate-activation-code-template');
 				$label->appendChild(Widget::Select('members[regenerate-activation-code-template][]', $regenerate_activation_code_templates, array('multiple' => 'multiple')));
+				$label->appendChild(Widget::Input('members[event]', 'regenerate-activation-code-template', 'hidden'));
 
 				$div->appendChild($label);
 				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));

@@ -34,6 +34,7 @@
 				$label = new XMLElement('label', __('Activate Account Email Template'));
 				$activate_account_templates = extension_Members::setActiveTemplate($templates, 'activate-account-template');
 				$label->appendChild(Widget::Select('members[activate-account-template][]', $activate_account_templates, array('multiple' => 'multiple')));
+				$label->appendChild(Widget::Input('members[event]', 'activate-account-template', 'hidden'));
 
 				$div->appendChild($label);
 				$div->appendChild(Widget::Input(null, __('Save'), 'submit'));
