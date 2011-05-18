@@ -204,6 +204,9 @@
 		'Account will be activated when entry is saved' =>
 		'Das Konto wird aktiviert wenn der Eintrag gespeichert wird',
 
+		'Member will assume the role <strong>%s</strong> when activated.' =>
+		'Nach der Aktivierung wird das Mitglied die Rolle <strong>%s</strong> annehmen.',
+
 		'Activated %s' =>
 		'Aktiviert %s',
 
@@ -287,5 +290,11 @@
 
 		'Member is not activated.' =>
 		'Mitglied ist nicht aktiviert.',
+
+		'Event updated at {$time}. <a href="{$new_url}">Create another?</a> <a href="{$url}">View all Events</a>' =>
+		'Ereignis um {$time} aktualisiert. <a href="{$new_url}">Ein neues erstellen?</a> <a href="{$url}">Zeige alle Ereignisse</a>',
+
+		'An error occurred while processing this form.' =>
+		'Beim Verarbeiten dieses Formulars ist ein Fehler aufgetreten.',
 
 	);
