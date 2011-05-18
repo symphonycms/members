@@ -1,7 +1,7 @@
 jQuery(document).ready(function() {
 
 	Symphony.Language.add({
-		'Event updated at {$time}. <a href="{$new_url}">Create another?</a> <a href="{$url}">View all Events</a>': false,
+		'Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>': false,
 		'An error occurred while processing this form.': false
 	});
 
