@@ -14,7 +14,7 @@
 			else if (!is_writable(CONFIG)) {
 				$this->_status = AjaxPage::STATUS_BAD;
 				$this->_Result->appendChild(
-					new XMLElement('error', __('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'))
+					new XMLElement('message', __('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'))
 				);
 				return;
 			}
@@ -40,7 +40,10 @@
 			if(Administration::instance()->saveConfig()) {
 				$this->_status = AjaxPage::STATUS_OK;
 				$this->_Result->appendChild(
-					new XMLElement('error', __('Preferences saved.'))
+					new XMLElement('message', __('Preferences saved.'))
+				);
+				$this->_Result->appendChild(
+					new XMLElement('timestamp', '<![CDATA[' . DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__) . ']]>')
 				);
 			}
 		}
