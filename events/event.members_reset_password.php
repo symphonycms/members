@@ -27,6 +27,19 @@
 		}
 
 		public static function documentation(){
+			// Fetch all the Email Templates available and add to the end of the documentation
+			$templates = extension_Members::fetchEmailTemplates();
+			if(!empty($templates)) {
+				$div = new XMLElement('div');
+				$label = new XMLElement('label', __('Reset Password Email Template'));
+				$reset_password_templates = extension_Members::setActiveTemplate($templates, 'reset-password-template');
+				$label->appendChild(Widget::Select('members[reset-password-template][]', $reset_password_templates, array('multiple' => 'multiple')));
+				$label->appendChild(Widget::Input('members[event]', 'reset-password-template', 'hidden'));
+
+				$div->appendChild($label);
+				$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
+			}
+
 			return '
 				<p>This event takes a recovery code and a new password for a member. Should the recovery code
 				be correct and the new password validate, the member\'s password is changed to their new password.<br />
@@ -51,6 +64,7 @@
 				<h3>More Information</h3>
 				<p>For further information about this event, including response and error XML, please refer to the
 				<a href="https://github.com/symphonycms/members/wiki/Members%3A-Reset-Password">wiki</a>.</p>
+				' . $div->generate() . '
 			';
 		}
 
@@ -64,6 +78,12 @@
 			// Create the post data cookie element
 			if (is_array($fields) && !empty($fields)) {
 				General::array_to_xml($post_values, $fields, true);
+			}
+
+			// Read the activation code template from the Configuration if it exists
+			// This is required for the Email Template Filter/Email Template Manager
+			if(!is_null(extension_Members::getSetting('reset-password-template'))) {
+				$this->eParamFILTERS = explode(',', extension_Members::getSetting('reset-password-template'));
 			}
 
 			// Check that there is a row with this recovery code and that they
@@ -203,6 +223,28 @@
 				// reset to no.
 				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
 
+				$filter_results = array();
+				$filter_errors = array();
+				/**
+				 * @delegate EventFinalSaveFilter
+				 * @param string $context
+				 * '/frontend/'
+				 * @param array $fields
+				 * @param string $event
+				 * @param array $messages
+				 * @param array $errors
+				 * @param Entry $entry
+				 */
+				Symphony::ExtensionManager()->notifyMembers(
+					'EventFinalSaveFilter', '/frontend/', array(
+						'fields'	=> $fields,
+						'event'		=> $this,
+						'messages'	=> $filter_results,
+						'errors'	=> &$filter_errors,
+						'entry'		=> $entry
+					)
+				);
+
 				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
 				// handle relogging in the user.
 				$driver->getMemberDriver()->filter_UpdatePasswordLogin(array(
@@ -213,6 +255,17 @@
 						)
 					)
 				));
+
+				// Take the logic from `event.section.php` to append `$filter_errors`
+				if(is_array($filter_errors) && !empty($filter_errors)){
+					foreach($filter_errors as $fr){
+						list($name, $status, $message, $attributes) = $fr;
+
+						$result->appendChild(
+							extension_Members::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
+						);
+					}
+				}
 
 				$result->setAttribute('result', 'success');
 			}
