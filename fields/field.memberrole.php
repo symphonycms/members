@@ -112,6 +112,7 @@
 			$wrapper->appendChild($group);
 
 			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
 		}
