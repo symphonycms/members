@@ -46,8 +46,8 @@
 			}
 
 			else{
-			    $sectionManager = new SectionManager(Administration::instance());
-			    $section = $sectionManager->fetch(extension_Members::getMembersSection());
+				$sectionManager = new SectionManager(Administration::instance());
+				$section = $sectionManager->fetch(extension_Members::getMembersSection());
 
 				$with_selected_roles = array();
 				$hasRoles = !is_null(extension_Members::getSetting('role'));
@@ -66,7 +66,7 @@
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
 							"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-							extension_Members::getSetting('role'), $role->get('id')
+							extension_Members::getField('role')->get('id'), $role->get('id')
 						));
 
 						$td2 = Widget::TableData(Widget::Anchor(
@@ -376,7 +376,7 @@
 
 						Symphony::Database()->query(sprintf(
 							"UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d",
-							extension_members::getSetting('role'),
+							extension_members::getField('role')->get('id'),
 							$target_role,
 							$role_id
 						));

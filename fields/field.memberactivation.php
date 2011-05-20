@@ -301,20 +301,8 @@
 				'deny_login' => $this->get('deny_login') == 'yes' ? 'yes' : 'no'
 			);
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
-				Symphony::Configuration()->set('activation', $id, 'members');
-				Administration::instance()->saveConfig();
-			}
-
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
-		}
-
-		public function tearDown() {
-			Symphony::Configuration()->remove('activation', 'members');
-			Administration::instance()->saveConfig();
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------

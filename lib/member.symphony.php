@@ -90,7 +90,7 @@
 			if(!is_null(extension_Members::getSetting('activation'))) {
 				$entry = extension_Members::$entryManager->fetch($member_id);
 
-				$isActivated = $entry[0]->getData(extension_Members::getSetting('activation'), true)->activated == "yes";
+				$isActivated = $entry[0]->getData(extension_Members::getField('activation')->get('id'), true)->activated == "yes";
 
 				// If we are denying login for non activated members, lets do so now
 				if(extension_Members::getField('activation')->get('deny_login') == 'yes' && !$isActivated) {
@@ -129,10 +129,10 @@
 			// the current Role with the Activation Role. This may allow Members to view certain
 			// things until they active their account.
 			if(!is_null(extension_Members::getSetting('activation'))) {
-				if($member->getData(extension_Members::getSetting('activation'), true)->activated != "yes") {
+				if($member->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
 					if(!is_null(extension_Members::getSetting('role'))) {
 						$member->setData(
-							extension_Members::getSetting('role'),
+							extension_Members::getField('role')->get('id'),
 							extension_Members::getField('activation')->get('activation_role_id')
 						);
 					}
@@ -299,7 +299,7 @@
 					if(!$member instanceof Entry) return;
 
 					// If there is a Role set to this Member, lock the `$fields` role to the same value
-					$role_id = $member->getData(extension_Members::getSetting('role'), true)->role_id;
+					$role_id = $member->getData(extension_Members::getField('role')->get('id'), true)->role_id;
 					$context['fields'][extension_Members::getFieldHandle('role')] = $role_id;
 				}
 				// New Member, so use the default Role
@@ -321,7 +321,7 @@
 					if(!$member instanceof Entry) return;
 
 					// Lock the `$fields` activation to the same value as what is set to the Member
-					$activated = $member->getData(extension_Members::getSetting('activation'), true)->activated;
+					$activated = $member->getData(extension_Members::getField('activation')->get('id'), true)->activated;
 					$context['fields'][extension_Members::getFieldHandle('activation')] = $activated;
 				}
 				// New Member, so use the default Role
@@ -356,7 +356,7 @@
 
 			$this->login(array(
 				extension_Members::getFieldHandle('authentication') => $context['fields'][extension_Members::getFieldHandle('authentication')]['password'],
-				extension_Members::getFieldHandle('identity') => $context['entry']->getData(extension_Members::getSetting('identity'), true)->value
+				extension_Members::getFieldHandle('identity') => $context['entry']->getData(extension_Members::getField('identity')->get('id'), true)->value
 			), false);
 
 			if(isset($_REQUEST['redirect'])) {

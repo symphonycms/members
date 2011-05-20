@@ -112,7 +112,7 @@
 			if($purge_members) {
 				$members = Symphony::Database()->fetchCol('entry_id', sprintf(
 					"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-					extension_Members::getSetting('role'), $role_id
+					extension_Members::getField('role')->get('id'), $role_id
 				));
 
 				/**

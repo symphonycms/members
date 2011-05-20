@@ -190,7 +190,7 @@
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
-				extension_Members::getFieldHandle('authentication') => $entry->getData(extension_Members::getSetting('authentication'), true)->password
+				extension_Members::getFieldHandle('authentication') => $entry->getData(extension_Members::getField('authentication')->get('id'), true)->password
 			));
 
 			// Only login if the Activation field allows auto login.

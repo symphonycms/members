@@ -114,66 +114,56 @@
 		 */
 		public static function initialise() {
 			extension_Members::$initialised = true;
-			$fieldManager = extension_Members::$entryManager->fieldManager;
+			$sectionManager = extension_Members::$entryManager->sectionManager;
+			$membersSectionSchema = array();
 
-			if(!is_null(extension_Members::getSetting('timezone'))) {
-				extension_Members::$fields['timezone'] = $fieldManager->fetch(
-					extension_Members::getSetting('timezone')
-				);
-
-				if(extension_Members::$fields['timezone'] instanceof Field) {
-					extension_Members::$handles['timezone'] = extension_Members::$fields['timezone']->get('element_name');
-				}
+			if(
+				!is_null(extension_Members::getMembersSection()) &&
+				is_numeric(extension_Members::getMembersSection())
+			) {
+				$membersSectionSchema = $sectionManager->fetch(
+					extension_Members::getMembersSection()
+				)->fetchFieldsSchema();
 			}
 
-			if(!is_null(extension_Members::getSetting('role'))) {
-				extension_Members::$fields['role'] = $fieldManager->fetch(
-					extension_Members::getSetting('role')
-				);
+			foreach($membersSectionSchema as $field) {
+				if($field['type'] == 'membertimezone') {
+					extension_Members::initialiseField($field, 'timezone');
+					continue;
+				}
 
-				if(extension_Members::$fields['role'] instanceof Field) {
-					extension_Members::$handles['role'] = extension_Members::$fields['role']->get('element_name');
+				if($field['type'] == 'memberrole') {
+					extension_Members::initialiseField($field, 'role');
+					continue;
+				}
+
+				if($field['type'] == 'memberactivation') {
+					extension_Members::initialiseField($field, 'activation');
+					continue;
+				}
+
+				if($field['type'] == 'memberusername') {
+					extension_Members::initialiseField($field, 'identity');
+					continue;
+				}
+
+				if($field['type'] == 'memberemail') {
+					extension_Members::initialiseField($field, 'email');
+					continue;
+				}
+
+				if($field['type'] == 'memberpassword') {
+					extension_Members::initialiseField($field, 'authentication');
+					continue;
 				}
 			}
+		}
 
-			if(!is_null(extension_Members::getSetting('activation'))) {
-				extension_Members::$fields['activation'] = $fieldManager->fetch(
-					extension_Members::getSetting('activation')
-				);
+		private static function initialiseField($field, $name) {
+			extension_Members::$fields[$name] = extension_Members::$entryManager->fieldManager->fetch($field['id']);
 
-				if(extension_Members::$fields['activation'] instanceof Field) {
-					extension_Members::$handles['activation'] = extension_Members::$fields['activation']->get('element_name');
-				}
-			}
-
-			if(!is_null(extension_Members::getSetting('identity'))) {
-				extension_Members::$fields['identity'] = $fieldManager->fetch(
-					extension_Members::getSetting('identity')
-				);
-
-				if(extension_Members::$fields['identity'] instanceof Field) {
-					extension_Members::$handles['identity'] = extension_Members::$fields['identity']->get('element_name');
-				}
-			}
-
-			if(!is_null(extension_Members::getSetting('email'))) {
-				extension_Members::$fields['email'] = $fieldManager->fetch(
-					extension_Members::getSetting('email')
-				);
-
-				if(extension_Members::$fields['email'] instanceof Field) {
-					extension_Members::$handles['email'] = extension_Members::$fields['email']->get('element_name');
-				}
-			}
-
-			if(!is_null(extension_Members::getSetting('authentication'))) {
-				extension_Members::$fields['authentication'] = $fieldManager->fetch(
-					extension_Members::getSetting('authentication')
-				);
-
-				if(extension_Members::$fields['authentication'] instanceof Field) {
-					extension_Members::$handles['authentication'] = extension_Members::$fields['authentication']->get('element_name');
-				}
+			if(extension_Members::$fields[$name] instanceof Field) {
+				extension_Members::$handles[$name] = $field['element_name'];
 			}
 		}
 
@@ -354,7 +344,12 @@
 			}
 
 			if(version_compare($previousVersion, '1.0RC1', '<')) {
-				Symphony::Configuration()->remove('reset-password-template', 'members');
+				Symphony::Configuration()->remove('timezone', 'members');
+				Symphony::Configuration()->remove('role', 'members');
+				Symphony::Configuration()->remove('activation', 'members');
+				Symphony::Configuration()->remove('identity', 'members');
+				Symphony::Configuration()->remove('email', 'members');
+				Symphony::Configuration()->remove('authentication', 'members');
 				Administration::instance()->saveConfig();
 			}
 		}
@@ -510,7 +505,7 @@
 				__('Members: Lock Role')
 			);
 
-			if(!is_null(extension_Members::getSetting('activation')) && !is_null(extension_Members::getSetting('email'))) {
+			if(!is_null(extension_Members::getFieldHandle('activation')) && !is_null(extension_Members::getFieldHandle('email'))) {
 				// Add Member: Lock Activation filter
 				$context['options'][] = array(
 					'member-lock-activation',
@@ -519,7 +514,7 @@
 				);
 			}
 
-			if(!is_null(extension_Members::getSetting('authentication'))) {
+			if(!is_null(extension_Members::getFieldHandle('authentication'))) {
 				// Add Member: Update Password filter
 				$context['options'][] = array(
 					'member-update-password',
@@ -747,15 +742,15 @@
 			if($isLoggedIn && $this->getMemberDriver()->getMember() instanceOf Entry) {
 				$this->__updateSystemTimezoneOffset($this->getMemberDriver()->getMember()->get('id'));
 
-				if(!is_null(extension_Members::getSetting('role'))) {
-					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getSetting('role'));
+				if(!is_null(extension_Members::getFieldHandle('role'))) {
+					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getField('role')->get('id'));
 				}
 			}
 
 			// If there is no role field, or a Developer is logged in, return, as Developers
 			// should be able to access every page.
 			if(
-				is_null(extension_Members::getSetting('role'))
+				is_null(extension_Members::getFieldHandle('role'))
 				|| (Frontend::instance()->Author instanceof Author && Frontend::instance()->Author->isDeveloper())
 			) return;
 
@@ -842,7 +837,7 @@
 			// If this system has no Roles, or the event is set to ignore role permissions
 			// continue straight to processing the Filters
 			if(
-				is_null(extension_Members::getSetting('role')) ||
+				is_null(extension_Members::getFieldHandle('role')) ||
 				(method_exists($context['event'], 'ignoreRolePermissions') && $context['event']->ignoreRolePermissions() == true)
 			) {
 				return $this->__processEventFilters($context);
@@ -865,7 +860,7 @@
 			if($isLoggedIn && $this->getMemberDriver()->initialiseMemberObject()) {
 				if($this->getMemberDriver()->getMember() instanceOf Entry) {
 					$required_level = EventPermissions::OWN_ENTRIES;
-					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getSetting('role'));
+					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getField('role')->get('id'));
 					$role_id = $role_data['role_id'];
 
 					if($action == 'edit' && method_exists($context['event'], 'getSource')) {
@@ -888,11 +883,11 @@
 
 							// Get the ID's of the fields that may be used for Linking (Username/Email)
 							if(!is_null(extension_Members::getSetting('identity'))) {
-								$field_ids[] = extension_Members::getSetting('identity');
+								$field_ids[] = extension_Members::getField('identity')->get('id');
 							}
 
 							if(!is_null(extension_Members::getSetting('email'))) {
-								$field_ids[] = extension_Members::getSetting('email');
+								$field_ids[] = extension_Members::getField('email')->get('id');
 							}
 
 							// Query for the `field_id` of any linking fields that link to the members

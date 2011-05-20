@@ -123,7 +123,7 @@
 			$context['params']['member-id'] = $this->getMemberID();
 
 			if(!is_null(extension_Members::getSetting('role'))) {
-				$role_data = $this->getMember()->getData(extension_Members::getSetting('role'));
+				$role_data = $this->getMember()->getData(extension_Members::getField('role')->get('id'));
 				$role = RoleManager::fetch($role_data['role_id']);
 				if($role instanceof Role) {
 					$context['params']['member-role'] = $role->get('name');
@@ -131,7 +131,7 @@
 			}
 
 			if(!is_null(extension_Members::getSetting('activation'))) {
-				if($this->getMember()->getData(extension_Members::getSetting('activation'), true)->activated != "yes") {
+				if($this->getMember()->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
 					$context['params']['member-activated'] = 'no';
 				}
 			}
