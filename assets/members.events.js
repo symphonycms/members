@@ -9,7 +9,7 @@ jQuery(document).ready(function() {
 		memberEventSave: function() {
 			jQuery.ajax({
 				type: 'post',
-				url: Symphony.Context.get('root') + '/symphony/extension/members/emailtemplates/',
+				url: Symphony.Context.get('root') + '/symphony/extension/members/events/',
 				async: false,
 				data: jQuery('form').serialize(),
 				success: function(data, response) {

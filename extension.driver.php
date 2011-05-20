@@ -344,6 +344,19 @@
 			}
 
 			if(version_compare($previousVersion, '1.0RC1', '<')) {
+				// Move the auto_login setting from the Activation Field to the config
+				if($field = extension_Members::getField('activation') && $field instanceof Field) {
+					Symphony::Configuration()->set('activate-account-auto-login', $field->get('auto_login'));
+
+					$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+					if(!empty($activation_table)) {
+						Symphony::Database()->query("
+							ALTER TABLE `tbl_fields_memberpassword` DROP `auto_login`;
+						");
+					}
+				}
+
+				// These are now loaded dynamically
 				Symphony::Configuration()->remove('timezone', 'members');
 				Symphony::Configuration()->remove('role', 'members');
 				Symphony::Configuration()->remove('activation', 'members');
@@ -351,6 +364,8 @@
 				Symphony::Configuration()->remove('email', 'members');
 				Symphony::Configuration()->remove('authentication', 'members');
 				Administration::instance()->saveConfig();
+
+
 			}
 		}
 

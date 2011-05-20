@@ -47,7 +47,6 @@
 				  `field_id` int(11) unsigned NOT NULL,
 				  `code_expiry` varchar(50) NOT NULL,
 				  `activation_role_id` int(11) unsigned NOT NULL,
-				  `auto_login` enum('yes','no') NOT NULL default 'yes',
 				  `deny_login` enum('yes','no') NOT NULL default 'yes',
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
@@ -186,7 +185,6 @@
 	-------------------------------------------------------------------------*/
 
 		public function setFromPOST(Array $settings = array()) {
-			$settings['auto_login'] = (isset($settings['auto_login']) && $settings['auto_login'] == 'yes' ? 'yes' : 'no');
 			$settings['deny_login'] = (isset($settings['deny_login']) && $settings['deny_login'] == 'yes' ? 'yes' : 'no');
 
 			parent::setFromPOST($settings);
@@ -257,19 +255,6 @@
 
 			$div->appendChild($label);
 
-			// Add Auto Login
-			$div->appendChild(Widget::Input("fields[{$this->get('sortorder')}][auto_login]", 'no', 'hidden'));
-
-			$label = Widget::Label();
-			$label->setAttribute('class', 'meta');
-			$input = Widget::Input("fields[{$this->get('sortorder')}][auto_login]", 'yes', 'checkbox');
-
-			if ($this->get('auto_login') == 'yes') $input->setAttribute('checked', 'checked');
-
-			$label->setValue(__('%s Automatically log the member in after activation', array($input->generate())));
-
-			$div->appendChild($label);
-
 			// Add Show Column
 			$this->appendShowColumnCheckbox($div);
 
@@ -297,7 +282,6 @@
 				'field_id' => $id,
 				'code_expiry' => $this->get('code_expiry'),
 				'activation_role_id' => $this->get('activation_role_id'),
-				'auto_login' => $this->get('auto_login') == 'yes' ? 'yes' : 'no',
 				'deny_login' => $this->get('deny_login') == 'yes' ? 'yes' : 'no'
 			);
 

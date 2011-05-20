@@ -2,7 +2,7 @@
 
 	require_once(TOOLKIT . '/class.ajaxpage.php');
 
-	Class contentExtensionMembersEmailTemplates extends AjaxPage {
+	Class contentExtensionMembersEvents extends AjaxPage {
 
 		public function view() {
 			// Ensure we have been set $_POST data from Members events
@@ -27,24 +27,40 @@
 			}
 			// If no template was set, then the user selected nothing,
 			// so remove the template preference
-			else if($settings['event'] == 'generate-recovery-code-template') {
+			else if($settings['event'] == 'generate-recovery-code') {
 				Symphony::Configuration()->remove('generate-recovery-code-template', 'members');
 			}
 
-			// Activate Account
-			if(isset($settings['activate-account-template'])) {
-				Symphony::Configuration()->set('activate-account-template', implode(',', array_filter($settings['activate-account-template'])), 'members');
+			// Reset Password
+			if(isset($settings['reset-password-template'])) {
+				Symphony::Configuration()->set('reset-password-template', implode(',', array_filter($settings['reset-password-template'])), 'members');
 			}
-			else if($settings['event'] == 'activate-account-template') {
-				Symphony::Configuration()->remove('activate-account-template', 'members');
+			else if($settings['event'] == 'reset-password') {
+				Symphony::Configuration()->remove('reset-password-template', 'members');
+			}
+
+			if($settings['event'] == 'reset-password') {
+				Symphony::Configuration()->set('reset-password-auto-login', $settings['auto-login'], 'members');
 			}
 
 			// Regenerate Activation Code
 			if(isset($settings['regenerate-activation-code-template'])) {
 				Symphony::Configuration()->set('regenerate-activation-code-template', implode(',', array_filter($settings['regenerate-activation-code-template'])), 'members');
 			}
-			else if($settings['event'] == 'regenerate-activation-code-template') {
+			else if($settings['event'] == 'regenerate-activation-code') {
 				Symphony::Configuration()->remove('regenerate-activation-code-template', 'members');
+			}
+
+			// Activate Account
+			if(isset($settings['activate-account-template'])) {
+				Symphony::Configuration()->set('activate-account-template', implode(',', array_filter($settings['activate-account-template'])), 'members');
+			}
+			else if($settings['event'] == 'activate-account') {
+				Symphony::Configuration()->remove('activate-account-template', 'members');
+			}
+
+			if($settings['event'] == 'activate-account') {
+				Symphony::Configuration()->set('activate-account-auto-login', $settings['auto-login'], 'members');
 			}
 
 			// Return successful

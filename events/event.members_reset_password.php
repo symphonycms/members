@@ -31,12 +31,28 @@
 			$templates = extension_Members::fetchEmailTemplates();
 			if(!empty($templates)) {
 				$div = new XMLElement('div');
+
+				//Template
 				$label = new XMLElement('label', __('Reset Password Email Template'));
 				$reset_password_templates = extension_Members::setActiveTemplate($templates, 'reset-password-template');
 				$label->appendChild(Widget::Select('members[reset-password-template][]', $reset_password_templates, array('multiple' => 'multiple')));
-				$label->appendChild(Widget::Input('members[event]', 'reset-password-template', 'hidden'));
-
 				$div->appendChild($label);
+
+				// Auto Login
+				$div->appendChild(
+					Widget::Input("members[auto-login]", 'no', 'hidden')
+				);
+				$label = new XMLElement('label');
+				$input = Widget::Input("members[auto-login]", 'yes', 'checkbox');
+
+				if (extension_Members::getSetting('reset-password-auto-login') == 'yes') {
+					$input->setAttribute('checked', 'checked');
+				}
+
+				$label->setValue(__('%s Automatically log the member in after changing their password', array($input->generate())));
+				$div->appendChild($label);
+
+				$div->appendChild(Widget::Input('members[event]', 'reset-password', 'hidden'));
 				$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
 			}
 
@@ -245,16 +261,20 @@
 					)
 				);
 
-				// Instead of replicating the same logic, call the UpdatePasswordLogin which will
-				// handle relogging in the user.
-				$driver->getMemberDriver()->filter_UpdatePasswordLogin(array(
-					'entry' => $entry,
-					'fields' => array(
-						extension_Members::getFieldHandle('authentication') => array(
-							'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password'])
+				if(extension_Members::getSetting('reset-password-auto-login') == "yes") {
+					// Instead of replicating the same logic, call the UpdatePasswordLogin which will
+					// handle relogging in the user.
+					$driver->getMemberDriver()->filter_UpdatePasswordLogin(array(
+						'entry' => $entry,
+						'fields' => array(
+							extension_Members::getFieldHandle('authentication') => array(
+								'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password'])
+							)
 						)
-					)
-				));
+					));
+				}
+
+				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
 				// Take the logic from `event.section.php` to append `$filter_errors`
 				if(is_array($filter_errors) && !empty($filter_errors)){
