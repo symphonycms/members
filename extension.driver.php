@@ -867,7 +867,7 @@
 				$entry_id = 0;
 			}
 
-			$required_level = $action == 'create' ? EventPermissions::OWN_ENTRIES : EventPermissions::ALL_ENTRIES;
+			$required_level = $action == 'create' ? EventPermissions::CREATE : EventPermissions::ALL_ENTRIES;
 			$role_id = Role::PUBLIC_ROLE;
 
 			$isLoggedIn = $this->getMemberDriver()->isLoggedIn();
