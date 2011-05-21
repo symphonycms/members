@@ -1,14 +1,11 @@
 <?php
 
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
+	require_once EXTENSIONS . '/members/lib/class.membersevent.php';
 
-	Class eventMembers_Activate_Account extends Event{
+	Class eventMembers_Activate_Account extends MembersEvent {
 
 		const ROOTELEMENT = 'members-activate-account';
-
-		public function ignoreRolePermissions() {
-			return true;
-		}
 
 		public static function about(){
 			return array(
@@ -92,12 +89,15 @@
 				General::array_to_xml($post_values, $fields, true);
 			}
 
-			// Read the activate account template from the Configuration if it exists
-			// This is required for the Email Template Filter/Email Template Manager
-			if(!is_null(extension_Members::getSetting('activate-account-template'))) {
-				$this->eParamFILTERS = explode(',', extension_Members::getSetting('activate-account-template'));
-			}
+			// Trigger the EventPreSaveFilter delegate. We are using this to make
+			// use of the XSS Filter extension that will ensure our data is ok to use
+			$this->notifyEventPreSaveFilter($result, $fields, $post_values);
+			if($result->getAttribute('result') == 'error') return $result;
 
+			// Add any Email Templates for this event
+			$this->addEmailTemplates('activate-account-template');
+
+			// Do sanity checks on the incoming data
 			$activation = extension_Members::getField('activation');
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
@@ -111,8 +111,7 @@
 				return $result;
 			}
 
-			// Check that either a Member: Username or Member: Email field
-			// has been detected
+			// Check that either a Member: Username or Member: Email field has been detected
 			$identity = SymphonyMember::setIdentityField($fields, false);
 			if(!$identity instanceof Identity) {
 				$result->setAttribute('result', 'error');
@@ -126,6 +125,7 @@
 				return $result;
 			}
 
+			// Ensure that the Member: Activation field has been provided
 			if(!isset($fields[$activation->get('element_name')]) or empty($fields[$activation->get('element_name')])) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -157,7 +157,7 @@
 				return $result;
 			}
 
-			// Retrieve Member Entry record
+			// Retrieve Member's entry
 			$driver = Symphony::ExtensionManager()->create('members');
 			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
 
@@ -212,48 +212,18 @@
 
 			// Only login if the Activation field allows auto login.
 			if(extension_Members::getSetting('activate-account-auto-login') == 'no' || $driver->getMemberDriver()->login($data_fields, true)) {
-				// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
-				// and EmailTemplateManager use to send emails.
-
-				$filter_results = array();
-				$filter_errors = array();
-				/**
-				 * @delegate EventFinalSaveFilter
-				 * @param string $context
-				 * '/frontend/'
-				 * @param array $fields
-				 * @param string $event
-				 * @param array $messages
-				 * @param array $errors
-				 * @param Entry $entry
-				 */
-				Symphony::ExtensionManager()->notifyMembers(
-					'EventFinalSaveFilter', '/frontend/', array(
-						'fields'	=> $fields,
-						'event'		=> $this,
-						'messages'	=> $filter_results,
-						'errors'	=> &$filter_errors,
-						'entry'		=> $entry
-					)
-				);
+				// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
+				// and Email Template Manager extensions use this delegate to send any
+				// emails attached to this event
+				$this->notifyEventFinalSaveFilter($result, $fields, $post_values, $entry);
 
 				// If a redirect is set, redirect, the page won't be able to receive
 				// the Event XML anyway
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
 
-				// Take the logic from `event.section.php` to append `$filter_errors`
-				if(is_array($filter_errors) && !empty($filter_errors)){
-					foreach($filter_errors as $fr){
-						list($name, $status, $message, $attributes) = $fr;
-
-						$result->appendChild(
-							extension_Members::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
-						);
-					}
-				}
-
 				$result->setAttribute('result', 'success');
 			}
+
 			// User didn't login, unknown error.
 			else if(extension_Members::getSetting('activate-account-auto-login') == 'yes') {
 				if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);

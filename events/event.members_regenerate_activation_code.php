@@ -1,14 +1,11 @@
 <?php
 
 	if(!defined('__IN_SYMPHONY__')) die('<h2>Error</h2><p>You cannot directly access this file</p>');
+	require_once EXTENSIONS . '/members/lib/class.membersevent.php';
 
-	Class eventMembers_Regenerate_Activation_Code extends Event {
+	Class eventMembers_Regenerate_Activation_Code extends MembersEvent {
 
 		const ROOTELEMENT = 'members-regenerate-activation-code';
-
-		public function ignoreRolePermissions() {
-			return true;
-		}
 
 		public static function about(){
 			return array(
@@ -78,11 +75,13 @@
 				General::array_to_xml($post_values, $fields, true);
 			}
 
-			// Read the activation code template from the Configuration if it exists
-			// This is required for the Email Template Filter/Email Template Manager
-			if(!is_null(extension_Members::getSetting('regenerate-activation-code-template'))) {
-				$this->eParamFILTERS = explode(',', extension_Members::getSetting('regenerate-activation-code-template'));
-			}
+			// Trigger the EventPreSaveFilter delegate. We are using this to make
+			// use of the XSS Filter extension that will ensure our data is ok to use
+			$this->notifyEventPreSaveFilter($result, $fields, $post_values);
+			if($result->getAttribute('result') == 'error') return $result;
+
+			// Add any Email Templates for this event
+			$this->addEmailTemplates('regenerate-activation-code-template');
 
 			$activation = extension_Members::getField('activation');
 			if(!$activation instanceof fieldMemberActivation) {
@@ -171,46 +170,14 @@
 			// Update the database setting activation to yes.
 			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
 
-			// We now need to simulate the EventFinalSaveFilter which the EmailTemplateFilter
-			// and EmailTemplateManager use to send emails.
-			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
-
-			$filter_results = array();
-			$filter_errors = array();
-			/**
-			 * @delegate EventFinalSaveFilter
-			 * @param string $context
-			 * '/frontend/'
-			 * @param array $fields
-			 * @param string $event
-			 * @param array $messages
-			 * @param array $errors
-			 * @param Entry $entry
-			 */
-			Symphony::ExtensionManager()->notifyMembers(
-				'EventFinalSaveFilter', '/frontend/', array(
-					'fields'	=> $fields,
-					'event'		=> $this,
-					'messages'	=> $filter_results,
-					'errors'	=> &$filter_errors,
-					'entry'		=> $entry
-				)
-			);
+			// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
+			// and Email Template Manager extensions use this delegate to send any
+			// emails attached to this event
+			$this->notifyEventFinalSaveFilter($result, $fields, $post_values, $entry);
 
 			// If a redirect is set, redirect, the page won't be able to receive
 			// the Event XML anyway
 			if(isset($_REQUEST['redirect'])) redirect($_REQUEST['redirect']);
-
-			// Take the logic from `event.section.php` to append `$filter_errors`
-			if(is_array($filter_errors) && !empty($filter_errors)){
-				foreach($filter_errors as $fr){
-					list($name, $status, $message, $attributes) = $fr;
-
-					$result->appendChild(
-						extension_Members::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
-					);
-				}
-			}
 
 			$result->setAttribute('result', 'success');
 			$result->appendChild(
