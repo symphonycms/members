@@ -240,9 +240,9 @@
 						__('User can create new entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][create]",
-							'1',
+							EventPermissions::CREATE,
 							'checkbox',
-							($permissions['create'] == 1 ? array('checked' => 'checked') : NULL)
+							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : NULL)
 						)->generate(),
 						'Create'
 					),

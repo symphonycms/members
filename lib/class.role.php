@@ -81,7 +81,7 @@
 
 				foreach($permissions as $event_handle => $p){
 					if(!array_key_exists('create', $p)) {
-						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
+						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::CREATE);
 					}
 
 					foreach($p as $action => $level) {
@@ -144,9 +144,7 @@
 		 */
 		public static function fetch($role_id = null) {
 			$result = array();
-			$return_single = true;
-
-			if(is_null($role_id)) $return_single = false;
+			$return_single = is_null($role_id) ? false : true;
 
 			if($return_single) {
 				// Check static cache for object
