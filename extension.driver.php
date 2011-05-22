@@ -488,7 +488,7 @@
 		 * @param string $handle
 		 * @return array
 		 */
-		public static function setActiveTemplate(Array $options, $handle) {
+		public static function setActiveTemplate(array $options, $handle) {
 			$templates = explode(',', extension_Members::getSetting($handle));
 
 			foreach($options as $index => $ext) {
@@ -678,7 +678,7 @@
 		 *
 		 * @uses savePreferences
 		 */
-		public function savePreferences(Array &$context){
+		public function savePreferences(array &$context){
 			$settings = $context['settings'];
 
 			// Active Section
@@ -830,7 +830,7 @@
 		 *
 		 * @uses checkEventPermissions
 		 */
-		public function checkEventPermissions(Array &$context){
+		public function checkEventPermissions(array &$context){
 			// If this system has no Roles, or the event is set to ignore role permissions
 			// continue straight to processing the Filters
 			if(
@@ -952,7 +952,7 @@
 		 * We can safely assume at this stage of the process that whatever user has
 		 * requested this event has permission to actually do so.
 		 */
-		private function __processEventFilters(Array &$context) {
+		private function __processEventFilters(array &$context) {
 			// Process the Member Lock Role
 			if (in_array('member-lock-role', $context['event']->eParamFILTERS)) {
 				$this->getMemberDriver()->filter_LockRole(&$context);
@@ -974,7 +974,7 @@
 		 *
 		 * @uses EventPostSaveFilter
 		 */
-		public function processPostSaveFilter(Array &$context) {
+		public function processPostSaveFilter(array &$context) {
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
 				$this->getMemberDriver()->filter_UpdatePasswordLogin($context);
@@ -985,11 +985,11 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function addMemberDetailsToPageParams(Array $context = null) {
+		public function addMemberDetailsToPageParams(array $context = null) {
 			$this->getMemberDriver()->addMemberDetailsToPageParams($context);
 		}
 
-		public function appendLoginStatusToEventXML(Array $context = null){
+		public function appendLoginStatusToEventXML(array $context = null){
 			$this->getMemberDriver()->appendLoginStatusToEventXML($context);
 		}
 

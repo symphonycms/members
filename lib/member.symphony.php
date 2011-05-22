@@ -21,7 +21,7 @@
 		 *  the field handles to a normalised username/email.
 		 * @return Field
 		 */
-		public static function setIdentityField(Array $credentials, $simplified = true) {
+		public static function setIdentityField(array $credentials, $simplified = true) {
 			if($simplified) {
 				extract($credentials);
 			}
@@ -63,7 +63,7 @@
 		 * @param array $credentials
 		 * @return integer
 		 */
-		public function findMemberIDFromCredentials(Array $credentials) {
+		public function findMemberIDFromCredentials(array $credentials) {
 			extract($credentials);
 
 			if((is_null($username) && is_null($email))) return null;
@@ -159,7 +159,7 @@
 		 *  to log the user in
 		 * @return boolean
 		 */
-		public function login(Array $credentials, $isHashed = false) {
+		public function login(array $credentials, $isHashed = false) {
 			$username = $email = $password = null;
 			$data = array();
 
@@ -287,7 +287,7 @@
 		Filters:
 	-------------------------------------------------------------------------*/
 
-		public function filter_LockRole(Array &$context) {
+		public function filter_LockRole(array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
 			if(!is_null(extension_Members::getSetting('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
@@ -309,7 +309,7 @@
 			}
 		}
 
-		public function filter_LockActivation(Array &$context) {
+		public function filter_LockActivation(array &$context) {
 			// If there is an Activation field, this will force it to be no.
 			if(!is_null(extension_Members::getSetting('activation'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
@@ -339,7 +339,7 @@
 		 * they enter a value in the password field, in which it assumes the user is
 		 * trying to update their password.
 		 */
-		public function filter_UpdatePassword(Array &$context) {
+		public function filter_UpdatePassword(array &$context) {
 			if(!is_null(extension_Members::getSetting('authentication'))) {
 				$context['fields'][extension_Members::getFieldHandle('authentication')]['optional'] = 'yes';
 			}
@@ -350,7 +350,7 @@
 		 * If the user changed their password, we need to login them back into the
 		 * system with their new password.
 		 */
-		public function filter_UpdatePasswordLogin(Array $context) {
+		public function filter_UpdatePasswordLogin(array $context) {
 			// If the user didn't update their password.
 			if(empty($context['fields'][extension_Members::getFieldHandle('authentication')]['password'])) return;
 

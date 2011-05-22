@@ -184,7 +184,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function setFromPOST(Array $settings = array()) {
+		public function setFromPOST(array $settings = array()) {
 			$settings['deny_login'] = (isset($settings['deny_login']) && $settings['deny_login'] == 'yes' ? 'yes' : 'no');
 
 			parent::setFromPOST($settings);

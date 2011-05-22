@@ -82,7 +82,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function setFromPOST(Array $settings = array()) {
+		public function setFromPOST(array $settings = array()) {
 			$settings['required'] = 'yes';
 
 			parent::setFromPOST($settings);

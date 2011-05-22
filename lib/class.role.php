@@ -16,7 +16,7 @@
 		 * @return integer
 		 *  The newly created Role's ID
 		 */
-		public function add(Array $data) {
+		public function add(array $data) {
 			Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
 			$role_id = Symphony::Database()->getInsertID();
 
@@ -56,7 +56,7 @@
 		 * @param array $data
 		 * @return boolean
 		 */
-		public function edit($role_id, Array $data) {
+		public function edit($role_id, array $data) {
 			if(is_null($role_id)) return false;
 
 			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
@@ -209,7 +209,7 @@
 
 		private $settings = array();
 
-		public function __construct(Array $settings){
+		public function __construct(array $settings){
 			$this->setArray($settings);
 
 			$this->set('forbidden_pages', array());
@@ -234,7 +234,7 @@
 		 *
 		 * @param array $array
 		 */
-		public function setArray(Array $array) {
+		public function setArray(array $array) {
 			foreach($array as $name => $value) {
 				$this->set($name, $value);
 			}

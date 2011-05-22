@@ -115,7 +115,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function addMemberDetailsToPageParams(Array $context = null) {
+		public function addMemberDetailsToPageParams(array $context = null) {
 			if(!$this->isLoggedIn()) return;
 
 			$this->initialiseMemberObject();
@@ -137,12 +137,12 @@
 			}
 		}
 
-		public function appendLoginStatusToEventXML(Array $context = null){
+		public function appendLoginStatusToEventXML(array $context = null){
 			$result = new XMLElement('member-login-info');
 
 			if($this->isLoggedIn()) {
 				self::$driver->__updateSystemTimezoneOffset($this->getMemberID());
-				$result->setAttributeArray(array(
+				$result->setAttributearray(array(
 					'logged-in' => 'yes',
 					'id' => $this->getMemberID(),
 					'result' => 'success'
@@ -186,19 +186,19 @@
 		Filters:
 	-------------------------------------------------------------------------*/
 
-		public function filter_LockRole(Array &$context) {
+		public function filter_LockRole(array &$context) {
 			return true;
 		}
 
-		public function filter_LockActivation(Array &$context) {
+		public function filter_LockActivation(array &$context) {
 			return true;
 		}
 
-		public function filter_UpdatePassword(Array &$context) {
+		public function filter_UpdatePassword(array &$context) {
 			return true;
 		}
 
-		public function filter_UpdatePasswordLogin(Array $context) {
+		public function filter_UpdatePasswordLogin(array $context) {
 			return true;
 		}
 	}
