@@ -54,7 +54,7 @@
 		public function initialiseCookie() {
 			if(is_null($this->cookie)) {
 				$this->cookie = new Cookie(
-					__SYM_COOKIE_PREFIX_, TWO_WEEKS, __SYM_COOKIE_PATH__, null, true
+					Symphony::Configuration()->get('cookie-prefix', 'members'), TWO_WEEKS, __SYM_COOKIE_PATH__, true
 				);
 			}
 		}
