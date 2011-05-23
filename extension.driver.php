@@ -170,8 +170,8 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.0 Beta 3',
-				'release-date'	=> 'April 26th 2011',
+				'version' 		=> '1.0RC1',
+				'release-date'	=> 'May 23rd 2011',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',

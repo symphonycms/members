@@ -1,15 +1,11 @@
 # Members
 
-- Version: 1.0 Beta 3
+- Version: 1.0RC1
 - Author: Symphony Team
-- Build Date: April 26th 2011
+- Build Date: May 23rd 2011
 - Requirements: Symphony 2.2.1
 
 Frontend Membership extension for Symphony CMS.
-
-For testing purposes this extension currently requires the Symphony 2 integration branch, which contains
-the latest code that will be packaged into the 2.2.1 release. This extension should not be used in production
-environments and is provided solely for the purpose of testing and feedback at this stage.
 
 ## Installation and Setup
 
