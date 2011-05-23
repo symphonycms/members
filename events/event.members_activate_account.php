@@ -26,33 +26,33 @@
 		public static function documentation(){
 			// Fetch all the Email Templates available and add to the end of the documentation
 			$templates = extension_Members::fetchEmailTemplates();
+			$div = new XMLElement('div');
 			if(!empty($templates)) {
-				$div = new XMLElement('div');
-
 				// Template
 				$label = new XMLElement('label', __('Activate Account Email Template'));
 				$activate_account_templates = extension_Members::setActiveTemplate($templates, 'activate-account-template');
 				$label->appendChild(Widget::Select('members[activate-account-template][]', $activate_account_templates, array('multiple' => 'multiple')));
 				$div->appendChild($label);
-
-				// Auto Login
-				$div->appendChild(
-					Widget::Input("members[auto-login]", 'no', 'hidden')
-				);
-				$label = new XMLElement('label');
-				$input = Widget::Input("members[auto-login]", 'yes', 'checkbox');
-
-				if (extension_Members::getSetting('activate-account-auto-login') == 'yes') {
-					$input->setAttribute('checked', 'checked');
-				}
-
-				$label->setValue(__('%s Automatically log the member in after activation', array($input->generate())));
-				$div->appendChild($label);
-
-				// Add Save Changes
-				$div->appendChild(Widget::Input('members[event]', 'activate-account', 'hidden'));
-				$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
 			}
+
+			// Auto Login
+			$div->appendChild(
+				Widget::Input("members[auto-login]", 'no', 'hidden')
+			);
+			$label = new XMLElement('label');
+			$input = Widget::Input("members[auto-login]", 'yes', 'checkbox');
+
+			if (extension_Members::getSetting('activate-account-auto-login') == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->setValue(__('%s Automatically log the member in after activation', array($input->generate())));
+			$div->appendChild($label);
+
+			// Add Save Changes
+			$div->appendChild(Widget::Input('members[event]', 'activate-account', 'hidden'));
+			$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
+
 
 			return '
 				<p>This event takes an activation code and an identifier for the Member (either Email or Username) to activate their account.
