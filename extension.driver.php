@@ -170,8 +170,8 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.0RC2',
-				'release-date'	=> 'May 26th 2011',
+				'version' 		=> '1.0RC3',
+				'release-date'	=> 'May 27th 2011',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
@@ -552,7 +552,6 @@
 				}
 			}
 			catch (DatabaseException $ex) {
-				var_dump($ex->getMessage());exit;
 				// Table doesn't exist yet, it's ok we have defaults.
 			}
 
