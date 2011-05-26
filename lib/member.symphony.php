@@ -87,7 +87,7 @@
 			if(is_null($member_id)) return null;
 
 			// Check that if there's activiation, that this Member is activated.
-			if(!is_null(extension_Members::getSetting('activation'))) {
+			if(!is_null(extension_Members::getFieldHandle('activation'))) {
 				$entry = extension_Members::$entryManager->fetch($member_id);
 
 				$isActivated = $entry[0]->getData(extension_Members::getField('activation')->get('id'), true)->activated == "yes";
@@ -106,7 +106,7 @@
 				// If the member isn't activated and a Role field doesn't exist
 				// just return false.
 				if(!$isActivated) {
-					if(is_null(extension_Members::getSetting('role'))) {
+					if(is_null(extension_Members::getFieldHandle('role'))) {
 						extension_Members::$_errors[extension_Members::getFieldHandle('activation')] = array(
 							'message' => __('Member is not activated.'),
 							'type' => 'invalid',
@@ -128,9 +128,9 @@
 			// If the member isn't activated and a Role field exists, we need to override
 			// the current Role with the Activation Role. This may allow Members to view certain
 			// things until they active their account.
-			if(!is_null(extension_Members::getSetting('activation'))) {
+			if(!is_null(extension_Members::getFieldHandle('activation'))) {
 				if($member->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
-					if(!is_null(extension_Members::getSetting('role'))) {
+					if(!is_null(extension_Members::getFieldHandle('role'))) {
 						$member->setData(
 							extension_Members::getField('role')->get('id'),
 							extension_Members::getField('activation')->get('activation_role_id')
@@ -177,7 +177,7 @@
 			if(isset($username)) {
 				$data['username'] = Symphony::Database()->cleanValue($username);
 			}
-			else if(isset($email) && !is_null(extension_Members::getSetting('email'))) {
+			else if(isset($email) && !is_null(extension_Members::getFieldHandle('email'))) {
 				$data['email'] = Symphony::Database()->cleanValue($email);
 			}
 
@@ -289,7 +289,7 @@
 
 		public function filter_LockRole(array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
-			if(!is_null(extension_Members::getSetting('role'))) {
+			if(!is_null(extension_Members::getFieldHandle('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
 					$member = parent::fetchMemberFromID(
@@ -311,7 +311,7 @@
 
 		public function filter_LockActivation(array &$context) {
 			// If there is an Activation field, this will force it to be no.
-			if(!is_null(extension_Members::getSetting('activation'))) {
+			if(!is_null(extension_Members::getFieldHandle('activation'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
 					$member = parent::fetchMemberFromID(
@@ -340,7 +340,7 @@
 		 * trying to update their password.
 		 */
 		public function filter_UpdatePassword(array &$context) {
-			if(!is_null(extension_Members::getSetting('authentication'))) {
+			if(!is_null(extension_Members::getFieldHandle('authentication'))) {
 				$context['fields'][extension_Members::getFieldHandle('authentication')]['optional'] = 'yes';
 			}
 		}

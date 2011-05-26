@@ -552,6 +552,7 @@
 				}
 			}
 			catch (DatabaseException $ex) {
+				var_dump($ex->getMessage());exit;
 				// Table doesn't exist yet, it's ok we have defaults.
 			}
 
@@ -879,11 +880,11 @@
 							$field_ids = array();
 
 							// Get the ID's of the fields that may be used for Linking (Username/Email)
-							if(!is_null(extension_Members::getSetting('identity'))) {
+							if(!is_null(extension_Members::getFieldHandle('identity'))) {
 								$field_ids[] = extension_Members::getField('identity')->get('id');
 							}
 
-							if(!is_null(extension_Members::getSetting('email'))) {
+							if(!is_null(extension_Members::getFieldHandle('email'))) {
 								$field_ids[] = extension_Members::getField('email')->get('id');
 							}
 

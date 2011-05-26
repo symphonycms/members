@@ -9,7 +9,7 @@
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
 
-			if(is_null(extension_Members::getSetting('role')) && !is_null(extension_Members::getMembersSection())) {
+			if(is_null(extension_Members::getFieldHandle('role')) && !is_null(extension_Members::getMembersSection())) {
 				$this->pageAlert(
 					__('There is no Member: Role field in the active Members section. <a href="%s%d/">Add Member: Role field?</a>',
 					array(
@@ -50,7 +50,7 @@
 				$section = $sectionManager->fetch(extension_Members::getMembersSection());
 
 				$with_selected_roles = array();
-				$hasRoles = !is_null(extension_Members::getSetting('role'));
+				$hasRoles = !is_null(extension_Members::getFieldHandle('role'));
 
 				foreach($roles as $role){
 					// Setup each cell
