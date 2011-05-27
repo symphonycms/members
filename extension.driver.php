@@ -364,8 +364,6 @@
 				Symphony::Configuration()->remove('email', 'members');
 				Symphony::Configuration()->remove('authentication', 'members');
 				Administration::instance()->saveConfig();
-
-
 			}
 		}
 
@@ -631,14 +629,13 @@
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild(new XMLElement('legend', __('Members')));
 
-			$group = new XMLElement('div', null, array('class' => 'group'));
-
+			$div = new XMLElement('div');
 			$label = new XMLElement('label', __('Active Members Section'));
 
-			$member_sections = array();
-
+			// Get the Sections that contain a Member field.
 			$sectionManager = self::$entryManager->sectionManager;
 			$sections = $sectionManager->fetch();
+			$member_sections = array();
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
 					$schema = $section->fetchFieldsSchema();
@@ -653,22 +650,24 @@
 				}
 			}
 
-			$options = array();
-			$options[] = array(null, false, null);
+			// Build the options
+			$options = array(
+				array(null, false, null)
+			);
 			foreach($member_sections as $section_id => $section) {
   				$options[] = array($section_id, ($section_id == extension_Members::getMembersSection()), $section['name']);
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
+			$div->appendChild($label);
 
 			if(count($options) == 1) {
-				$label->appendChild(
+				$div->appendChild(
 					new XMLElement('p', __('A Members section will at minimum contain either a Member: Email or a Member: Username field'), array('class' => 'help'))
 				);
 			}
 
-			$group->appendChild($label);
-			$fieldset->appendChild($group);
+			$fieldset->appendChild($div);
 
 			$context['wrapper']->appendChild($fieldset);
 		}
