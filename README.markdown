@@ -21,19 +21,19 @@ and either a Member: Email or Member: Username field. If you wish to email your 
 5.	Go to System > Member Roles and setup your Roles as required. There is one default Role, Public that cannot be
 removed (but can be edited to suit your needs). This role represents an unauthenticated Member.
 
-6.	On your frontend, Members can login using standard forms. Below is an example:
+6.	On the frontend, Members can login using standard forms. Below is an example:
 
-		<form method="post" autocomplete='off'>
-			<label>Username
-				<input name="fields[{Member: Username element_name}]" type="text" />
-			</label>
-			<label>Password
-				<input name="fields[{Member: Password element_name}]" type="password" />
-			</label>
+	<form method="post" autocomplete='off'>
+		<label>Username
+			<input name="fields[{Member: Username element_name}]" type="text" />
+		</label>
+		<label>Password
+			<input name="fields[{Member: Password element_name}]" type="password" />
+		</label>
 
-			<input name="redirect" type="hidden" value="{$root}/account/" />
-			<input name="member-action[login]" type="submit" value="Login" />
-		</form>
+		<input name="redirect" type="hidden" value="{$your-redirect-url}" />
+		<input name="member-action[login]" type="submit" value="Login" />
+	</form>
 
 Event information will be returned in the XML similar to the following example:
 
@@ -154,26 +154,26 @@ There are two global events that are available on any page your website:
 
 	<form method="post" autocomplete='off'>
 		<label>Username
-			<input name="fields[username]" type="text" />
+			<input name="fields[{Member: Username element_name}]" type="text" />
 		</label>
 		<label>Password
-			<input name="fields[password]" type="password" />
+			<input name="fields[{Member: Password element_name}]" type="password" />
 		</label>
 
-		<input type='hidden' name='redirect' value='{$redirect-url}' />
-		<input name="member-action[login]" type="submit" value="Submit" />
+		<input name="redirect" type="hidden" value="{$your-redirect-url}" />
+		<input name="member-action[login]" type="submit" value="Login" />
 	</form>
 
 ### Members: Logout
 
 	<form method="post" autocomplete='off'>
-		<input type='hidden' name='redirect' value='{$redirect-url}' />
+		<input type='hidden' name='redirect' value='{$your-redirect-url}' />
 		<input name="member-action[action]" type="submit" value="Logout" />
 	</form>
 
 or
 
-	<a href='?member-action=logout&redirect={$redirect-url}'>Logout</a>
+	<a href='?member-action=logout&redirect={$your-redirect-url}'>Logout</a>
 
 ### Create a Member
 
