@@ -12,7 +12,7 @@ table.role-permissions th {
 }
 
 table.role-permissions th {
-	padding: 0;
+	padding: 3px 6px;
 	white-space: nowrap;
 }
 
@@ -25,6 +25,11 @@ table.role-permissions th.edit {
 	cursor: pointer;
 }
 
+table.role-permissions th span {
+	padding: 0 0 1px 0;
+	border-bottom: 1px dotted #666;
+}
+
 table.role-permissions th.new:hover,
 table.role-permissions th.edit:hover {
 	color: #333;
@@ -35,24 +40,28 @@ table.role-permissions tr td {
 	width: 1px;
 }
 
-table.role-permissions tr td:last-child {
-	border-right: 1px solid #E6E6E5;
-}
-
 table.role-permissions tr td.name {
 	width: auto;
-	border-left: 1px solid #E6E6E5;
 }
 
 table.role-permissions td:first-child {
 	text-align: left;
+	border-left: 1px solid #E6E6E5;
+}
+
+table.role-permissions td:last-child {
+	border-right: 1px solid #E6E6E5;
 }
 
 table.role-permissions label {
-	padding: 6px 30px;
+	padding: 6px 25px;
 	margin: 0;
 	width: auto;
 	display: inline-block;
+}
+
+table.role-permissions td.create label {
+	padding: 6px 50px;
 }
 
 table.role-permissions input {
@@ -73,7 +82,6 @@ table.role-permissions td.create span {
 }
 
 table.role-permissions td.create {
-/*	border-left: 1px solid #E6E6E5;*/
-/*	border-right: 1px solid #E6E6E5;*/
-/*	*/
+	/*border-left: 1px solid #E6E6E5;
+	border-right: 1px solid #E6E6E5;*/
 }

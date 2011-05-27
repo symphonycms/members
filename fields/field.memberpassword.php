@@ -2,11 +2,7 @@
 
 	Class fieldMemberPassword extends Field{
 
-		protected static $_strengths = array(
-			array('weak', false, 'Weak'),
-			array('good', false, 'Good'),
-			array('strong', false, 'Strong')
-		);
+		protected static $_strengths = array();
 
 		protected static $_strength_map = array(
 			'weak' => array(0,1),
@@ -26,6 +22,12 @@
 			$this->set('required', 'yes');
 			$this->set('length', '6');
 			$this->set('strength', 'good');
+
+			fieldMemberPassword::$_strengths = array(
+				array('weak', false, __('Weak')),
+				array('good', false, __('Good')),
+				array('strong', false, __('Strong'))
+			);
 		}
 
 		public function canFilter(){
@@ -48,6 +50,7 @@
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
 				  `salt` varchar(255) default NULL,
+				  `code_expiry` varchar(50) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -69,7 +72,8 @@
 				  KEY `entry_id` (`entry_id`),
 				  KEY `length` (`length`),
 				  KEY `password` (`password`),
-				  KEY `expires` (`expires`)
+				  KEY `expires` (`expires`),
+				  UNIQUE KEY `recovery-code` (`recovery-code`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -95,6 +99,15 @@
 				$password = $needle;
 			}
 
+			if(empty($password)) {
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __('%s is a required field.', array($this->get('label'))),
+					'type' => 'missing',
+					'label' => $this->get('label')
+				);
+				return null;
+			}
+
 			$data = Symphony::Database()->fetchRow(0, sprintf("
 					SELECT `entry_id`, `reset`
 					FROM `tbl_entries_data_%d`
@@ -111,15 +124,19 @@
 						SELECT `entry_id`
 						FROM `tbl_entries_data_%d`
 						WHERE `entry_id` = %d
-						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
+						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now + 1 hour'))
+					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
 				));
 
 				// If we didn't get an entry_id back, then it's because it was expired
 				if(is_null($valid_id)) {
-					extension_Members::$_errors[$this->get('element_name')] = __('Password has expired');
+					extension_Members::$_errors[$this->get('element_name')] = array(
+						'message' => __('Recovery code has expired.'),
+						'type' => 'invalid',
+						'label' => $this->get('label')
+					);
 				}
 				// Otherwise, we found the entry_id, so lets remove the reset and expires as this password
 				// has now been used by the user.
@@ -131,7 +148,11 @@
 
 			if(!empty($data)) return $member_id;
 
-			extension_Members::$_errors[$this->get('element_name')] = __('Invalid password');
+			extension_Members::$_errors[$this->get('element_name')] = array(
+				'message' => __('Invalid %s.', array($this->get('label'))),
+				'type' => 'invalid',
+				'label' => $this->get('label')
+			);
 
 			return null;
 		}
@@ -213,6 +234,10 @@
 			");
 		}
 
+		public static function findCodeExpiry() {
+			return extension_Members::findCodeExpiry('tbl_fields_memberpassword');
+		}
+
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -251,6 +276,9 @@
 
 		// Salt ---------------------------------------------------------------
 
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+
 			$label = Widget::Label(__('Password Salt'));
 			$label->appendChild(
 				new XMLElement('i', __('A salt gives your passwords extra security. It cannot be changed once set'))
@@ -269,10 +297,40 @@
 				$label = Widget::wrapFormElementWithError($label, $errors['salt']);
 			}
 
-			$wrapper->appendChild($label);
+			$group->appendChild($label);
 
-			$this->appendRequiredCheckbox($wrapper);
-			$this->appendShowColumnCheckbox($wrapper);
+			// Add Activiation Code Expiry
+			$div = new XMLElement('div');
+
+			$label = Widget::Label(__('Recovery Code Expiry'));
+			$label->appendChild(
+				new XMLElement('i', __('How long a member\'s recovery code will be valid for before it expires'))
+			);
+			$label->appendChild(Widget::Input(
+				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
+			));
+
+			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
+			$tags = fieldMemberPassword::findCodeExpiry();
+			foreach($tags as $name => $time) {
+				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
+			}
+
+			if (isset($errors['code_expiry'])) {
+				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
+			}
+
+			$div->appendChild($label);
+			$div->appendChild($ul);
+
+			$group->appendChild($div);
+			$wrapper->appendChild($group);
+
+			// Add checkboxes
+			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$this->appendRequiredCheckbox($div);
+			$this->appendShowColumnCheckbox($div);
+			$wrapper->appendChild($div);
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates = true) {
@@ -282,6 +340,10 @@
 
 			if (trim($this->get('salt')) == '') {
 				$errors['salt'] = __('This is a required field.');
+			}
+
+			if (trim($this->get('code_expiry')) == '') {
+				$errors['code_expiry'] = __('This is a required field.');
 			}
 		}
 
@@ -300,23 +362,12 @@
 				'field_id' => $id,
 				'length' => $this->get('length'),
 				'strength' => $this->get('strength'),
-				'salt' => $this->get('salt')
+				'salt' => $this->get('salt'),
+				'code_expiry' => $this->get('code_expiry')
 			);
-
-			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
-				Symphony::Configuration()->set('authentication', $id, 'members');
-				Administration::instance()->saveConfig();
-			}
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
-		}
-
-		public function tearDown(){
-			Symphony::Configuration()->remove('authentication', 'members');
-			Administration::instance()->saveConfig();
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -414,12 +465,12 @@
 			//	Check password
 			if(!empty($password)) {
 				if($confirm !== $password) {
-					$message = __('Passwords do not match.');
+					$message = __('%s confirmation does not match.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
 
 				if(strlen($password) < (int)$this->get('length')) {
-					$message = __('Password is too short. It must be at least %d characters.', array($this->get('length')));
+					$message = __('%s is too short. It must be at least %d characters.', array($this->get('label'), $this->get('length')));
 					return self::__INVALID_FIELDS__;
 				}
 
@@ -473,6 +524,10 @@
 				$pw->appendChild(
 					new XMLElement('recovery-code', $data['recovery-code'])
 				);
+				// Add expiry timestamp, including how long the code is valid for
+				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry')), 'expires');
+				$expiry->setAttribute('expiry', $this->get('code_expiry'));
+				$pw->appendChild($expiry);
 			}
 			// Output the hash of the password.
 			else if($data['password']) {
@@ -485,16 +540,9 @@
 		public function prepareTableValue($data, XMLElement $link=NULL){
 			if(empty($data)) return __('None');
 
-			if($data['reset'] == 'yes') {
-				return parent::prepareTableValue(array(
-					'value' => __('Password Reset')
-				), $link);
-			}
-			else {
-				return parent::prepareTableValue(array(
-					'value' => ucwords($data['strength']) . ' (' . $data['length'] . ')'
-				), $link);
-			}
+			return parent::prepareTableValue(array(
+				'value' => __(ucwords($data['strength'])) . ' (' . $data['length'] . ')'
+			), $link);
 		}
 
 	/*-------------------------------------------------------------------------

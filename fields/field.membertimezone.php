@@ -57,6 +57,64 @@
 		}
 
 		/**
+		 * This functions acts as a standard way to get the zones
+		 * available on the system. For PHP5.2, these constants are
+		 * just copied from PHP5.3
+		 *
+		 * @link http://au2.php.net/manual/en/class.datetimezone.php
+		 * @return array
+		 */
+		public function getZones() {
+			if(PHP_VERSION_ID >= 50300) {
+				$ref = new ReflectionClass('DateTimeZone');
+				return $ref->getConstants();
+			}
+			else {
+				return array(
+					'AFRICA' => 1,
+					'AMERICA' => 2,
+					'ANTARCTICA' => 4,
+					'ARCTIC' => 8,
+					'ASIA' => 16,
+					'ATLANTIC' => 32,
+					'AUSTRALIA' => 64,
+					'EUROPE' => 128,
+					'INDIAN' => 256,
+					'PACIFIC' => 512,
+					'UTC' => 1024
+				);
+			}
+		}
+
+		/**
+		 * This functions acts as a standard way to get the timezones
+		 * regardless of PHP version. It accepts a single parameter,
+		 * zone, which returns the timezones associated with that 'zone'
+		 *
+		 * @link http://au2.php.net/manual/en/class.datetimezone.php
+		 * @link http://au2.php.net/manual/en/datetimezone.listidentifiers.php
+		 * @param string $zone
+		 *  The zone for the timezones the field wants. This maps to the
+		 *  DateTimeZone constants
+		 * @return array
+		 */
+		public function getTimezones($zone) {
+			// PHP5.3 supports the `$what` parameter of the listIdentifiers function
+			if(PHP_VERSION_ID >= 50300) {
+				return DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
+			}
+			else {
+				$timezones = DateTimeZone::listIdentifiers();
+
+				foreach($timezones as $index => $timezone) {
+					if(stripos($timezone, $zone) === false) unset($timezones[$index]);
+				}
+
+				return $timezones;
+			}
+		}
+
+		/**
 		 * Creates a list of Timezones for the With Selected dropdown in the backend.
 		 * This list has the limitation that the timezones cannot be grouped as the
 		 * With Selected menu already uses `<optgroup>` to separate the toggling of
@@ -68,7 +126,7 @@
 			$zones = explode(",", $this->get('available_zones'));
 
 			foreach($zones as $zone) {
-				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
+				$timezones = $this->getTimezones($zone);
 
 				$options = array();
 				foreach($timezones as $timezone) {
@@ -106,7 +164,7 @@
 			$zones = explode(",", $this->get('available_zones'));
 
 			foreach($zones as $zone) {
-				$timezones = DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
+				$timezones = $this->getTimezones($zone);
 
 				$options = array();
 				foreach($timezones as $timezone) {
@@ -142,9 +200,7 @@
 				? $this->get('available_zones')
 				: explode(',', $this->get('available_zones'));
 
-			// Loop over the DateTimeZone class constants for Zones
-			$ref = new ReflectionClass('DateTimeZone');
-			foreach($ref->getConstants() as $zone => $value) {
+			foreach($this->getZones() as $zone => $value) {
 				if($value >= 1024) break;
 
 				$options[] = array($zone, in_array($zone, $zones), ucwords(strtolower($zone)));
@@ -156,8 +212,10 @@
 
 			$wrapper->appendChild($label);
 
-			$this->appendRequiredCheckbox($wrapper);
-			$this->appendShowColumnCheckbox($wrapper);
+			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$this->appendRequiredCheckbox($div);
+			$this->appendShowColumnCheckbox($div);
+			$wrapper->appendChild($div);
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates=true) {
@@ -181,20 +239,8 @@
 				$fields['available_zones'] = implode(",", $this->get('available_zones'));
 			}
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
-				Symphony::Configuration()->set('timezone', $id, 'members');
-				Administration::instance()->saveConfig();
-			}
-
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
-		}
-
-		public function tearDown() {
-			Symphony::Configuration()->remove('timezone', 'members');
-			Administration::instance()->saveConfig();
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------

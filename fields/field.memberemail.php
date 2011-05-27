@@ -16,7 +16,7 @@
 			$this->_required = true;
 			$this->set('required', 'yes');
 		}
-		
+
 		public function isSortable(){
 			return true;
 		}
@@ -61,13 +61,26 @@
 				$email = $needle;
 			}
 
+			if(empty($email)) {
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __('%s is a required field.', array($this->get('label'))),
+					'type' => 'missing',
+					'label' => $this->get('label')
+				);
+				return null;
+			}
+
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
 				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
 				$this->get('id'), Symphony::Database()->cleanValue($email)
 			));
 
 			if(is_null($member_id)) {
-				extension_Members::$_errors[$this->get('element_name')] = __("Member not found");
+				extension_Members::$_errors[$this->get('element_name')] = array(
+					'message' => __("Member not found."),
+					'type' => 'invalid',
+					'label' => $this->get('label')
+				);
 				return null;
 			}
 			else return $member_id;
@@ -80,8 +93,10 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$this->appendRequiredCheckbox($wrapper);
-			$this->appendShowColumnCheckbox($wrapper);
+			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$this->appendRequiredCheckbox($div);
+			$this->appendShowColumnCheckbox($div);
+			$wrapper->appendChild($div);
 		}
 
 		public function commit(){
@@ -97,20 +112,8 @@
 				'field_id' => $id
 			);
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
-				Symphony::Configuration()->set('email', $id, 'members');
-				Administration::instance()->saveConfig();
-			}
-
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
-		}
-
-		public function tearDown(){
-			Symphony::Configuration()->remove('email', 'members');
-			Administration::instance()->saveConfig();
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -130,7 +133,7 @@
 
 			$email = trim($data);
 
-			//	If the field is required, we should have both a $username and $password.
+			//	If the field is required
 			if($required && empty($email)) {
 				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
@@ -146,9 +149,9 @@
 				// We need to make sure the value doesn't already exist in the Section.
 				$existing = $this->fetchMemberIDBy($email);
 
-				// If there is an existing username, and it's not the current object (editing), error.
+				// If there is an existing email, and it's not the current object (editing), error.
 				if(!is_null($existing) && $existing != $entry_id) {
-					$message = __('That %s is already taken.', array($this->get('label')));
+					$message = __('%s is already taken.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
 			}

@@ -8,24 +8,25 @@
 
 	Interface Member {
 		// Authentication
-		public function login(Array $credentials);
+		public function login(array $credentials);
 		public function logout();
 		public function isLoggedIn();
 
 		// Finding
-		public function findMemberIDFromCredentials(Array $credentials);
+		public static function setIdentityField(array $credentials, $simplified = true);
+		public function findMemberIDFromCredentials(array $credentials);
+		public function fetchMemberFromID($member_id = null);
 
 		// Output
-		public function addMemberDetailsToPageParams(Array $context = null);
-		public function appendLoginStatusToEventXML(Array $context = null);
+		public function addMemberDetailsToPageParams(array $context = null);
+		public function appendLoginStatusToEventXML(array $context = null);
 	}
 
 	Abstract Class Members implements Member {
 
-		public static $driver = null;
-
-		public static $member_id = 0;
-		public static $isLoggedIn = false;
+		protected static $driver = null;
+		protected static $member_id = 0;
+		protected static $isLoggedIn = false;
 
 		public $Member = null;
 		public $cookie = null;
@@ -42,20 +43,25 @@
 			return self::$member_id;
 		}
 
+		public function getMember() {
+			return $this->Member;
+		}
+
 	/*-------------------------------------------------------------------------
 		Initalise:
 	-------------------------------------------------------------------------*/
+
 		public function initialiseCookie() {
 			if(is_null($this->cookie)) {
 				$this->cookie = new Cookie(
-					Symphony::Configuration()->get('cookie-prefix', 'members'), TWO_WEEKS, __SYM_COOKIE_PATH__, true
+					Symphony::Configuration()->get('cookie-prefix', 'members'), TWO_WEEKS, __SYM_COOKIE_PATH__, null, true
 				);
 			}
 		}
 
 		public function initialiseMemberObject($member_id = null) {
 			if(is_null($this->Member)) {
-				$this->Member = self::fetchMemberFromID($member_id);
+				$this->Member = $this->fetchMemberFromID($member_id);
 			}
 
 			return $this->Member;
@@ -67,11 +73,12 @@
 
 		public function fetchMemberFromID($member_id = null) {
 			if(!is_null($member_id)) {
-				$Member = self::$driver->em->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = extension_Members::$entryManager->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
+
 			else if(self::$member_id !== 0) {
-				$Member = self::$driver->em->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = extension_Members::$entryManager->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
 
@@ -89,7 +96,7 @@
 		public function findMemberIDFromIdentity($needle = null){
 			if(is_null($needle)) return null;
 
-			$identity = extension_Members::$fields['identity'];
+			$identity = extension_Members::getField('identity');
 
 			return $identity->fetchMemberIDBy($needle);
 		}
@@ -108,47 +115,66 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function addMemberDetailsToPageParams(Array $context = null) {
+		public function addMemberDetailsToPageParams(array $context = null) {
 			if(!$this->isLoggedIn()) return;
 
 			$this->initialiseMemberObject();
 
-			$context['params']['member-id'] = $this->Member->get('id');
+			$context['params']['member-id'] = $this->getMemberID();
 
-			if(is_null(extension_Members::getConfigVar('role'))) return;
+			if(!is_null(extension_Members::getFieldHandle('role'))) {
+				$role_data = $this->getMember()->getData(extension_Members::getField('role')->get('id'));
+				$role = RoleManager::fetch($role_data['role_id']);
+				if($role instanceof Role) {
+					$context['params']['member-role'] = $role->get('name');
+				}
+			}
 
-			$role_data = $this->Member->getData(extension_Members::getConfigVar('role'));
-			$role = RoleManager::fetch($role_data['role_id']);
-			if($role instanceof Role) {
-				$context['params']['member-role'] = $role->get('name');
+			if(!is_null(extension_Members::getFieldHandle('activation'))) {
+				if($this->getMember()->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
+					$context['params']['member-activated'] = 'no';
+				}
 			}
 		}
 
-		public function appendLoginStatusToEventXML(Array $context = null){
+		public function appendLoginStatusToEventXML(array $context = null){
 			$result = new XMLElement('member-login-info');
 
 			if($this->isLoggedIn()) {
-				self::$driver->__updateSystemTimezoneOffset($this->Member->get('id'));
-				$result->setAttributeArray(array(
+				self::$driver->__updateSystemTimezoneOffset($this->getMemberID());
+				$result->setAttributearray(array(
 					'logged-in' => 'yes',
-					'id' => $this->Member->get('id')
+					'id' => $this->getMemberID(),
+					'result' => 'success'
 				));
 			}
 			else {
 				$result->setAttribute('logged-in','no');
 
-				if(extension_Members::$_failed_login_attempt) {
-					$result->setAttribute('failed-login-attempt','yes');
-				}
-				else {
-					$result->setAttribute('failed-login-attempt','no');
-				}
-
+				// Append error messages
 				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
 					foreach(extension_Members::$_errors as $type => $error) {
 						$result->appendChild(
-							new XMLElement($type, $error)
+							new XMLElement($type, null, array(
+								'type' => $error['type'],
+								'message' => $error['message'],
+								'label' => General::sanitize($error['label'])
+							))
 						);
+					}
+				}
+
+				// Append post values to simulate a real Symphony event
+				if(extension_Members::$_failed_login_attempt) {
+					$result->setAttribute('result', 'error');
+
+					$post_values = new XMLElement('post-values');
+					$post = General::getPostData();
+
+					// Create the post data cookie element
+					if (is_array($post['fields']) && !empty($post['fields'])) {
+						General::array_to_xml($post_values, $post['fields'], true);
+						$result->appendChild($post_values);
 					}
 				}
 			}
@@ -160,19 +186,19 @@
 		Filters:
 	-------------------------------------------------------------------------*/
 
-		public function filter_Register(Array &$context) {
+		public function filter_LockRole(array &$context) {
 			return true;
 		}
 
-		public function filter_Activation(Array &$context) {
+		public function filter_LockActivation(array &$context) {
 			return true;
 		}
 
-		public function filter_UpdatePassword(Array &$context) {
+		public function filter_UpdatePassword(array &$context) {
 			return true;
 		}
 
-		public function filter_UpdatePasswordLogin(Array $context) {
+		public function filter_UpdatePasswordLogin(array $context) {
 			return true;
 		}
 	}

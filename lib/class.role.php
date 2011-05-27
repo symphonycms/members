@@ -16,7 +16,7 @@
 		 * @return integer
 		 *  The newly created Role's ID
 		 */
-		public function add(Array $data) {
+		public function add(array $data) {
 			Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
 			$role_id = Symphony::Database()->getInsertID();
 
@@ -56,7 +56,7 @@
 		 * @param array $data
 		 * @return boolean
 		 */
-		public function edit($role_id, Array $data) {
+		public function edit($role_id, array $data) {
 			if(is_null($role_id)) return false;
 
 			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
@@ -112,7 +112,7 @@
 			if($purge_members) {
 				$members = Symphony::Database()->fetchCol('entry_id', sprintf(
 					"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-					extension_Members::getConfigVar('role'), $role_id
+					extension_Members::getField('role')->get('id'), $role_id
 				));
 
 				/**
@@ -144,9 +144,7 @@
 		 */
 		public static function fetch($role_id = null) {
 			$result = array();
-			$return_single = true;
-
-			if(is_null($role_id)) $return_single = false;
+			$return_single = is_null($role_id) ? false : true;
 
 			if($return_single) {
 				// Check static cache for object
@@ -168,7 +166,7 @@
 			foreach($roles as $role) {
 				if(!in_array($role['id'], array_keys(RoleManager::$_pool))) {
 					RoleManager::$_pool[$role['id']] = new Role($role);
-					RoleManager::$_pool[$role['id']]->getPermissions();
+					RoleManager::$_pool[$role['id']]->setPermissions();
 				}
 
 				$result[] = RoleManager::$_pool[$role['id']];
@@ -201,44 +199,52 @@
 	}
 
 	/**
-	 * The Role class defines an Access Level for Frontend members
-	 * which includes what pages are accessible and what events a
-	 * member of this Role can use.
-	 *
-	 * Roles are optional and are only used if the Active Member's
-	 * section has the Member: Role field.
+	 * The Role class defines an Access Level for Frontend members which includes
+	 * what pages are accessible and what events a member of this Role can use.
 	 */
 	Class Role {
 		const PUBLIC_ROLE = 1;
 
 		private $settings = array();
 
-		public function __construct(Array $settings){
+		public function __construct(array $settings){
 			$this->setArray($settings);
 
 			$this->set('forbidden_pages', array());
 			$this->set('event_permissions', array());
 		}
 
+		/**
+		 * Given a `$name` and a `$value`, this will set it into the Role's
+		 * `$this->settings` array. By default, `$name` maps the `tbl_member_roles`
+		 * column names.
+		 *
+		 * @param string $name
+		 * @param mixed $value
+		 */
 		public function set($name, $value) {
 			$this->settings[$name] = $value;
 		}
 
-		public function setArray(Array $array) {
+		/**
+		 * Convenience function to set an associative array without using multiple
+		 * `set` calls. This function expects an associative array
+		 *
+		 * @param array $array
+		 */
+		public function setArray(array $array) {
 			foreach($array as $name => $value) {
 				$this->set($name, $value);
 			}
 		}
 
-		public function get($name = null) {
-			if(is_null($name)) return $this->settings;
-
-			if(!array_key_exists($name, $this->settings)) return null;
-
-			return $this->settings[$name];
-		}
-
-		public function getPermissions() {
+		/**
+		 * Sets the permissions for the current Role by loading them from
+		 * `tbl_member_roles_forbidden_pages` and `tbl_member_roles_event_permissions`.
+		 * The permissions are set under `forbidden_pages` and `event_permissions` keys
+		 * that can be accessed via `Role->get('event_permissions')`.
+		 */
+		public function setPermissions() {
 			// Get all pages that this Role can't access
 			$this->set('forbidden_pages', Symphony::Database()->fetchCol('page_id', sprintf(
 				"SELECT `page_id` FROM `tbl_members_roles_forbidden_pages` WHERE `role_id` = %d",
@@ -259,10 +265,46 @@
 			$this->set('event_permissions', $event_permissions);
 		}
 
+		/**
+		 * Given a `$name`, this function returns the setting for this Role. If
+		 * no setting is found, this function will return null.
+		 * If `$name` is not provided, the entire `$this->settings` array will
+		 * be returned.
+		 *
+		 * @param string $name
+		 * @return mixed
+		 */
+		public function get($name = null) {
+			if(is_null($name)) return $this->settings;
+
+			if(!array_key_exists($name, $this->settings)) return null;
+
+			return $this->settings[$name];
+		}
+
+		/**
+		 * Given a `$page_id`, this functions return true if this role is
+		 * allowed to view the page with that ID.
+		 *
+		 * @param integer $page_id
+		 * @return boolean
+		 */
 		public function canAccessPage($page_id){
 			return !in_array($page_id, $this->get('forbidden_pages'));
 		}
 
+		/**
+		 * Given an event handle, the desired action, either create or edit, and
+		 * the required permission level, this function will return boolean if
+		 * the user can process the event. The `$required_level` is one of the
+		 * `EventPermissions` constants, `NO_PERMISSIONS`, `OWN_ENTRIES`, `ALL_ENTRIES`
+		 * or `CREATE`.
+		 *
+		 * @param string $event_handle
+		 * @param string $action
+		 * @param integer $required_level
+		 * @return boolean
+		 */
 		public function canProcessEvent($event_handle, $action, $required_level){
 			$event_permissions = $this->get('event_permissions');
 
@@ -279,6 +321,7 @@
 		const NO_PERMISSIONS = 0;
 		const OWN_ENTRIES = 1;
 		const ALL_ENTRIES = 2;
+		const CREATE = 1;
 
 		public static $permissionMap = array(
 			self::NO_PERMISSIONS => 'No Permission',

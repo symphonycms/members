@@ -32,6 +32,10 @@
 			return true;
 		}
 
+		public function canPrePopulate(){
+			return false;
+		}
+
 	/*-------------------------------------------------------------------------
 		Setup:
 	-------------------------------------------------------------------------*/
@@ -43,6 +47,7 @@
 				  `field_id` int(11) unsigned NOT NULL,
 				  `code_expiry` varchar(50) NOT NULL,
 				  `activation_role_id` int(11) unsigned NOT NULL,
+				  `deny_login` enum('yes','no') NOT NULL default 'yes',
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM;
@@ -58,7 +63,8 @@
 				  `timestamp` DATETIME default NULL,
 				  `code` varchar(40) default NULL,
 				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`)
+				  KEY `entry_id` (`entry_id`),
+				  UNIQUE KEY `code` (`code`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -121,7 +127,7 @@
 				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
 			));
 
-			if(is_array($code) && !empty($code)) {
+			if(is_array($code) && !empty($code) && !is_null($code['code'])) {
 				return $code;
 			}
 			else {
@@ -135,35 +141,26 @@
 		 * be removed on a per member basis, or whether it should be a global
 		 * purge.
 		 *
-		 * @todo Look whether this function needs to exist..
 		 * @param integer $entry_id
 		 * @return boolean
 		 */
 		public function purgeCodes($entry_id = null){
 			$entry_id = Symphony::Database()->cleanValue($entry_id);
 
-			return Symphony::Database()->delete("`tbl_entries_data_{$this->get('id')}`", sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
-				DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))), ($entry_id ? " OR `entry_id` = $entry_id" : '')
-			));
+			return Symphony::Database()->update(
+				array(
+					'code' => null
+				),
+				"`tbl_entries_data_{$this->get('id')}`",
+				sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
+					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))),
+					($entry_id ? " OR `entry_id` = $entry_id" : '')
+				)
+			);
 		}
 
 		public static function findCodeExpiry() {
-			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
-
-			try {
-				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
-					SELECT DISTINCT(code_expiry) FROM `tbl_fields_memberactivation`
-				"));
-
-				if(is_array($used) && !empty($used)) {
-					$default = array_merge($default, array_combine($used, $used));
-				}
-			}
-			catch (DatabaseException $ex) {
-				// Table doesn't exist yet, it's ok we have defaults.
-			}
-
-			return $default;
+			return extension_Members::findCodeExpiry('tbl_fields_memberactivation');
 		}
 
 		public function getToggleStates() {
@@ -187,6 +184,12 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
+		public function setFromPOST(array $settings = array()) {
+			$settings['deny_login'] = (isset($settings['deny_login']) && $settings['deny_login'] == 'yes' ? 'yes' : 'no');
+
+			parent::setFromPOST($settings);
+		}
+
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
@@ -198,7 +201,7 @@
 
 			$label = Widget::Label(__('Activation Code Expiry'));
 			$label->appendChild(
-				new XMLElement('i', __('How long a user\'s activation code will be valid for before it expires'))
+				new XMLElement('i', __('How long a member\'s activation code will be valid for before it expires'))
 			);
 			$label->appendChild(Widget::Input(
 				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
@@ -208,6 +211,10 @@
 			$tags = fieldMemberActivation::findCodeExpiry();
 			foreach($tags as $name => $time) {
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
+			}
+
+			if (isset($errors['code_expiry'])) {
+				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
 			}
 
 			$div->appendChild($label);
@@ -233,7 +240,25 @@
 			$group->appendChild($div);
 			$wrapper->appendChild($group);
 
-			$this->appendShowColumnCheckbox($wrapper);
+			$div = new XMLElement('div', null, array('class' => 'compact'));
+
+			// Add Deny Login
+			$div->appendChild(Widget::Input("fields[{$this->get('sortorder')}][deny_login]", 'no', 'hidden'));
+
+			$label = Widget::Label();
+			$label->setAttribute('class', 'meta');
+			$input = Widget::Input("fields[{$this->get('sortorder')}][deny_login]", 'yes', 'checkbox');
+
+			if ($this->get('deny_login') == 'yes') $input->setAttribute('checked', 'checked');
+
+			$label->setValue(__('%s Prevent unactivated members from logging in', array($input->generate())));
+
+			$div->appendChild($label);
+
+			// Add Show Column
+			$this->appendShowColumnCheckbox($div);
+
+			$wrapper->appendChild($div);
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates=true) {
@@ -255,23 +280,13 @@
 
 			$fields = array(
 				'field_id' => $id,
-				'code_expiry' => $this->get('code_expiry')
+				'code_expiry' => $this->get('code_expiry'),
+				'activation_role_id' => $this->get('activation_role_id'),
+				'deny_login' => $this->get('deny_login') == 'yes' ? 'yes' : 'no'
 			);
-
-			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
-				Symphony::Configuration()->set('activation', $id, 'members');
-				Administration::instance()->saveConfig();
-			}
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
-		}
-
-		public function tearDown() {
-			Symphony::Configuration()->remove('activation', 'members');
-			Administration::instance()->saveConfig();
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -285,7 +300,7 @@
 			// has enough access to create the record in the backend anyway.
 			$options = array(
 				array('no', ($data['activated'] == 'no'), __('Not Activated')),
-				array('yes', ($isActivated || is_null($entry_id) or is_null($data)), __('Activated'))
+				array('yes', ($isActivated || is_null($entry_id) || is_null($data)), __('Activated'))
 			);
 
 			$label = Widget::Label($this->get('label'));
@@ -301,22 +316,20 @@
 			}
 
 			// Member not activated
-			if(!$isActivated) {
-				if(!is_null($data)) {
-					// If code is still live, displays when the code was generated.
-					if(strtotime($data['timestamp']) < strtotime('now + ' . $this->get('code_expiry'))) {
-						$label->appendChild(
-							new XMLElement('span', __('Activation code %s', array('<code>' . $data['code'] . '</code>')), array('class' => 'frame'))
-						);
-					}
-					// If the code is expired, displays 'Expired' w/the expiration timestamp.
-					else {
-						$label->appendChild(
-							new XMLElement('i', __('Activation code expired %s', array(
-								DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($data['timestamp']))
-							)))
-						);
-					}
+			if(!$isActivated && !is_null($data)) {
+				// If code is still live, displays when the code was generated.
+				if($this->isCodeActive($entry_id) !== false) {
+					$label->appendChild(
+						new XMLElement('span', __('Activation code %s', array('<code>' . $data['code'] . '</code>')), array('class' => 'frame'))
+					);
+				}
+				// If the code is expired, displays 'Expired' w/the expiration timestamp.
+				else {
+					$label->appendChild(
+						new XMLElement('i', __('Activation code expired %s', array(
+							DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($data['timestamp']))
+						)))
+					);
 				}
 			}
 			else {

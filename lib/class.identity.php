@@ -59,7 +59,7 @@
 		 * @return Entry
 		 */
 		public function fetchMemberFromID($member_id){
-			return Identity::$driver->Member->initialiseMemberObject($member_id);
+			return Identity::$driver->getMemberDriver()->initialiseMemberObject($member_id);
 		}
 
 		abstract public function fetchMemberIDBy($needle);

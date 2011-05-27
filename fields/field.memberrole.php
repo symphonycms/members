@@ -26,6 +26,10 @@
 			return true;
 		}
 
+		public function canPrePopulate(){
+			return false;
+		}
+
 	/*-------------------------------------------------------------------------
 		Setup:
 	-------------------------------------------------------------------------*/
@@ -78,7 +82,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function setFromPOST(Array $settings = array()) {
+		public function setFromPOST(array $settings = array()) {
 			$settings['required'] = 'yes';
 
 			parent::setFromPOST($settings);
@@ -107,7 +111,10 @@
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
-			$this->appendShowColumnCheckbox($wrapper);
+			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$this->appendRequiredCheckbox($div);
+			$this->appendShowColumnCheckbox($div);
+			$wrapper->appendChild($div);
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates=true) {
@@ -128,20 +135,8 @@
 				'default_role' => $this->get('default_role')
 			);
 
-			if(extension_Members::getMembersSection() == $this->get('parent_section') || is_null(extension_Members::getMembersSection())) {
-				Symphony::Configuration()->set('role', $id, 'members');
-				Administration::instance()->saveConfig();
-			}
-
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
 			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
-		}
-
-		public function tearDown(){
-			Symphony::Configuration()->remove('role', 'members');
-			Administration::instance()->saveConfig();
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -156,18 +151,50 @@
 				$data['role_id'] = $this->get('default_role');
 			}
 
+			// If the Members installation has a Activation field used, we need to make sure
+			// that this field represents accurately what Role this Member actually has.
+			// The Activation field allows developers to set a Activation Role, which is the role
+			// assigned to Members who have registered, but not yet activated their account.
+			$activation_role_id = null;
+			$activation = extension_Members::getField('activation');
+			if(!is_null($activation) && !is_null($entry_id)) {
+				$entry = extension_Members::$entryManager->fetch($entry_id);
+				$entry = $entry[0];
+
+				if($entry instanceof Entry && $entry->getData($activation->get('id'), true)->activated != 'yes') {
+					$activation_role_id = $activation->get('activation_role_id');
+				}
+			}
+
+			// Loop over states to build the Select options array
 			foreach($states as $role_id => $role_name){
 				$options[] = array(
 					$role_id,
-					$role_id == $data['role_id'],
+					!is_null($activation_role_id) ? ($role_id == $activation_role_id) : ($role_id == $data['role_id']),
 					$role_name
 				);
 			}
 
 			$label = Widget::Label($this->get('label'));
 			$label->appendChild(Widget::Select(
-				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
+				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix,
+				$options,
+				!is_null($activation_role_id) ? array('disabled' => 'disabled') : array())
 			);
+
+			// Add message about user's Role when they activate and a hidden field that
+			// contains the Default Role ID
+			if(!is_null($activation_role_id)) {
+				$default_role = RoleManager::fetch($this->get('default_role'));
+				$label->appendChild(
+					new XMLElement('span',
+					__('Member will assume the role <strong>%s</strong> when activated.', array($default_role->get('name'))),
+					array('class' => 'help frame'))
+				);
+				$label->appendChild(
+					Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $data['role_id'], 'hidden')
+				);
+			}
 
 			if(!is_null($error)) {
 				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
@@ -366,5 +393,26 @@
 			return $groups;
 		}
 
+	/*-------------------------------------------------------------------------
+		Events:
+	-------------------------------------------------------------------------*/
+
+		public function getExampleFormMarkup(){
+			$states = $this->getToggleStates();
+			foreach($states as $role_id => $role_name){
+				$options[] = array(
+					$role_id,
+					$role_id == $data['role_id'],
+					$role_name
+				);
+			}
+
+			$label = Widget::Label($this->get('label'));
+			$label->appendChild(Widget::Select(
+				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options)
+			);
+
+			return $label;
+		}
 	}
 

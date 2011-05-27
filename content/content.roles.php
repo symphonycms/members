@@ -9,7 +9,7 @@
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
 
-			if(is_null(extension_Members::getConfigVar('role')) && !is_null(extension_Members::getMembersSection())) {
+			if(is_null(extension_Members::getFieldHandle('role')) && !is_null(extension_Members::getMembersSection())) {
 				$this->pageAlert(
 					__('There is no Member: Role field in the active Members section. <a href="%s%d/">Add Member: Role field?</a>',
 					array(
@@ -46,11 +46,11 @@
 			}
 
 			else{
-			    $sectionManager = new SectionManager(Administration::instance());
-			    $section = $sectionManager->fetch(extension_Members::getMembersSection());
+				$sectionManager = new SectionManager(Administration::instance());
+				$section = $sectionManager->fetch(extension_Members::getMembersSection());
 
 				$with_selected_roles = array();
-				$hasRoles = !is_null(extension_Members::getConfigVar('role'));
+				$hasRoles = !is_null(extension_Members::getFieldHandle('role'));
 
 				foreach($roles as $role){
 					// Setup each cell
@@ -66,12 +66,12 @@
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
 							"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-							extension_Members::getConfigVar('role'), $role->get('id')
+							extension_Members::getField('role')->get('id'), $role->get('id')
 						));
 
 						$td2 = Widget::TableData(Widget::Anchor(
 							"$member_count",
-							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . extension_Members::$handles['role'] . ':' . $role->get('id')
+							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . extension_Members::getFieldHandle('role') . ':' . $role->get('id')
 						));
 					}
 
@@ -223,10 +223,6 @@
 			$EventManager = new EventManager(Administration::instance());
 			$events = $EventManager->listAll();
 
-			if(is_array($events) && !empty($events)) foreach($events as $handle => $e) {
-				if(!$e['can_parse']) unset($events[$handle]);
-			}
-
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
 			$fieldset->appendChild(new XMLElement('legend', __('Event Level Permissions')));
@@ -240,12 +236,13 @@
 				$td_name = Widget::TableData($event['name'], 'name');
 
 				$td_permission_create = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User can create new entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][create]",
-							'1',
+							EventPermissions::CREATE,
 							'checkbox',
-							($permissions['create'] == 1 ? array('checked' => 'checked') : NULL)
+							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : NULL)
 						)->generate(),
 						'Create'
 					),
@@ -253,7 +250,8 @@
 				);
 
 				$td_permission_none = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User cannot edit existing entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
 							EventPermissions::NO_PERMISSIONS,
@@ -265,7 +263,8 @@
 				);
 
 				$td_permission_own = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User can edit their own entries only'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
 							EventPermissions::OWN_ENTRIES,
@@ -277,7 +276,8 @@
 				);
 
 				$td_permission_all = Widget::TableData(
-					sprintf('<label>%s <span>%s</span></label>',
+					sprintf('<label title="%s">%s <span>%s</span></label>',
+						__('User can edit all entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
 							EventPermissions::ALL_ENTRIES,
@@ -288,22 +288,30 @@
 					)
 				);
 
-				$aTableBody[] = Widget::TableRow(array(
-					$td_name,
-					$td_permission_create,
-					$td_permission_none,
-					$td_permission_own,
-					$td_permission_all
-				));
+				// Create an Event instance
+				$ev = $EventManager->create($event_handle, array());
+
+				$aTableBody[] = Widget::TableRow(
+					array(
+						$td_name,
+						$td_permission_create,
+						$td_permission_none,
+						$td_permission_own,
+						$td_permission_all
+					),
+					(method_exists($ev, 'ignoreRolePermissions') && $ev->ignoreRolePermissions() == true) ? 'inactive' : ''
+				);
+
+				unset($ev);
 			}
 
 			$thead = Widget::TableHead(
 				array(
 					array(__('Event'), 'col', array('class' => 'name')),
-					array(__('Create New'), 'col', array('class' => 'new')),
-					array(__('No Edit'), 'col', array('class' => 'edit')),
-					array(__('Edit Own'), 'col', array('class' => 'edit')),
-					array(__('Edit All'), 'col', array('class' => 'edit'))
+					array(__('Create New'), 'col', array('class' => 'new', 'title'=> __('Toggle all'))),
+					array(__('No Edit'), 'col', array('class' => 'edit', 'title'=> __('Toggle all'))),
+					array(__('Edit Own'), 'col', array('class' => 'edit', 'title'=> __('Toggle all'))),
+					array(__('Edit All'), 'col', array('class' => 'edit', 'title'=> __('Toggle all')))
 				)
 			);
 
@@ -317,6 +325,7 @@
 			$fieldset->appendChild($table);
 			$this->Form->appendChild($fieldset);
 
+			// Add Page Permissions [simple Deny/Allow]
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
 			$fieldset->appendChild(new XMLElement('legend', __('Page Level Permissions')));
@@ -326,7 +335,7 @@
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
 
 			$options = array();
-			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY `title` ASC");
+			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY sortorder ASC");
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],
@@ -367,7 +376,7 @@
 
 						Symphony::Database()->query(sprintf(
 							"UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d",
-							extension_members::getConfigVar('role'),
+							extension_members::getField('role')->get('id'),
 							$target_role,
 							$role_id
 						));
