@@ -27,6 +27,7 @@
 			// Fetch all the Email Templates available and add to the end of the documentation
 			$templates = extension_Members::fetchEmailTemplates();
 			$div = new XMLElement('div');
+
 			if(!empty($templates)) {
 				//Template
 				$label = new XMLElement('label', __('Reset Password Email Template'));

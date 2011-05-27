@@ -26,9 +26,9 @@
 		public static function documentation(){
 			// Fetch all the Email Templates available and add to the end of the documentation
 			$templates = extension_Members::fetchEmailTemplates();
-			if(!empty($templates)) {
-				$div = new XMLElement('div');
+			$div = new XMLElement('div');
 
+			if(!empty($templates)) {
 				$label = new XMLElement('label', __('Regenerate Activation Code Email Template'));
 				$regenerate_activation_code_templates = extension_Members::setActiveTemplate($templates, 'regenerate-activation-code-template');
 				$label->appendChild(Widget::Select('members[regenerate-activation-code-template][]', $regenerate_activation_code_templates, array('multiple' => 'multiple')));

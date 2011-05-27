@@ -53,7 +53,6 @@
 			$div->appendChild(Widget::Input('members[event]', 'activate-account', 'hidden'));
 			$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
 
-
 			return '
 				<p>This event takes an activation code and an identifier for the Member (either Email or Username) to activate their account.
 				An activation code is available by outputting your Activation field in a Datasource after the registration event has executed.</p>

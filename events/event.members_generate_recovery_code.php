@@ -26,9 +26,9 @@
 		public static function documentation() {
 			// Fetch all the Email Templates available and add to the end of the documentation
 			$templates = extension_Members::fetchEmailTemplates();
-			if(!empty($templates)) {
-				$div = new XMLElement('div');
+			$div = new XMLElement('div');
 
+			if(!empty($templates)) {
 				$label = new XMLElement('label', __('Generate Recovery Code Email Template'));
 				$generate_recovery_code_templates = extension_Members::setActiveTemplate($templates, 'generate-recovery-code-template');
 				$label->appendChild(Widget::Select('members[generate-recovery-code-template][]', $generate_recovery_code_templates, array('multiple' => 'multiple')));
