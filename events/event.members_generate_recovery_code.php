@@ -44,8 +44,6 @@
 				their recovery code through the Members: Reset Password event.<br /> This recovery code be seen
 				by outputting the Member: Password field in a datasource once this event has completed, or by outputting
 				the event result.</p>
-				<p>You can set the Email Template for this event from the <a href="' . SYMPHONY_URL . '/system/preferences/">Preferences</a>
-				page</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
 				accepts either the member\'s email address or username.</p>
