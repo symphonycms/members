@@ -806,6 +806,10 @@
 				) {
 					Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.events.js', 10001, false);
 				}
+				// Temporary fix
+				else if($context['oPage'] instanceof contentPublish) {
+					Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/members.publish.css', 'screen', 45);
+				}
 			}
 		}
 
