@@ -267,6 +267,10 @@
 			if (trim($this->get('code_expiry')) == '') {
 				$errors['code_expiry'] = __('This is a required field.');
 			}
+
+			if(!DateTimeObj::validate($this->get('code_expiry'))) {
+				$errors['code_expiry'] = __('Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>');
+			}
 		}
 
 		public function commit(){
