@@ -252,6 +252,9 @@
 		'How long a member\'s recovery code will be valid for before it expires' =>
 		'Wie lange der Notfallcode eines Mitglieds gültig ist bevor er erlischt',
 
+		'%s Automatically log the member in after changing their password' =>
+		'%s Melde das Mitglied nach einer Passwortänderung automatisch an',
+
 		'Leave new password field blank to keep the current password' =>
 		'Lassen Sie das Feld für ein neues Passwort leer um das aktuelle Passwort zu behalten',
 
@@ -291,8 +294,8 @@
 		'Member is not activated.' =>
 		'Mitglied ist nicht aktiviert.',
 
-		'Event updated at {$time}. <a href="{$new_url}">Create another?</a> <a href="{$url}">View all Events</a>' =>
-		'Ereignis um {$time} aktualisiert. <a href="{$new_url}">Ein neues erstellen?</a> <a href="{$url}">Zeige alle Ereignisse</a>',
+		'Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>' =>
+		'Ereignis um {$time} aktualisiert. <a href="{$new_url}" accesskey="c">Ein neues erstellen?</a> <a href="{$url}">Zeige alle Ereignisse</a>',
 
 		'An error occurred while processing this form.' =>
 		'Beim Verarbeiten dieses Formulars ist ein Fehler aufgetreten.',
