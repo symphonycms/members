@@ -1,3 +1,7 @@
+.secondary label > i {
+	height: 16px;
+	white-space: nowrap;
+}
 .secondary label > i:hover {
 	white-space:normal;
 	height:auto;
