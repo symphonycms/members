@@ -185,6 +185,7 @@
 
 			if($isNew) {
 				$this->setTitle(__('Symphony &ndash; Member Roles'));
+				$this->appendSubheading(__('Untitled'));
 
 				$fields = array(
 					'name' => null,
