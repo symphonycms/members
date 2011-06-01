@@ -1,8 +1,8 @@
 # Members
 
-- Version: 1.0RC3
+- Version: 1.0
 - Author: Symphony Team
-- Build Date: May 27th 2011
+- Release Date: June 1st 2011
 - Requirements: Symphony 2.2.1
 
 Frontend Membership extension for Symphony CMS.
