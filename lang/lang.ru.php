@@ -7,7 +7,7 @@
 			'email' => 'danilasusak@gmail.com',
 			'website' => ''
 		),
-		'release-date' => '2011-05-19'
+		'release-date' => '2011-06-01'
 	);
 
 	/**
@@ -32,6 +32,9 @@
 
 		'%s is a required field.' => 
 		'%s это поле обязательно для заполнения.',
+
+		'%s is already taken.' => 
+		'%s уже существует',
 
 		'%s is not strong enough.' => 
 		'%s недостаточно сильный',
@@ -75,6 +78,9 @@
 		'Active Members Section' => 
 		'Сущность с Пользователями',
 
+		'An error occurred while processing this form.' => 
+		'Во время обработки формы были обнаружены ошибки.',
+
 		'Available Zones' => 
 		'Доступные зоны',
 
@@ -108,6 +114,9 @@
 		'Event Level Permissions' => 
 		'Разрешения для событий',
 
+		'Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>' => 
+		'Событие обновлено в {$time}. <a href="{$new_url}" accesskey="c">Добавить еще?</a> <a href="{$url}" accesskey="a">Все события</a>',
+
 		'Generate Recovery Code Email Template' => 
 		'Email Шаблон для кода восстановления пароля',
 
@@ -131,6 +140,9 @@
 
 		'Member not found.' => 
 		'Пользователь не найден',
+
+		'Member will assume the role <strong>%s</strong> when activated.' => 
+		'Пользователь возьмет эту роль <strong>%s</strong> сразу после активации.',
 
 		'Member: Activation' => 
 		'Пользователь: Код активации',
@@ -276,30 +288,25 @@
 		'You cannot generate a recovery code while being logged in.' => 
 		'Вы не можете запросить новый код для восстановления, пока вы не осуществите вход',
 
-		// Missing
-
 		'Email Template Filter' => 
 		false,
 
 		'Email Template Manager' => 
 		false,
 
-		'Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>' => 
-		'Событие обновлено в {$time}. <a href="{$new_url}" accesskey="c">Добавить еще?</a> <a href="{$url}" accesskey="a">Все события</a>',
+		'Reset Password Email Template' => 
+		'Email шаблон для сброса пароля',
 
-		'An error occurred while processing this form.' => 
-		'Во время обработки формы были обнаружены ошибки.',
+		'%s Automatically log the member in after changing their password' => 
+		'%s Автоматически осуществлять вход после смены пароля',
 
 		'How long a member\'s activation code will be valid for before it expires' => 
 		'Как долго код активации пользователя будет актуальным',
 
-		'%s is already taken.' => 
-		'%s уже существует',
+		'Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>' => 
+		'Время действия кода может указана в слудеющих единицах времени: <code>1 day</code> или <code>2 hours</code>',
 
 		'How long a member\'s recovery code will be valid for before it expires' => 
 		'Как долго код восстановления пароля пользователя будет актуальным',
-
-		'Member will assume the role <strong>%s</strong> when activated.' => 
-		'Пользователь возьмет эту роль <strong>%s</strong> сразу после активации.',
 
 	);
