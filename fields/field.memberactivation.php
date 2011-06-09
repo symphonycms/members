@@ -124,7 +124,7 @@
 				LIMIT 1",
  				$this->get('id'),
 				$entry_id,
-				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
+				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry') . ' minutes'))
 			));
 
 			if(is_array($code) && !empty($code) && !is_null($code['code'])) {
@@ -153,7 +153,7 @@
 				),
 				"`tbl_entries_data_{$this->get('id')}`",
 				sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
-					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))),
+					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry') . ' minutes')),
 					($entry_id ? " OR `entry_id` = $entry_id" : '')
 				)
 			);
@@ -201,24 +201,24 @@
 
 			$label = Widget::Label(__('Activation Code Expiry'));
 			$label->appendChild(
-				new XMLElement('i', __('How long a member\'s activation code will be valid for before it expires'))
+				new XMLElement('i', __('How long a member\'s activation code will be valid for before it expires (in minutes)'))
 			);
 			$label->appendChild(Widget::Input(
 				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
 			));
 
-			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
-			$tags = fieldMemberActivation::findCodeExpiry();
-			foreach($tags as $name => $time) {
-				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
-			}
+#			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
+#			$tags = fieldMemberActivation::findCodeExpiry();
+#			foreach($tags as $name => $time) {
+#				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
+#			}
 
 			if (isset($errors['code_expiry'])) {
 				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
 			}
 
 			$div->appendChild($label);
-			$div->appendChild($ul);
+#			$div->appendChild($ul);
 
 			// Get Roles in system
 			$roles = RoleManager::fetch();
@@ -268,8 +268,11 @@
 				$errors['code_expiry'] = __('This is a required field.');
 			}
 
-			if(!DateTimeObj::validate($this->get('code_expiry'))) {
-				$errors['code_expiry'] = __('Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>');
+#			if(!DateTimeObj::validate($this->get('code_expiry'))) {
+#				$errors['code_expiry'] = __('Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>');
+#			}
+			if(!preg_match("/^[1-9]+[0-9]*$/", trim($this->get('code_expiry')))) {
+				$errors['code_expiry'] = __('Code expiry must be a valid value for minutes, such as <code>60</code> (1 hour) or <code>1440</code> (1 day)');
 			}
 		}
 
@@ -409,7 +412,7 @@
 				);
 
 				// Add expiry timestamp, including how long the code is valid for
-				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry')), 'expires');
+				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry') . ' minutes'), 'expires');
 				$expiry->setAttribute('expiry', $this->get('code_expiry'));
 				$el->appendChild($expiry);
 			}

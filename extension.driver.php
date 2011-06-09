@@ -365,6 +365,39 @@
 				Symphony::Configuration()->remove('authentication', 'members');
 				Administration::instance()->saveConfig();
 			}
+
+			if(version_compare($previousVersion, '1.1', '<')) {
+				// Updates values in each `code_expiry` column (see Password Field and Activation Field)
+				$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+				if(!empty($activation_table)) {
+					$values = Symphony::Database()->fetch("
+						SELECT `id`, `code_expiry` FROM `tbl_fields_memberactivation` ORDER BY `id` ASC;
+					");
+					$this->fromStrtotimeToMinutes($values);
+					foreach($values as $index => $value) {
+						Symphony::Database()->update(
+							array('code_expiry' => $value['code_expiry']),
+							"tbl_fields_memberactivation",
+							"`id` = " . $value['id']
+						);
+					}
+				}
+
+				$password_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberpassword';");
+				if(!empty($password_table)) {
+					$values = Symphony::Database()->fetch("
+						SELECT `id`, `code_expiry` FROM `tbl_fields_memberpassword` ORDER BY `id` ASC;
+					");
+					$this->fromStrtotimeToMinutes($values);
+					foreach($values as $index => $value) {
+						Symphony::Database()->update(
+							array('code_expiry' => $value['code_expiry']),
+							"tbl_fields_memberpassword",
+							"`id` = " . $value['id']
+						);
+					}
+				}
+			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -537,24 +570,24 @@
 			}
 		}
 
-		public static function findCodeExpiry($table) {
-			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
+#		public static function findCodeExpiry($table) {
+#			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
 
-			try {
-				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
-					SELECT DISTINCT(code_expiry) FROM `%s`
-				", $table));
+#			try {
+#				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
+#					SELECT DISTINCT(code_expiry) FROM `%s`
+#				", $table));
 
-				if(is_array($used) && !empty($used)) {
-					$default = array_merge($default, array_combine($used, $used));
-				}
-			}
-			catch (DatabaseException $ex) {
-				// Table doesn't exist yet, it's ok we have defaults.
-			}
+#				if(is_array($used) && !empty($used)) {
+#					$default = array_merge($default, array_combine($used, $used));
+#				}
+#			}
+#			catch (DatabaseException $ex) {
+#				// Table doesn't exist yet, it's ok we have defaults.
+#			}
 
-			return $default;
-		}
+#			return $default;
+#		}
 
 		public static function fetchEmailTemplates() {
 			$options = array();
@@ -609,6 +642,22 @@
 			catch(Exception $ex) {}
 
 			return $options;
+		}
+
+		public static function fromStrtotimeToMinutes(&$values) {
+			$default = 1440; // 24 hours
+			$current_time = time();
+
+			foreach($values as $index => &$value){
+				$computed_time = strtotime($value['code_expiry']);
+				if($computed_time && ($computed_time > $current_time)){
+					// Sorry, we can't afford second precision
+					$value['code_expiry'] = round(($computed_time - $current_time) / 60, 0, PHP_ROUND_HALF_UP);
+				} else {
+					// If the stored value wasn't valid (e.g. "last Monday" or "yesterday"), it's reverted to the default
+					$value['code_expiry'] = $default;
+				}
+			}
 		}
 
 	/*-------------------------------------------------------------------------
