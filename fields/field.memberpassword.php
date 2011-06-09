@@ -101,7 +101,7 @@
 
 			if(empty($password)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
-					'message' => __('%s is a required field.', array($this->get('label'))),
+					'message' => __('\'%s\' is a required field.', array($this->get('label'))),
 					'type' => 'missing',
 					'label' => $this->get('label')
 				);
@@ -127,7 +127,7 @@
 						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
+					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry') . ' minutes'))
 				));
 
 				// If we didn't get an entry_id back, then it's because it was expired
@@ -304,24 +304,24 @@
 
 			$label = Widget::Label(__('Recovery Code Expiry'));
 			$label->appendChild(
-				new XMLElement('i', __('How long a member\'s recovery code will be valid for before it expires'))
+				new XMLElement('i', __('How long a member\'s recovery code will be valid for before it expires (in minutes)'))
 			);
 			$label->appendChild(Widget::Input(
 				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
 			));
 
-			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
-			$tags = fieldMemberPassword::findCodeExpiry();
-			foreach($tags as $name => $time) {
-				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
-			}
+#			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
+#			$tags = fieldMemberPassword::findCodeExpiry();
+#			foreach($tags as $name => $time) {
+#				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
+#			}
 
 			if (isset($errors['code_expiry'])) {
 				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
 			}
 
 			$div->appendChild($label);
-			$div->appendChild($ul);
+#			$div->appendChild($ul);
 
 			$group->appendChild($div);
 			$wrapper->appendChild($group);
@@ -346,8 +346,11 @@
 				$errors['code_expiry'] = __('This is a required field.');
 			}
 
-			if(!DateTimeObj::validate($this->get('code_expiry'))) {
-				$errors['code_expiry'] = __('Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>');
+#			if(!DateTimeObj::validate($this->get('code_expiry'))) {
+#				$errors['code_expiry'] = __('Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>');
+#			}
+			if(!preg_match("/^[1-9]+[0-9]*$/", trim($this->get('code_expiry')))) {
+				$errors['code_expiry'] = __('Code expiry must be a valid value for minutes, such as <code>60</code> (1 hour) or <code>1440</code> (1 day)');
 			}
 		}
 
@@ -462,24 +465,24 @@
 
 			//	If the field is required, we should have both a $username and $password.
 			if($required && !isset($data['optional']) && (empty($password))) {
-				$message = __('%s is a required field.', array($this->get('label')));
+				$message = __('\'%s\' is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
 			//	Check password
 			if(!empty($password)) {
 				if($confirm !== $password) {
-					$message = __('%s confirmation does not match.', array($this->get('label')));
+					$message = __('Passwords don\'t match.');
 					return self::__INVALID_FIELDS__;
 				}
 
 				if(strlen($password) < (int)$this->get('length')) {
-					$message = __('%s is too short. It must be at least %d characters.', array($this->get('label'), $this->get('length')));
+					$message = __('Password is too short. It must be at least %d characters.', array($this->get('length')));
 					return self::__INVALID_FIELDS__;
 				}
 
 				if (!fieldMemberPassword::compareStrength(fieldMemberPassword::checkPassword($password), $this->get('strength'))) {
-					$message = __('%s is not strong enough.', array($this->get('label')));
+					$message = __('Password is not strong enough.');
 					return self::__INVALID_FIELDS__;
 				}
 			}
@@ -529,7 +532,7 @@
 					new XMLElement('recovery-code', $data['recovery-code'])
 				);
 				// Add expiry timestamp, including how long the code is valid for
-				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry')), 'expires');
+				$expiry = General::createXMLDateObject(strtotime($data['timestamp'] . ' + ' . $this->get('code_expiry') . ' minutes'), 'expires');
 				$expiry->setAttribute('expiry', $this->get('code_expiry'));
 				$pw->appendChild($expiry);
 			}
