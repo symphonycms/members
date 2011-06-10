@@ -174,8 +174,8 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.0',
-				'release-date'	=> 'June 1st 2011',
+				'version' 		=> '1.1-dev',
+				'release-date'	=> 'unreleased',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
@@ -349,7 +349,8 @@
 
 			if(version_compare($previousVersion, '1.0RC1', '<')) {
 				// Move the auto_login setting from the Activation Field to the config
-				if($field = extension_Members::getField('activation') && $field instanceof Field) {
+				$field = extension_Members::getField('activation');
+				if($field instanceof Field) {
 					Symphony::Configuration()->set('activate-account-auto-login', $field->get('auto_login'));
 
 					$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
@@ -368,6 +369,91 @@
 				Symphony::Configuration()->remove('email', 'members');
 				Symphony::Configuration()->remove('authentication', 'members');
 				Administration::instance()->saveConfig();
+			}
+
+			if(version_compare($previousVersion, '1.1-dev', '<')) {
+				$tables = array();
+
+				// For any Member: Username or Member: Email fields, add a handle column
+				// and adjust the indexes to reflect that. Uniqueness is on the handle,
+				// not the value.
+				$field = extension_Members::getField('identity');
+				if($field instanceof fieldMemberUsername) {
+					$identity_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberusername`");
+
+					if(is_array($identity_tables) && !empty($identity_tables)) {
+						$tables = array_merge($tables, $identity_tables);
+					}
+				}
+
+				$field = extension_Members::getField('email');
+				if($field instanceof fieldMemberEmail) {
+					$email_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberemail`");
+
+					if(is_array($email_tables) && !empty($email_tables)) {
+						$tables = array_merge($tables, $email_tables);
+					}
+				}
+
+				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
+					if(!extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
+						// Add handle field
+						Symphony::Database()->query(sprintf(
+							"ALTER TABLE `tbl_entries_data_%d` ADD `handle` VARCHAR(255) DEFAULT NULL",
+							$field
+						));
+
+						// Populate handle field
+						$rows = Symphony::Database()->fetch(sprintf(
+								"SELECT `id`, `value` FROM `tbl_entries_data_%d`",
+								$field
+						));
+
+						foreach($rows as $row) {
+							Symphony::Database()->query(sprintf("
+									UPDATE `tbl_entries_data_%d`
+									SET handle = '%s'
+									WHERE id = %d
+								", $field, Lang::createHandle($row['value']), $row['id']
+							));
+						}
+
+						// Adjust INDEXES
+						try {
+							Symphony::Database()->query(sprintf(
+								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `email`', $field
+							));
+							Symphony::Database()->query(sprintf(
+								'CREATE UNIQUE INDEX `email` ON `tbl_entries_data_%d` (`handle`)', $field
+							));
+							Symphony::Database()->query(sprintf(
+								'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+							));
+
+							continue;
+						}
+						catch(Exception $ex) {
+							// Probably was the Member: Username table
+						}
+
+						try {
+							Symphony::Database()->query(sprintf(
+								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`', $field
+							));
+							Symphony::Database()->query(sprintf(
+								'CREATE UNIQUE INDEX `username` ON `tbl_entries_data_%d` (`handle`)', $field
+							));
+							Symphony::Database()->query(sprintf(
+								'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+							));
+
+							continue;
+						}
+						catch(Exception $ex) {
+							// Probably was the Member: Email table
+						}
+					}
+				}
 			}
 		}
 
@@ -613,6 +699,12 @@
 			catch(Exception $ex) {}
 
 			return $options;
+		}
+
+		public static function tableContainsField($table, $field){
+			$results = Symphony::Database()->fetch("DESC `{$table}` `{$field}`");
+
+			return (is_array($results) && !empty($results));
 		}
 
 	/*-------------------------------------------------------------------------

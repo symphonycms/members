@@ -42,9 +42,11 @@
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
 				  `value` varchar(255) default NULL,
+				  `handle` varchar(255) default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
-				  UNIQUE KEY `email` (`value`)
+				  KEY `value` (`value`)
+				  UNIQUE KEY `email` (`handle`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -71,8 +73,8 @@
 			}
 
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
-				$this->get('id'), Symphony::Database()->cleanValue($email)
+				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `handle` = '%s' LIMIT 1",
+				$this->get('id'), Lang::createHandle($email)
 			));
 
 			if(is_null($member_id)) {
@@ -168,8 +170,9 @@
 
 			$wrapper->appendChild(
 				new XMLElement($this->get('element_name'), General::sanitize($data['value']), array(
-					'hash' => md5($data['value'])
-				)
+					'handle' => $data['handle'],
+					'hash' => md5($data['value']
+				))
 			));
 		}
 

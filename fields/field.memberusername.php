@@ -40,9 +40,11 @@
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
 				  `value` varchar(255) default NULL,
+				  `handle` varchar(255) default NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
-				  UNIQUE KEY `username` (`value`)
+				  KEY `value` (`value`)
+				  UNIQUE KEY `username` (`handle`)
 				) ENGINE=MyISAM;
 			");
 		}
@@ -77,8 +79,8 @@
 			}
 
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
-				$this->get('id'), Symphony::Database()->cleanValue($username)
+				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `handle` = '%s' LIMIT 1",
+				$this->get('id'), Lang::createHandle($username)
 			));
 
 			if(is_null($member_id)) {
@@ -179,10 +181,10 @@
 			if(!isset($data['value'])) return;
 
 			$wrapper->appendChild(
-				new XMLElement(
-					$this->get('element_name'),
-					General::sanitize($data['value'])
-			));
+				new XMLElement($this->get('element_name'), General::sanitize($data['value']), array(
+					'handle' => $data['handle']
+				))
+			);
 		}
 
 	}
