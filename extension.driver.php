@@ -121,9 +121,13 @@
 				!is_null(extension_Members::getMembersSection()) &&
 				is_numeric(extension_Members::getMembersSection())
 			) {
-				$membersSectionSchema = $sectionManager->fetch(
+				$memberSection = $sectionManager->fetch(
 					extension_Members::getMembersSection()
-				)->fetchFieldsSchema();
+				);
+
+				if($memberSection instanceof Section) {
+					$membersSectionSchema = $memberSection->fetchFieldsSchema();
+				}
 			}
 
 			foreach($membersSectionSchema as $field) {
