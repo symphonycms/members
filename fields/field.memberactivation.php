@@ -262,7 +262,7 @@
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates=true) {
-			Field::checkFields(&$errors, $checkForDuplicates);
+			Field::checkFields($errors, $checkForDuplicates);
 
 			if (trim($this->get('code_expiry')) == '') {
 				$errors['code_expiry'] = __('This is a required field.');

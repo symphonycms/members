@@ -210,7 +210,7 @@
 				// Create new password using the auth field so simulate the checkPostFieldData
 				// and processRawFieldData functions.
 				$message = '';
-				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], &$message, $member_id);
+				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $member_id);
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(

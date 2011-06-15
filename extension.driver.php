@@ -1054,17 +1054,17 @@
 		private function __processEventFilters(array &$context) {
 			// Process the Member Lock Role
 			if (in_array('member-lock-role', $context['event']->eParamFILTERS)) {
-				$this->getMemberDriver()->filter_LockRole(&$context);
+				$this->getMemberDriver()->filter_LockRole($context);
 			}
 
 			// Process the Member Lock Activation
 			if (in_array('member-lock-activation', $context['event']->eParamFILTERS)) {
-				$this->getMemberDriver()->filter_LockActivation(&$context);
+				$this->getMemberDriver()->filter_LockActivation($context);
 			}
 
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
-				$this->getMemberDriver()->filter_UpdatePassword(&$context);
+				$this->getMemberDriver()->filter_UpdatePassword($context);
 			}
 		}
 

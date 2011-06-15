@@ -219,7 +219,7 @@
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates=true) {
-			Field::checkFields(&$errors, $checkForDuplicates);
+			Field::checkFields($errors, $checkForDuplicates);
 		}
 
 		public function commit(){
