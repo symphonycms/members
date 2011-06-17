@@ -324,7 +324,7 @@
 					$activated = $member->getData(extension_Members::getField('activation')->get('id'), true)->activated;
 					$context['fields'][extension_Members::getFieldHandle('activation')] = $activated;
 				}
-				// New Member, so use the default Role
+				// New Member, so set activation to 'no'
 				else {
 					$context['fields'][extension_Members::getFieldHandle('activation')] = 'no';
 				}
@@ -351,12 +351,15 @@
 		 * system with their new password.
 		 */
 		public function filter_UpdatePasswordLogin(array $context) {
-			// If the user didn't update their password.
+			// If the user didn't update their password, or no Identity field exists return
 			if(empty($context['fields'][extension_Members::getFieldHandle('authentication')]['password'])) return;
 
+			// Handle which is the Identity field, either the Member: Username or Member: Email field
+			$identity = is_null(extension_Members::getFieldHandle('identity')) ? 'email' : 'identity';
+
 			$this->login(array(
-				extension_Members::getFieldHandle('authentication') => $context['fields'][extension_Members::getFieldHandle('authentication')]['password'],
-				extension_Members::getFieldHandle('identity') => $context['entry']->getData(extension_Members::getField('identity')->get('id'), true)->value
+				extension_Members::getFieldHandle($identity) => $context['entry']->getData(extension_Members::getField($identity)->get('id'), true)->value,
+				extension_Members::getFieldHandle('authentication') => $context['fields'][extension_Members::getFieldHandle('authentication')]['password']
 			), false);
 
 			if(isset($_REQUEST['redirect'])) {
