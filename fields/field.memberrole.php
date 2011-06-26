@@ -183,17 +183,22 @@
 			);
 
 			// Add message about user's Role when they activate and a hidden field that
-			// contains the Default Role ID
+			// contains the Default Role ID. The Default Role ID can be two things,
+			// either the Default Role as set on the Settings page (most of the time) or
+			// if a value has been explicitly set.
 			if(!is_null($activation_role_id)) {
-				$default_role = RoleManager::fetch($this->get('default_role'));
-				$label->appendChild(
-					new XMLElement('span',
-					__('Member will assume the role <strong>%s</strong> when activated.', array($default_role->get('name'))),
-					array('class' => 'help frame'))
-				);
-				$label->appendChild(
-					Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $data['role_id'], 'hidden')
-				);
+				$default_role_id = !is_null($data['role_id']) ? $data['role_id'] : $this->get('default_role');
+				$default_role = RoleManager::fetch($default_role_id);
+				if($default_role instanceof Role) {
+					$label->appendChild(
+						new XMLElement('span',
+						__('Member will assume the role <strong>%s</strong> when activated.', array($default_role->get('name'))),
+						array('class' => 'help frame'))
+					);
+					$label->appendChild(
+						Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $default_role_id, 'hidden')
+					);
+				}
 			}
 
 			if(!is_null($error)) {
@@ -361,7 +366,7 @@
 			else {
 				$sort = sprintf(
 					'ORDER BY (
-						SELECT %s 
+						SELECT %s
 						FROM tbl_entries_data_%d AS `ed`
 						WHERE entry_id = e.id
 					) %s',
