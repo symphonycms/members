@@ -286,19 +286,19 @@
 		'Lascia il campo per la nuova password vuoto al fine di mantenere quella attuale',
 
 		'%s confirmation does not match.' => 
-		'Le password non corrispondono.',
+		'Le password nel campo \'%s\' non corrispondono.',
 		
 		'Passwords don\'t match.' => 
 		'Le password non corrispondono.',
 
 		'%s is too short. It must be at least %d characters.' => 
-		'%s &#232; troppo breve, deve essere lunga almeno %d caratteri.',
+		'La password nel campo \'%s\' &#232; troppo breve, deve essere lunga almeno %d caratteri.',
 		
 		'Password is too short. It must be at least %d characters.' => 
 		'La password &#232; troppo breve, deve essere lunga almeno %d caratteri.',
 
 		'%s is not strong enough.' => 
-		'%s non &#232; abbastanza robusta.',
+		'La password nel campo \'%s\' non &#232; abbastanza robusta.',
 		
 		'Password is not strong enough.' => 
 		'La password non &#232; abbastanza robusta.',
