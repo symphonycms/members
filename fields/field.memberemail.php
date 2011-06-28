@@ -65,7 +65,7 @@
 
 			if(empty($email)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
-					'message' => __('%s is a required field.', array($this->get('label'))),
+					'message' => __('\'%s\' is a required field.', array($this->get('label'))),
 					'type' => 'missing',
 					'label' => $this->get('label')
 				);
@@ -137,7 +137,7 @@
 
 			//	If the field is required
 			if($required && empty($email)) {
-				$message = __('%s is a required field.', array($this->get('label')));
+				$message = __('\'%s\' is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 

@@ -41,7 +41,7 @@
 
 			else if(is_null(extension_Members::getMembersSection())) {
 				$aTableBody = array(Widget::TableRow(
-					array(Widget::TableData(__('No Member section has been specified in %s. Please do this first.', array('<a href="'.SYMPHONY_URL.'/system/preferences/">Preferences</a>')), 'inactive', NULL, count($aTableHead)))
+					array(Widget::TableData(__('No Member section has been specified in <a href="%s">Preferences</a>. Please do this first.', array(SYMPHONY_URL.'/system/preferences/')), 'inactive', NULL, count($aTableHead)))
 				));
 			}
 
