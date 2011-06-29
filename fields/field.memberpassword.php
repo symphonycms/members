@@ -467,7 +467,7 @@
 			}
 
 			//	Check password
-			if(!empty($password)) {
+			if(!empty($password) || !empty($confirm)) {
 				if($confirm !== $password) {
 					$message = __('%s confirmation does not match.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
