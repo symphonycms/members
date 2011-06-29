@@ -143,18 +143,25 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
-			$states = $this->getToggleStates();
-			$options = array();
+		/**
+		 * If the Members installation has a Activation field used, we need to make sure
+		 * that this field represents accurately what Role this Member actually has.
+		 * The Activation field allows developers to set a Activation Role, which is the role
+		 * assigned to Members who have registered, but not yet activated their account.
+		 * This Activation role masks the Role field's value, so the Member assumes the
+		 * Role of the Activation role.
+		 *
+		 * @param integer $entry_id
+		 *  The Entry ID of the Member
+		 * @param integer $role_id
+		 *  A given Role ID
+		 * @return integer
+		 *  The resulting Role ID, whether that is the Activation ID or the
+		 *  given `$role_id`.
+		 */
+		public function getActivationRole($entry_id = null, $role_id = null) {
+			if(is_null($entry_id)) return null;
 
-			if(is_null($entry_id)) {
-				$data['role_id'] = $this->get('default_role');
-			}
-
-			// If the Members installation has a Activation field used, we need to make sure
-			// that this field represents accurately what Role this Member actually has.
-			// The Activation field allows developers to set a Activation Role, which is the role
-			// assigned to Members who have registered, but not yet activated their account.
 			$activation_role_id = null;
 			$activation = extension_Members::getField('activation');
 			if(!is_null($activation) && !is_null($entry_id)) {
@@ -165,6 +172,24 @@
 					$activation_role_id = $activation->get('activation_role_id');
 				}
 			}
+
+			if(!is_null($role_id) && is_null($activation_role_id)) {
+				return $role_id;
+			}
+			else {
+				return $activation_role_id;
+			}
+		}
+
+		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
+			$states = $this->getToggleStates();
+			$options = array();
+
+			if(is_null($entry_id)) {
+				$data['role_id'] = $this->get('default_role');
+			}
+
+			$activation_role_id = $this->getActivationRole($entry_id);
 
 			// Loop over states to build the Select options array
 			foreach($states as $role_id => $role_name){
@@ -234,7 +259,7 @@
 		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
 			if(!is_array($data) || empty($data)) return;
 
-			$role_id = $data['role_id'];
+			$role_id = $this->getActivationRole($entry_id, $data['role_id']);
 			$role = RoleManager::fetch($role_id);
 
 			if(!$role instanceof Role) return;
@@ -311,14 +336,20 @@
 			$wrapper->appendChild($element);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL){
-			$role_id = $data['role_id'];
+		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null) {
+			$role_id = $this->getActivationRole($entry_id, $data['role_id']);
 
 			$role = RoleManager::fetch($role_id);
 
 			return parent::prepareTableValue(array(
 				'value' => $role instanceof Role ? General::sanitize($role->get('name')) : null
 			), $link);
+		}
+
+		public function getParameterPoolValue($data, $entry_id = null) {
+			$role_id = $this->getActivationRole($entry_id, $data['role_id']);
+
+			return $role_id;
 		}
 
 	/*-------------------------------------------------------------------------
@@ -390,7 +421,7 @@
 			foreach($records as $r){
 				$data = $r->getData($this->get('id'));
 
-				$role_id = $data['role_id'];
+				$role_id = $this->getActivationRole($entry_id, $data['role_id']);
 				if(!$role = RoleManager::fetch($role_id)) continue;
 
 				if(!isset($groups[$this->get('element_name')][$role_id])){
@@ -420,7 +451,7 @@
 			foreach($states as $role_id => $role_name){
 				$options[] = array(
 					$role_id,
-					$role_id == $data['role_id'],
+					false,
 					$role_name
 				);
 			}
