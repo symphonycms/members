@@ -128,6 +128,12 @@
 				if($memberSection instanceof Section) {
 					$membersSectionSchema = $memberSection->fetchFieldsSchema();
 				}
+				else {
+					Symphony::$Log->pushToLog(
+						__("The Member's section, %d, saved in the configuration could not be found.", array(extension_Members::getMembersSection())),
+						E_ERROR, true
+					);
+				}
 			}
 
 			foreach($membersSectionSchema as $field) {
