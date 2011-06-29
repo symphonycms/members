@@ -390,7 +390,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+		public function appendFormattedElement(&$wrapper, $data, $encode=false, $mode = null, $entry_id = null){
 			if (!is_array($data) or is_null($data['activated'])) return;
 
 			$el = new XMLElement($this->get('element_name'));
@@ -423,6 +423,10 @@
 			), $link);
 		}
 
+		public function getParameterPoolValue($data, $entry_id = null) {
+			return $data['activated'];
+		}
+
 	/*-------------------------------------------------------------------------
 		Sorting:
 	-------------------------------------------------------------------------*/
@@ -434,7 +438,7 @@
 			else {
 				$sort = sprintf(
 					'ORDER BY (
-						SELECT %s 
+						SELECT %s
 						FROM tbl_entries_data_%d AS `ed`
 						WHERE entry_id = e.id
 					) %s',
