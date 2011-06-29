@@ -1,8 +1,8 @@
 # Members
 
-- Version: 1.0
+- Version: 1.1 Beta 1
 - Author: Symphony Team
-- Release Date: June 1st 2011
+- Release Date: June 29th 2011
 - Requirements: Symphony 2.2.1
 
 Frontend Membership extension for Symphony CMS.
@@ -46,6 +46,22 @@ Parameters for you to use in your datasources to get information about the
 logged in member.
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
+
+## Changelog
+
+*1.1* (in progress)
+
+- Member: Username and Member: Email uniqueness is now done by `handle`, rather than `value`
+- Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
+- Fix sorting and output parameter of the Member: Activation field
+- The Member: Reset Password event now works correctly with the Member: Email field when no Member: Username field is present
+- Addition of the Italian localisation
+- Other minor miscellaneous tweaks and fixes
+
+*1.0* June 1st 2011
+
+- Initial release
+
 
 ## Fields
 
