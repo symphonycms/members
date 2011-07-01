@@ -14,7 +14,7 @@
 					'name' => 'Symphony CMS',
 					'website' => 'http://symphony-cms.com',
 					'email' => 'team@symphony-cms.com'),
-				'version' => '1.0',
+				'version' => 'Members 1.0',
 				'release-date' => '2011-05-10'
 			);
 		}
@@ -27,6 +27,7 @@
 			// Fetch all the Email Templates available and add to the end of the documentation
 			$templates = extension_Members::fetchEmailTemplates();
 			$div = new XMLElement('div');
+
 			if(!empty($templates)) {
 				// Template
 				$label = new XMLElement('label', __('Activate Account Email Template'));
