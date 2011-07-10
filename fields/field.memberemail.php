@@ -41,12 +41,10 @@
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `value` varchar(255) default NULL,
-				  `handle` varchar(255) default NULL,
+				  `value` varchar(255) default NULL
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
-				  KEY `value` (`value`),
-				  UNIQUE KEY `email` (`handle`)
+				  UNIQUE KEY `value` (`value`)
 				) ENGINE=MyISAM;"
 			);
 		}
@@ -73,8 +71,8 @@
 			}
 
 			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `handle` = '%s' LIMIT 1",
-				$this->get('id'), Lang::createHandle($email)
+				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
+				$this->get('id'), $email
 			));
 
 			if(is_null($member_id)) {
@@ -161,6 +159,61 @@
 			return self::__OK__;
 		}
 
+		public function processRawFieldData($data, &$status, $simulate=false, $entry_id = null){
+			$status = self::__OK__;
+
+			if(empty($data)) return array();
+
+			return array(
+				'value' => trim($data)
+			);
+		}
+
+	/*-------------------------------------------------------------------------
+		Filtering:
+	-------------------------------------------------------------------------*/
+
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
+
+			$field_id = $this->get('id');
+
+			// Filter is an regexp.
+			if(self::isFilterRegex($data[0])) {
+				$pattern = str_replace('regexp:', '', $data[0]);
+				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
+				$where .= " AND (
+								`t$field_id`.value REGEXP '$pattern'
+								OR `t$field_id`.entry_id REGEXP '$pattern'
+							) ";
+			}
+
+			// Filter has + in it.
+			else if($andOperation) {
+				foreach($data as $key => $bit){
+					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
+					$where .= " AND (
+									`t$field_id$key`.value = '$bit'
+									OR `t$field_id`.entry_id = '$bit'
+								) ";
+				}
+			}
+
+			// Normal
+			else {
+				if(!is_array($data)) {
+					$data = array($data);
+				}
+
+				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
+				$where .= " AND (
+								`t$field_id`.value IN ('".implode("', '", $data)."')
+								OR `t$field_id`.entry_id IN ('".implode("', '", $data)."')
+							) ";
+			}
+
+			return true;
+		}
+
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
@@ -170,10 +223,9 @@
 
 			$wrapper->appendChild(
 				new XMLElement($this->get('element_name'), General::sanitize($data['value']), array(
-					'handle' => $data['handle'],
-					'hash' => md5($data['value']
+					'hash' => md5($data['value'])
 				))
-			));
+			);
 		}
 
 	}

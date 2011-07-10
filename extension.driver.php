@@ -392,15 +392,6 @@
 					}
 				}
 
-				$field = extension_Members::getField('email');
-				if($field instanceof fieldMemberEmail) {
-					$email_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberemail`");
-
-					if(is_array($email_tables) && !empty($email_tables)) {
-						$tables = array_merge($tables, $email_tables);
-					}
-				}
-
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
 					if(!extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						// Add handle field
@@ -424,27 +415,9 @@
 							));
 						}
 
-						// Adjust INDEXES
 						try {
 							Symphony::Database()->query(sprintf(
-								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `email`', $field
-							));
-							Symphony::Database()->query(sprintf(
-								'CREATE UNIQUE INDEX `email` ON `tbl_entries_data_%d` (`handle`)', $field
-							));
-							Symphony::Database()->query(sprintf(
-								'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
-							));
-
-							continue;
-						}
-						catch(Exception $ex) {
-							// Probably was the Member: Username table
-						}
-
-						try {
-							Symphony::Database()->query(sprintf(
-								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`', $field
+								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`, `value`', $field
 							));
 							Symphony::Database()->query(sprintf(
 								'CREATE UNIQUE INDEX `username` ON `tbl_entries_data_%d` (`handle`)', $field
@@ -458,6 +431,41 @@
 						catch(Exception $ex) {
 							// Probably was the Member: Email table
 						}
+					}
+				}
+			}
+
+			// So `handle` for Email fields is useless as me@example.com will become
+			// the same as meex@ample.com. Reverting previous change by dropping
+			// `handle` column from Member: Email tables and restoring the UNIQUE KEY
+			// index to the `value` column.
+			if(version_compare($previousVersion, '1.1 Beta 2', '<')) {
+				$field = extension_Members::getField('email');
+				if($field instanceof fieldMemberEmail) {
+					$email_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberemail`");
+
+					if(is_array($email_tables) && !empty($email_tables)) {
+						$tables = array_merge($tables, $email_tables);
+					}
+				}
+
+				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
+					if(extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
+						// Drop handle field
+						Symphony::Database()->query(sprintf(
+							"ALTER TABLE `tbl_entries_data_%d` DROP `handle`",
+							$field
+						));
+
+						// Drop `value` index
+						Symphony::Database()->query(sprintf(
+							'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `value`', $field
+						));
+
+						// Readd UNIQUE `value` index
+						Symphony::Database()->query(sprintf(
+							'CREATE UNIQUE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+						));
 					}
 				}
 			}
