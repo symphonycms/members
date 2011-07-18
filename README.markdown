@@ -1,8 +1,8 @@
 # Members
 
-- Version: 1.1 Beta 1
+- Version: 1.1 Release Candidate 1
 - Author: Symphony Team
-- Release Date: June 29th 2011
+- Release Date: July 18th 2011
 - Requirements: Symphony 2.2.1
 
 Frontend Membership extension for Symphony CMS.
@@ -51,7 +51,7 @@ logged in member.
 
 *1.1* (in progress)
 
-- Member: Username and Member: Email uniqueness is now done by `handle`, rather than `value`
+- Member: Username uniqueness is now done by `handle`, rather than `value`
 - Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
 - Fix sorting and output parameter of the Member: Activation field
 - The Member: Reset Password event now works correctly with the Member: Email field when no Member: Username field is present
