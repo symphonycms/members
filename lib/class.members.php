@@ -141,7 +141,6 @@
 			$result = new XMLElement('member-login-info');
 
 			if($this->isLoggedIn()) {
-				self::$driver->__updateSystemTimezoneOffset($this->getMemberID());
 				$result->setAttributearray(array(
 					'logged-in' => 'yes',
 					'id' => $this->getMemberID(),

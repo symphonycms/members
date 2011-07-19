@@ -564,7 +564,7 @@
 		 * @param integer $member_id
 		 * @return void
 		 */
-		public function __updateSystemTimezoneOffset($member_id) {
+		public function updateSystemTimezoneOffset($member_id) {
 			$timezone = extension_Members::getField('timezone');
 
 			if(!$timezone instanceof fieldMemberTimezone) return;
@@ -818,6 +818,20 @@
 
 			// Logout
 			if(trim($action) == 'logout') {
+				/**
+				 * Fired just before a member is logged out (and page redirection),
+				 * this delegate provides the current Member ID
+				 *
+				 * @delegate MembersPreLogout
+				 * @param string $context
+				 *  '/frontend/'
+				 * @param integer $member_id
+				 *  The Member ID of the member who is about to logged out
+				 */
+				Symphony::ExtensionManager()->notifyMembers('MembersPreLogout', '/frontend/', array(
+					'member_id' => $this->getMemberDriver()->getMemberID()
+				));
+
 				$this->getMemberDriver()->logout();
 
 				// If a redirect is provided, redirect to that, otherwise return the user
@@ -836,6 +850,24 @@
 				}
 
 				if($this->getMemberDriver()->login($_POST['fields'])) {
+					/**
+					 * Fired just after a Member has successfully logged in, this delegate
+					 * provides the current Member ID. This delegate is fired just before
+					 * the page redirection (if it is provided)
+					 *
+					 * @delegate MembersPostLogin
+					 * @param string $context
+					 *  '/frontend/'
+					 * @param integer $member_id
+					 *  The Member ID of the member who just logged in.
+					 * @param Entry $member
+					 *  The Entry object of the logged in Member.
+					 */
+					Symphony::ExtensionManager()->notifyMembers('MembersPostLogin', '/frontend/', array(
+						'member_id' => $this->getMemberDriver()->getMemberID(),
+						'member' => $this->getMemberDriver()->getMember()
+					));
+
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
 				}
 				else {
@@ -846,7 +878,7 @@
 			$this->Member->initialiseMemberObject();
 
 			if($isLoggedIn && $this->getMemberDriver()->getMember() instanceOf Entry) {
-				$this->__updateSystemTimezoneOffset($this->getMemberDriver()->getMember()->get('id'));
+				$this->updateSystemTimezoneOffset($this->getMemberDriver()->getMemberID());
 
 				if(!is_null(extension_Members::getFieldHandle('role'))) {
 					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getField('role')->get('id'));
