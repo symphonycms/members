@@ -992,7 +992,7 @@
 			// to the previous logic. This will mean that using `allow_multiple` will
 			// not be compatible without Symphony 2.2.2 and Members 1.1
 			// @see https://github.com/symphonycms/members/issues/167
-			if(isset($context['entry_id'] && is_numeric($context['entry_id']))) {
+			if(isset($context['entry_id']) && is_numeric($context['entry_id'])) {
 				$entry_id = (int)$context['entry_id'];
 				$action = 'edit';
 			}
