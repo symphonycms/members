@@ -973,7 +973,7 @@
 		 * immediately proceed to processing any of the Filters attached to the event
 		 * before returning.
 		 *
-		 * @uses checkEventPermissions
+		 * @uses EventPreSaveFilter
 		 */
 		public function checkEventPermissions(array &$context){
 			// If this system has no Roles, or the event is set to ignore role permissions
@@ -985,7 +985,18 @@
 				return $this->__processEventFilters($context);
 			}
 
-			if(isset($_POST['id'])){
+			// Prior to Symphony 2.2.2, the EventPreSaveFilter delegate doesn't
+			// pass the `$entry_id`. This can cause an issue when an Event has the
+			// `allow_multiple` filter set as we can't determine the correct `$entry_id`
+			// This will check to see if the `$entry_id` is set, otherwise fallback
+			// to the previous logic. This will mean that using `allow_multiple` will
+			// not be compatible without Symphony 2.2.2 and Members 1.1
+			// @see https://github.com/symphonycms/members/issues/167
+			if(isset($context['entry_id'] && is_numeric($context['entry_id']))) {
+				$entry_id = (int)$context['entry_id'];
+				$action = 'edit';
+			}
+			else if(isset($_POST['id'])){
 				$entry_id = (int)$_POST['id'];
 				$action = 'edit';
 			}
