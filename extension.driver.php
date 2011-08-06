@@ -180,8 +180,8 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.1RC1',
-				'release-date'	=> '2011-07-18',
+				'version' 		=> '1.1',
+				'release-date'	=> '2011-08-06',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
