@@ -30,7 +30,7 @@
 				  `validator` varchar(255) DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -45,7 +45,7 @@
 				  KEY `entry_id` (`entry_id`),
 				  KEY `value` (`value`),
 				  UNIQUE KEY `username` (`handle`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 

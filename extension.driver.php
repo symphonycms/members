@@ -180,8 +180,8 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.1.1RC1',
-				'release-date'	=> '2011-08-11',
+				'version' 		=> '1.1.1',
+				'release-date'	=> '2011-08-13',
 				'author' => array(
 					'name'		=> 'Symphony Team',
 					'website'	=> 'http://www.symphony-cms.com',
@@ -285,7 +285,7 @@
 				  `handle` varchar(255) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `handle` (`handle`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 				INSERT INTO `tbl_members_roles` VALUES(1, 'Public', 'public');
 
@@ -298,7 +298,7 @@
 				  `level` smallint(1) unsigned NOT NULL DEFAULT '0',
 				  PRIMARY KEY (`id`),
 				  KEY `role_id` (`role_id`,`event`,`action`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 				DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
 				CREATE TABLE `tbl_members_roles_forbidden_pages` (
@@ -307,7 +307,7 @@
 				  `page_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `role_id` (`role_id`,`page_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 

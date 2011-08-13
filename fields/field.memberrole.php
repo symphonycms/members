@@ -42,7 +42,7 @@
 				  `default_role` int(11) unsigned NOT NULL,
 				  PRIMARY KEY (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -54,8 +54,8 @@
  				  `role_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `entry_id` (`entry_id`)
-				)"
-			);
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			");
 		}
 
 	/*-------------------------------------------------------------------------
