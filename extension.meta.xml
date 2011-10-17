@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<extension id="members">
+
+	<name>Members</name>
+
+	<description lang="en">Frontend Membership extension for Symphony CMS.</description>
+
+	<url type="repo">https://github.com/symphonycms/members</url>
+
+	<types>
+		<type>Authentication</type>
+	</types>
+
+	<authors>
+		<author>
+			<name github="symphonycms" symphony="team" twitter="symphonycms">Symphony Team</name>
+			<website>http://symphonycms.com</website>
+		</author>
+		<author>
+			<name github="brendo" symphony="brendo" twitter="brend0">Brendan Abbott</name>
+			<email>brendan@bloodbone.ws</email>
+		</author>
+	</authors>
+
+	<releases>
+		<release version="1.2" date="unreleased" min="2.3">
+			* Update for Symphony 2.3
+			* Support for multiple member sections
+		</release>
+		<release version="1.1.1" date="2011-08-13" min="2.2.1">
+			* Fix update script in 1.1
+			* Explicitly set the CHARSET to be UTF8 when creating new tables.
+		</release>
+		<release version="1.1" date="2011-08-06" min="2.2.1">
+			* Member: Username uniqueness is now done by `handle`, rather than `value`
+			* Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
+			* Fix sorting and output parameter of the Member: Activation field
+			* The Member: Reset Password event now works correctly with the Member: Email field when no Member: Username field is present
+			* Addition of the Italian localisation
+			* Other minor miscellaneous tweaks and fixes
+		</release>
+		<release version="1.0" date="2011-06-01" min="2.2.1">
+			* Initial release
+		</release>
+	</releases>
+
+</extension>
