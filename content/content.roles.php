@@ -45,9 +45,8 @@
 				));
 			}
 
-			else{
-				$sectionManager = new SectionManager(Administration::instance());
-				$section = $sectionManager->fetch(extension_Members::getMembersSection());
+			else {
+				$section = SectionManager::fetch(extension_Members::getMembersSection());
 
 				$with_selected_roles = array();
 				$hasRoles = !is_null(extension_Members::getFieldHandle('role'));
@@ -208,6 +207,9 @@
 					);
 				}
 			}
+			$this->insertBreadcrumbs(array(
+				Widget::Anchor(__('Member Roles'), extension_members::baseURL() . 'roles/'),
+			));
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
@@ -221,8 +223,7 @@
 
 			$this->Form->appendChild($fieldset);
 
-			$EventManager = new EventManager(Administration::instance());
-			$events = $EventManager->listAll();
+			$events = EventManager::listAll();
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
@@ -290,7 +291,7 @@
 				);
 
 				// Create an Event instance
-				$ev = $EventManager->create($event_handle, array());
+				$ev = EventManager::create($event_handle, array());
 
 				$aTableBody[] = Widget::TableRow(
 					array(
@@ -336,12 +337,12 @@
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
 
 			$options = array();
-			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY sortorder ASC");
+			$pages = PageManager::fetch(false, array('id'));
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],
 					in_array($page['id'], $fields['page_access']),
-					'/' . Administration::instance()->resolvePagePath($page['id'])
+					'/' . PageManager::resolvePagePath($page['id'])
 				);
 			}
 

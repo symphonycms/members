@@ -8,8 +8,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Role');
 			$this->_showassociation = false;
 		}
@@ -165,7 +165,7 @@
 			$activation_role_id = null;
 			$activation = extension_Members::getField('activation');
 			if(!is_null($activation) && !is_null($entry_id)) {
-				$entry = extension_Members::$entryManager->fetch($entry_id);
+				$entry = EntryManager::fetch($entry_id);
 				$entry = $entry[0];
 
 				if($entry instanceof Entry && $entry->getData($activation->get('id'), true)->activated != 'yes') {
@@ -284,9 +284,8 @@
 
 				$forbidden_pages = $role->get('forbidden_pages');
 				if(is_array($forbidden_pages) & !empty($forbidden_pages)) {
-					$page_data = Symphony::Database()->fetch(sprintf(
-						"SELECT * FROM `tbl_pages` WHERE id IN (%s)",
-						implode(',', $forbidden_pages)
+					$page_data = PageManager::fetch(false, array('*'), array(
+						sprintf('id IN (%s)', implode(',', $forbidden_pages))
 					));
 
 					if(is_array($page_data) && !empty($page_data)) {

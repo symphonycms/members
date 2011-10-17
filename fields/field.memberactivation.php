@@ -14,8 +14,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Activation');
 			$this->_showassociation = false;
 		}
@@ -365,8 +365,7 @@
 			$status = self::__OK__;
 
 			if(is_null($data) && !is_null($entry_id)) {
-				$entryManager = new EntryManager(Symphony::Engine());
-				$entry = $entryManager->fetch($entry_id);
+				$entry = EntryManager::fetch($entry_id);
 
 				$data = $entry[0]->getData($this->get('id'));
 			}

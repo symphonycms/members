@@ -81,15 +81,6 @@
 		public static $_failed_login_attempt = false;
 
 		/**
-		 * An instance of the EntryManager class. Keep in mind that the Field Manager
-		 * and Section Manager are accessible via `$entryManager->fieldManager` and
-		 * `$entryManager->sectionManager` respectively.
-		 *
-		 * @var EntryManager $entryManager
-		 */
-		public static $entryManager = null;
-
-		/**
 		 * Only create a Member object on the Frontend of the site.
 		 * There is no need to create this in the Administration context
 		 * as authenticated users are Authors and are handled by Symphony,
@@ -99,8 +90,6 @@
 			if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
 				$this->Member = new SymphonyMember($this);
 			}
-
-			extension_Members::$entryManager = new EntryManager(Symphony::Engine());
 
 			if(!extension_Members::$initialised) {
 				extension_Members::initialise();
@@ -114,14 +103,13 @@
 		 */
 		public static function initialise() {
 			extension_Members::$initialised = true;
-			$sectionManager = extension_Members::$entryManager->sectionManager;
 			$membersSectionSchema = array();
 
 			if(
 				!is_null(extension_Members::getMembersSection()) &&
 				is_numeric(extension_Members::getMembersSection())
 			) {
-				$memberSection = $sectionManager->fetch(
+				$memberSection = SectionManager::fetch(
 					extension_Members::getMembersSection()
 				);
 
@@ -129,7 +117,7 @@
 					$membersSectionSchema = $memberSection->fetchFieldsSchema();
 				}
 				else {
-					Symphony::$Log->pushToLog(
+					Symphony::Log()->pushToLog(
 						__("The Member's section, %d, saved in the configuration could not be found.", array(extension_Members::getMembersSection())),
 						E_ERROR, true
 					);
@@ -170,7 +158,7 @@
 		}
 
 		private static function initialiseField($field, $name) {
-			extension_Members::$fields[$name] = extension_Members::$entryManager->fieldManager->fetch($field['id']);
+			extension_Members::$fields[$name] = FieldManager::fetch($field['id']);
 
 			if(extension_Members::$fields[$name] instanceof Field) {
 				extension_Members::$handles[$name] = $field['element_name'];
@@ -758,8 +746,7 @@
 			$label = new XMLElement('label', __('Active Members Section'));
 
 			// Get the Sections that contain a Member field.
-			$sectionManager = self::$entryManager->sectionManager;
-			$sections = $sectionManager->fetch();
+			$sections = SectionManager::fetch();
 			$member_sections = array();
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
@@ -912,12 +899,7 @@
 
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
-				if($row = Symphony::Database()->fetchRow(0,"
-					SELECT `p`.*
-					FROM `tbl_pages` as `p`
-					LEFT JOIN `tbl_pages_types` AS `pt` ON(`p`.id = `pt`.page_id)
-					WHERE `pt`.type = '403'
-				")) {
+				if($row = PageManager::fetchPageByType('403')) {
 					$row['type'] = FrontendPage::fetchPageTypes($row['id']);
 					$row['filelocation'] = FrontendPage::resolvePageFileLocation($row['path'], $row['handle']);
 
@@ -1077,7 +1059,7 @@
 							if(!empty($fields)) {
 								foreach($fields as $field_id) {
 									if($isOwner === true) break;
-									$field = self::$entryManager->fieldManager->fetch($field_id);
+									$field = FieldManager::fetch($field_id);
 									if($field instanceof Field) {
 										// So we are trying to find all entries that have selected the Member entry
 										// to determine ownership. This check will use the `fetchAssociatedEntryIDs`
