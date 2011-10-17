@@ -180,7 +180,7 @@
 		public function about(){
 			return array(
 				'name' 			=> 'Members',
-				'version' 		=> '1.1.1',
+				'version' 		=> '1.2dev',
 				'release-date'	=> '2011-08-13',
 				'author' => array(
 					'name'		=> 'Symphony Team',
