@@ -165,20 +165,6 @@
 			}
 		}
 
-		public function about(){
-			return array(
-				'name' 			=> 'Members',
-				'version' 		=> '1.2dev',
-				'release-date'	=> '2011-08-13',
-				'author' => array(
-					'name'		=> 'Symphony Team',
-					'website'	=> 'http://www.symphony-cms.com',
-					'email'		=> 'team@symphony-cms.com'
-				),
-				'description'	=> 'Frontend Membership extension for Symphony CMS'
-			);
-		}
-
 		public function fetchNavigation(){
 			return array(
 				array(
