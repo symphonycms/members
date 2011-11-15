@@ -87,8 +87,6 @@
 		 * not this extension.
 		 */
 		public function __construct() {
-			extension_Members::$entryManager = new EntryManager(Symphony::Engine());
-
 			if(!extension_Members::$initialised) {
 				if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
 					Symphony::ExtensionManager()->notifyMembers('InitialiseMember', '/frontend/', array(
@@ -485,7 +483,7 @@
 		}
 
 		private static function initialiseField(array $field, $type) {
-			extension_Members::$fields[$type] = extension_Members::$entryManager->fieldManager->fetch($field['id']);
+			extension_Members::$fields[$type] = FieldManager::fetch($field['id']);
 
 			if(extension_Members::$fields[$type] instanceof Field) {
 				extension_Members::$handles[$type] = $field['element_name'];
