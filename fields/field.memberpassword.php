@@ -14,8 +14,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Password');
 			$this->_required = true;
 
@@ -53,7 +53,7 @@
 				  `code_expiry` varchar(50) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -74,8 +74,8 @@
 				  KEY `password` (`password`),
 				  KEY `expires` (`expires`),
 				  UNIQUE KEY `recovery-code` (`recovery-code`)
-				) ENGINE=MyISAM;"
-			);
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			");
 		}
 
 	/*-------------------------------------------------------------------------

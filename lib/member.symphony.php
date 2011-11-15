@@ -84,7 +84,7 @@
 
 			// Check that if there's activiation, that this Member is activated.
 			if(!is_null(extension_Members::getFieldHandle('activation'))) {
-				$entry = extension_Members::$entryManager->fetch($member_id);
+				$entry = EntryManager::fetch($member_id);
 
 				$isActivated = $entry[0]->getData(extension_Members::getField('activation')->get('id'), true)->activated == "yes";
 

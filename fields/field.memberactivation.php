@@ -14,8 +14,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Activation');
 			$this->_showassociation = false;
 		}
@@ -50,7 +50,7 @@
 				  `deny_login` enum('yes','no') NOT NULL default 'yes',
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -65,8 +65,8 @@
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  UNIQUE KEY `code` (`code`)
-				) ENGINE=MyISAM;"
-			);
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			");
 		}
 
 	/*-------------------------------------------------------------------------
@@ -365,8 +365,7 @@
 			$status = self::__OK__;
 
 			if(is_null($data) && !is_null($entry_id)) {
-				$entryManager = new EntryManager(Symphony::Engine());
-				$entry = $entryManager->fetch($entry_id);
+				$entry = EntryManager::fetch($entry_id);
 
 				$data = $entry[0]->getData($this->get('id'));
 			}

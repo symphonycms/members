@@ -127,8 +127,7 @@
 				 */
 				Symphony::ExtensionManager()->notifyMembers('Delete', '/publish/', array('entry_id' => &$checked));
 
-				$entryManager = new EntryManager(Symphony::Engine());
-				$entryManager->delete($members);
+				EntryManager::delete($members);
 			}
 
 			return true;

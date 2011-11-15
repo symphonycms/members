@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.1
+- Version: 1.2dev
 - Author: Symphony Team
-- Release Date: August 6th 2011
-- Requirements: Symphony 2.2.1
+- Release Date: unreleased
+- Requirements: Symphony 2.3
 
-Frontend Membership extension for Symphony CMS.
+Frontend Membership extension for Symphony CMS. This version represents `1.2dev` which is an unstable release for the upcoming Symphony 2.3. Do not use this on production sites.
 
 ## Installation and Setup
 
@@ -48,6 +48,16 @@ logged in member.
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
 ## Changelog
+
+*1.2* unreleased
+
+- Update for Symphony 2.3
+- Support for multiple member sections
+
+*1.1.1* August 13th 2011
+
+- Fix update script in 1.1
+- Explicitly set the CHARSET to be UTF8 when creating new tables.
 
 *1.1* August 6th 2011
 

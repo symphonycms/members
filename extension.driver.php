@@ -81,15 +81,6 @@
 		public static $_failed_login_attempt = false;
 
 		/**
-		 * An instance of the EntryManager class. Keep in mind that the Field Manager
-		 * and Section Manager are accessible via `$entryManager->fieldManager` and
-		 * `$entryManager->sectionManager` respectively.
-		 *
-		 * @var EntryManager $entryManager
-		 */
-		public static $entryManager = null;
-
-		/**
 		 * Only create a Member object on the Frontend of the site.
 		 * There is no need to create this in the Administration context
 		 * as authenticated users are Authors and are handled by Symphony,
@@ -111,20 +102,6 @@
 
 				extension_Members::$initialised = true;
 			}
-		}
-
-		public function about(){
-			return array(
-				'name' 			=> 'Members',
-				'version' 		=> '1.1',
-				'release-date'	=> '2011-08-06',
-				'author' => array(
-					'name'		=> 'Symphony Team',
-					'website'	=> 'http://www.symphony-cms.com',
-					'email'		=> 'team@symphony-cms.com'
-				),
-				'description'	=> 'Frontend Membership extension for Symphony CMS'
-			);
 		}
 
 		public function fetchNavigation(){
@@ -221,7 +198,7 @@
 				  `handle` varchar(255) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `handle` (`handle`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 				INSERT INTO `tbl_members_roles` VALUES(1, 'Public', 'public');
 
@@ -234,7 +211,7 @@
 				  `level` smallint(1) unsigned NOT NULL DEFAULT '0',
 				  PRIMARY KEY (`id`),
 				  KEY `role_id` (`role_id`,`event`,`action`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 				DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
 				CREATE TABLE `tbl_members_roles_forbidden_pages` (
@@ -243,7 +220,7 @@
 				  `page_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `role_id` (`role_id`,`page_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -313,7 +290,7 @@
 				Administration::instance()->saveConfig();
 			}
 
-			if(version_compare($previousVersion, '1.1-dev', '<')) {
+			if(version_compare($previousVersion, '1.1 Beta 1', '<') || version_compare($previousVersion, '1.1.1RC1', '<')) {
 				$tables = array();
 
 				// For any Member: Username or Member: Email fields, add a handle column
@@ -338,8 +315,8 @@
 
 						// Populate handle field
 						$rows = Symphony::Database()->fetch(sprintf(
-								"SELECT `id`, `value` FROM `tbl_entries_data_%d`",
-								$field
+							"SELECT `id`, `value` FROM `tbl_entries_data_%d`",
+							$field
 						));
 
 						foreach($rows as $row) {
@@ -350,24 +327,31 @@
 								", $field, Lang::createHandle($row['value']), $row['id']
 							));
 						}
-
-						try {
-							Symphony::Database()->query(sprintf(
-								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`, `value`', $field
-							));
-							Symphony::Database()->query(sprintf(
-								'CREATE UNIQUE INDEX `username` ON `tbl_entries_data_%d` (`handle`)', $field
-							));
-							Symphony::Database()->query(sprintf(
-								'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
-							));
-
-							continue;
-						}
-						catch(Exception $ex) {
-							// Probably was the Member: Email table
-						}
 					}
+
+					// Try to drop the old `username` INDEX
+					try {
+						Symphony::Database()->query(sprintf(
+							'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`, DROP INDEX `value`', $field
+						));
+					}
+					catch(Exception $ex) {}
+
+					// Create the new UNIQUE INDEX `username` on `handle`
+					try {
+						Symphony::Database()->query(sprintf(
+							'CREATE UNIQUE INDEX `username` ON `tbl_entries_data_%d` (`handle`)', $field
+						));
+					}
+					catch(Exception $ex) {}
+
+					// Create an index on the `value` column
+					try {
+						Symphony::Database()->query(sprintf(
+							'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+						));
+					}
+					catch(Exception $ex) {}
 				}
 			}
 
@@ -376,6 +360,8 @@
 			// `handle` column from Member: Email tables and restoring the UNIQUE KEY
 			// index to the `value` column.
 			if(version_compare($previousVersion, '1.1 Beta 2', '<')) {
+				$tables = array();
+
 				$field = extension_Members::getField('email');
 				if($field instanceof fieldMemberEmail) {
 					$email_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberemail`");
@@ -387,21 +373,27 @@
 
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
 					if(extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
-						// Drop handle field
-						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` DROP `handle`",
-							$field
-						));
+						try {
+							// Drop handle field
+							Symphony::Database()->query(sprintf(
+								"ALTER TABLE `tbl_entries_data_%d` DROP `handle`",
+								$field
+							));
 
-						// Drop `value` index
-						Symphony::Database()->query(sprintf(
-							'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `value`', $field
-						));
+							// Drop `value` index
+							Symphony::Database()->query(sprintf(
+								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `value`', $field
+							));
 
-						// Readd UNIQUE `value` index
-						Symphony::Database()->query(sprintf(
-							'CREATE UNIQUE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
-						));
+							// Readd UNIQUE `value` index
+							Symphony::Database()->query(sprintf(
+								'CREATE UNIQUE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+							));
+						}
+						catch(Exception $ex) {
+							// Ignore, this may be because a user is updating directly from 1.0 and
+							// never had the INDEX's created during the 1.1* betas
+						}
 					}
 				}
 			}
@@ -703,8 +695,7 @@
 			$label = new XMLElement('label', __('Active Members Section'));
 
 			// Get the Sections that contain a Member field.
-			$sectionManager = self::$entryManager->sectionManager;
-			$sections = $sectionManager->fetch();
+			$sections = SectionManager::fetch();
 			$member_sections = array();
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
@@ -857,12 +848,7 @@
 
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
-				if($row = Symphony::Database()->fetchRow(0,"
-					SELECT `p`.*
-					FROM `tbl_pages` as `p`
-					LEFT JOIN `tbl_pages_types` AS `pt` ON(`p`.id = `pt`.page_id)
-					WHERE `pt`.type = '403'
-				")) {
+				if($row = PageManager::fetchPageByType('403')) {
 					$row['type'] = FrontendPage::fetchPageTypes($row['id']);
 					$row['filelocation'] = FrontendPage::resolvePageFileLocation($row['path'], $row['handle']);
 
@@ -1022,7 +1008,7 @@
 							if(!empty($fields)) {
 								foreach($fields as $field_id) {
 									if($isOwner === true) break;
-									$field = self::$entryManager->fieldManager->fetch($field_id);
+									$field = FieldManager::fetch($field_id);
 									if($field instanceof Field) {
 										// So we are trying to find all entries that have selected the Member entry
 										// to determine ownership. This check will use the `fetchAssociatedEntryIDs`

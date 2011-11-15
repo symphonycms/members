@@ -10,8 +10,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Email');
 			$this->_required = true;
 			$this->set('required', 'yes');
@@ -32,7 +32,7 @@
 				  `field_id` int(11) unsigned NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -45,8 +45,8 @@
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  UNIQUE KEY `value` (`value`)
-				) ENGINE=MyISAM;"
-			);
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			");
 		}
 
 	/*-------------------------------------------------------------------------
@@ -179,12 +179,7 @@
 
 			// Filter is an regexp.
 			if(self::isFilterRegex($data[0])) {
-				$pattern = str_replace('regexp:', '', $data[0]);
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND (
-								`t$field_id`.value REGEXP '$pattern'
-								OR `t$field_id`.entry_id REGEXP '$pattern'
-							) ";
+				$this->buildRegexSQL($data[0], array('value', 'entry_id'), $joins, $where);
 			}
 
 			// Filter has + in it.
