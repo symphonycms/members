@@ -9,9 +9,9 @@
 	Class extension_Members extends Extension {
 
 		/**
-		 * @var boolean $initialised
+		 * @var integer $members_section
 		 */
-		private static $initialised = false;
+		private static $initialised = null;
 
 		/**
 		 * @var integer $members_section
@@ -96,84 +96,20 @@
 		 * not this extension.
 		 */
 		public function __construct() {
-			if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
-				$this->Member = new SymphonyMember($this);
-			}
-
 			extension_Members::$entryManager = new EntryManager(Symphony::Engine());
 
 			if(!extension_Members::$initialised) {
-				extension_Members::initialise();
-			}
-		}
+				if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
+					Symphony::ExtensionManager()->notifyMembers('InitialiseMember', '/frontend/', array(
+						'member' => &$this->Member
+					));
 
-		/**
-		 * Loops over the configuration to detect the capabilities of this
-		 * Members setup. Populates two array's, one for Field objects, and
-		 * one for Field handles.
-		 */
-		public static function initialise() {
-			extension_Members::$initialised = true;
-			$sectionManager = extension_Members::$entryManager->sectionManager;
-			$membersSectionSchema = array();
-
-			if(
-				!is_null(extension_Members::getMembersSection()) &&
-				is_numeric(extension_Members::getMembersSection())
-			) {
-				$memberSection = $sectionManager->fetch(
-					extension_Members::getMembersSection()
-				);
-
-				if($memberSection instanceof Section) {
-					$membersSectionSchema = $memberSection->fetchFieldsSchema();
-				}
-				else {
-					Symphony::$Log->pushToLog(
-						__("The Member's section, %d, saved in the configuration could not be found.", array(extension_Members::getMembersSection())),
-						E_ERROR, true
-					);
-				}
-			}
-
-			foreach($membersSectionSchema as $field) {
-				if($field['type'] == 'membertimezone') {
-					extension_Members::initialiseField($field, 'timezone');
-					continue;
+					if(is_null($this->Member)) {
+						$this->Member = new SymphonyMember;
+					}
 				}
 
-				if($field['type'] == 'memberrole') {
-					extension_Members::initialiseField($field, 'role');
-					continue;
-				}
-
-				if($field['type'] == 'memberactivation') {
-					extension_Members::initialiseField($field, 'activation');
-					continue;
-				}
-
-				if($field['type'] == 'memberusername') {
-					extension_Members::initialiseField($field, 'identity');
-					continue;
-				}
-
-				if($field['type'] == 'memberemail') {
-					extension_Members::initialiseField($field, 'email');
-					continue;
-				}
-
-				if($field['type'] == 'memberpassword') {
-					extension_Members::initialiseField($field, 'authentication');
-					continue;
-				}
-			}
-		}
-
-		private static function initialiseField($field, $name) {
-			extension_Members::$fields[$name] = extension_Members::$entryManager->fieldManager->fetch($field['id']);
-
-			if(extension_Members::$fields[$name] instanceof Field) {
-				extension_Members::$handles[$name] = $field['element_name'];
+				extension_Members::$initialised = true;
 			}
 		}
 
@@ -525,17 +461,43 @@
 		 * `email`, `activation`, `authentication` and `identity`, this function
 		 * will return a Field instance. Typically this allows extensions to access
 		 * the Fields that are currently being used in the active Members section.
-		 * If no `$name` is given, an array of all Member fields will be returned.
 		 *
-		 * @param string $name
-		 * @return Field
+		 * @param string $type
+		 * @param integer $section_id
+		 *  The Section ID to find the given `$type` in. If this isn't provided this
+		 *  extension will just look for any Fields with the given `$type`
+		 * @return Field|null
+		 *  If `$type` is not given, or no Field was found, null will be returned.
 		 */
-		public static function getField($name = null) {
-			if(is_null($name)) return extension_Members::$fields;
+		public static function getField($type = null, $section_id = null) {
+			if(is_null($type)) return null;
 
-			if(!isset(extension_Members::$fields[$name])) return null;
+			// Check to see if this name has been stored in our 'static' cache
+			// If it hasn't, lets go find it (for better or worse)
+			if(!isset(extension_Members::$fields[$type])) {
+				$field = Symphony::Database()->fetch(sprintf("
+						SELECT `id`, `element_name`
+						FROM `tbl_fields`
+						WHERE `type` = '%s'
+						%s
+					",
+					$type,
+					!is_null($section_id) ? sprintf('AND `parent_section` = %d' , $section_id) : ''
+				));
 
-			return extension_Members::$fields[$name];
+				if(!empty($field)) extension_Members::initialiseField($field, $type);
+			}
+
+			// If it has, return it.
+			return extension_Members::$fields[$type];
+		}
+
+		private static function initialiseField(array $field, $type) {
+			extension_Members::$fields[$type] = extension_Members::$entryManager->fieldManager->fetch($field['id']);
+
+			if(extension_Members::$fields[$type] instanceof Field) {
+				extension_Members::$handles[$type] = $field['element_name'];
+			}
 		}
 
 		/**
@@ -546,15 +508,13 @@
 		 * If no `$name` is given, an array of all Member field handles will
 		 * be returned.
 		 *
-		 * @param string $name
+		 * @param string $type
 		 * @return string
 		 */
-		public static function getFieldHandle($name = null) {
-			if(is_null($name)) return extension_Members::$handles;
+		public static function getFieldHandle($type = null) {
+			if(!isset(extension_Members::$handles[$type])) return null;
 
-			if(!isset(extension_Members::$handles[$name])) return null;
-
-			return extension_Members::$handles[$name];
+			return extension_Members::$handles[$type];
 		}
 
 		/**
