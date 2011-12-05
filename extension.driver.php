@@ -367,7 +367,7 @@
 				}
 
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
-					if(!extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
+					if(!Symphony::Database()->tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						// Add handle field
 						Symphony::Database()->query(sprintf(
 							"ALTER TABLE `tbl_entries_data_%d` ADD `handle` VARCHAR(255) DEFAULT NULL",
@@ -433,7 +433,7 @@
 				}
 
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
-					if(extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
+					if(Symphony::Database()->tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						try {
 							// Drop handle field
 							Symphony::Database()->query(sprintf(
@@ -702,12 +702,6 @@
 			catch(Exception $ex) {}
 
 			return $options;
-		}
-
-		public static function tableContainsField($table, $field){
-			$results = Symphony::Database()->fetch("DESC `{$table}` `{$field}`");
-
-			return (is_array($results) && !empty($results));
 		}
 
 	/*-------------------------------------------------------------------------
