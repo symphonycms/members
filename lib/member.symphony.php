@@ -2,10 +2,6 @@
 
 	Class SymphonyMember extends Members {
 
-		public function __construct($driver) {
-			parent::__construct($driver);
-		}
-
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/

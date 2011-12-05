@@ -24,16 +24,11 @@
 
 	Abstract Class Members implements Member {
 
-		protected static $driver = null;
 		protected static $member_id = 0;
 		protected static $isLoggedIn = false;
 
 		public $Member = null;
 		public $cookie = null;
-
-		public function __construct($driver) {
-			self::$driver = $driver;
-		}
 
 	/*-------------------------------------------------------------------------
 		Utilities:
