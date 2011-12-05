@@ -979,7 +979,7 @@
 				$entry_id = (int)$context['entry_id'];
 				$action = 'edit';
 			}
-			else if(isset($_POST['id'])){
+			else if(isset($_POST['id']) && !empty($_POST['id'])) {
 				$entry_id = (int)$_POST['id'];
 				$action = 'edit';
 			}
