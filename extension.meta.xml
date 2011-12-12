@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="members" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
+	<name>Members</name>
+	<description>Define your own frontend membership system using events and XSLT.</description>
+	<repo type="github">https://github.com/symphonycms/members</repo>
+	<url type="discuss">http://symphony-cms.com/discuss/thread/70378/</url>
+	<types>
+		<type>Membership</type>
+	</types>
+	<authors>
+		<author>
+			<name github="symphonycms" symphony="team">Symphony Team</name>
+			<website>http://symphony-cms.com</website>
+		</author>
+		<author>
+			<name github="brendo" symphony="brendo">Brendan Abbott</name>
+		</author>
+	</authors>
+	<releases>
+		<release version="1.1.0" date="2011-08-13" min="2.2.1">
+			- Fix update script in 1.1
+			- Explicitly set the CHARSET to be UTF8 when creating new tables
+		</release>
+		<release version="1.1.0" date="2011-08-06" min="2.2.1">
+			- Member: Username uniqueness is now done by `handle`, rather than `value`
+			- Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
+			- Fix sorting and output parameter of the Member: Activation field
+			- The Member: Reset Password event now works correctly with the Member: Email field when no Member: Username field is present
+			- Addition of the Italian localisation
+			- Other minor miscellaneous tweaks and fixes
+		</release>
+		<release version="1.0.0" date="2011-05-01" min="2.2.1">
+			- Initial release
+		</release>
+	</releases>
+</extension>

@@ -47,27 +47,6 @@ logged in member.
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
-## Changelog
-
-*1.1.1* August 13th 2011
-
-- Fix update script in 1.1
-- Explicitly set the CHARSET to be UTF8 when creating new tables.
-
-*1.1* August 6th 2011
-
-- Member: Username uniqueness is now done by `handle`, rather than `value`
-- Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
-- Fix sorting and output parameter of the Member: Activation field
-- The Member: Reset Password event now works correctly with the Member: Email field when no Member: Username field is present
-- Addition of the Italian localisation
-- Other minor miscellaneous tweaks and fixes
-
-*1.0* June 1st 2011
-
-- Initial release
-
-
 ## Fields
 
 This extension provides six additional fields:
