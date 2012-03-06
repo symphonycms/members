@@ -216,9 +216,13 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 			if(!isset($data['value'])) return;
 
+			$mail = explode('@', General::sanitize($data['value']));
+
 			$wrapper->appendChild(
 				new XMLElement($this->get('element_name'), General::sanitize($data['value']), array(
-					'hash' => md5($data['value'])
+					'hash' => md5($data['value']),
+					'alias' => $mail[0],
+					'domain' => $mail[1]
 				))
 			);
 		}
