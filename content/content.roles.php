@@ -115,9 +115,7 @@
 				$options[1] = array('label' => __('Move Members To'), 'options' => $with_selected_roles);
 			}
 
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
-
+			$tableActions->appendChild(Widget::Apply($options));
 			$this->Form->appendChild($tableActions);
 		}
 
