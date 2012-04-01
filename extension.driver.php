@@ -447,6 +447,29 @@
 		}
 
 		/**
+		 * Given a string representing a field type, return the actual field type
+		 * that will be saved in Symphony. This is mainly for legacy reasons, where
+		 * the Members extension uses slightly different types to what is actually
+		 * saved. For example, `role` is `memberrole`, `authentication` is `memberpassword`
+		 * etc.
+		 *
+		 * @param string $type
+		 * @return $type;
+		 */
+		public static function getFieldType($type) {
+			$type = 'member' . $type;
+
+			switch($type) {
+				case "memberauthentication":
+					return "memberpassword";
+				case "memberidentity":
+					return "memberusername";
+				default:
+					return $type;
+			}
+		}
+
+		/**
 		 * Where `$name` is one of the following values, `role`, `timezone`,
 		 * `email`, `activation`, `authentication` and `identity`, this function
 		 * will return a Field instance. Typically this allows extensions to access
@@ -462,32 +485,21 @@
 		public static function getField($type = null, $section_id = null) {
 			if(is_null($type)) return null;
 
+			$type = self::getFieldType($type);
+
 			// Check to see if this name has been stored in our 'static' cache
 			// If it hasn't, lets go find it (for better or worse)
 			if(!isset(extension_Members::$fields[$type])) {
-				$field = Symphony::Database()->fetch(sprintf("
-						SELECT `id`, `element_name`
-						FROM `tbl_fields`
-						WHERE `type` = '%s'
-						%s
-					",
-					$type,
-					!is_null($section_id) ? sprintf('AND `parent_section` = %d' , $section_id) : ''
-				));
+				$field = FieldManager::fetch(null, $section_id, null, null, $type);
 
-				if(!empty($field)) extension_Members::initialiseField($field, $type);
+				if(!empty($field)) {
+					extension_Members::$fields[$type] = $field;
+					extension_Members::$handles[$type] = $field->get('element_name');
+				}
 			}
 
 			// If it has, return it.
 			return extension_Members::$fields[$type];
-		}
-
-		private static function initialiseField(array $field, $type) {
-			extension_Members::$fields[$type] = FieldManager::fetch($field['id']);
-
-			if(extension_Members::$fields[$type] instanceof Field) {
-				extension_Members::$handles[$type] = $field['element_name'];
-			}
 		}
 
 		/**
@@ -502,6 +514,8 @@
 		 * @return string
 		 */
 		public static function getFieldHandle($type = null) {
+			$type = self::getFieldType($type);
+
 			if(!isset(extension_Members::$handles[$type])) return null;
 
 			return extension_Members::$handles[$type];
