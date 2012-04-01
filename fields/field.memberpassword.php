@@ -462,7 +462,7 @@
 
 			//	If the field is required, we should have both a $username and $password.
 			if($required && !isset($data['optional']) && (empty($password))) {
-				$message = __('\'%s\' is a required field.', array($this->get('label')));
+				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
