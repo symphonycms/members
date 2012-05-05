@@ -240,7 +240,7 @@
 						__('User can create new entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][create]",
-							EventPermissions::CREATE,
+							(string)EventPermissions::CREATE,
 							'checkbox',
 							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -254,7 +254,7 @@
 						__('User cannot edit existing entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
-							EventPermissions::NO_PERMISSIONS,
+							(string)EventPermissions::NO_PERMISSIONS,
 							'radio',
 							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -267,7 +267,7 @@
 						__('User can edit their own entries only'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
-							EventPermissions::OWN_ENTRIES,
+							(string)EventPermissions::OWN_ENTRIES,
 							'radio',
 							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -280,7 +280,7 @@
 						__('User can edit all entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
-							EventPermissions::ALL_ENTRIES,
+							(string)EventPermissions::ALL_ENTRIES,
 							'radio',
 							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : NULL)
 						)->generate(),
