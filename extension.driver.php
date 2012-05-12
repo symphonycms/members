@@ -490,7 +490,7 @@
 			// Check to see if this name has been stored in our 'static' cache
 			// If it hasn't, lets go find it (for better or worse)
 			if(!isset(extension_Members::$fields[$type])) {
-				$field = FieldManager::fetch(null, $section_id, null, null, $type);
+				$field = FieldManager::fetch(null, $section_id, 'ASC', 'sortorder', $type);
 
 				if(!empty($field)) {
 					extension_Members::$fields[$type] = $field;
