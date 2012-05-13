@@ -493,6 +493,7 @@
 				$field = FieldManager::fetch(null, $section_id, 'ASC', 'sortorder', $type);
 
 				if(!empty($field)) {
+					$field = current($field);
 					extension_Members::$fields[$type] = $field;
 					extension_Members::$handles[$type] = $field->get('element_name');
 				}
