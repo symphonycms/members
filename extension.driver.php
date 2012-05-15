@@ -490,14 +490,11 @@
 			// Check to see if this name has been stored in our 'static' cache
 			// If it hasn't, lets go find it (for better or worse)
 			if(!isset(extension_Members::$fields[$type])) {
-				$field = FieldManager::fetch(null, $section_id, 'ASC', 'sortorder', $type);
-
-				if(!empty($field)) {
-					$field = current($field);
-					extension_Members::$fields[$type] = $field;
-					extension_Members::$handles[$type] = $field->get('element_name');
-				}
+				self::initialiseField($type, $section_id);
 			}
+
+			// No field, return null
+			if(!isset(extension_Members::$fields[$type])) return null;
 
 			// If it has, return it.
 			return extension_Members::$fields[$type];
@@ -512,14 +509,42 @@
 		 * be returned.
 		 *
 		 * @param string $type
+		 * @param integer $section_id
+		 *  The Section ID to find the given `$type` in. If this isn't provided this
+		 *  extension will just look for any Fields with the given `$type`
 		 * @return string
 		 */
-		public static function getFieldHandle($type = null) {
+		public static function getFieldHandle($type = null, $section_id = null) {
 			$type = self::getFieldType($type);
 
+			// Check to see if this name has been stored in our 'static' cache
+			// If it hasn't, lets go find it (for better or worse)
+			if(!isset(extension_Members::$handles[$type])) {
+				self::initialiseField($type, $section_id);
+			}
+
+			// No field, return null
 			if(!isset(extension_Members::$handles[$type])) return null;
 
+			// Return the handle
 			return extension_Members::$handles[$type];
+		}
+
+		/**
+		 * Given a `$type` and potentially `$section_id`, fetch the Field
+		 * instance and populate the static `$fields` and `$handles` arrays
+		 *
+		 * @param string $type
+		 * @param integer $section_id
+		 */
+		public static function initialiseField($type, $section_id = null) {
+			$field = FieldManager::fetch(null, $section_id, 'ASC', 'sortorder', $type);
+
+			if(!empty($field)) {
+				$field = current($field);
+				extension_Members::$fields[$type] = $field;
+				extension_Members::$handles[$type] = $field->get('element_name');
+			}
 		}
 
 		/**
@@ -806,7 +831,6 @@
 				if($isLoggedIn) {
 					$this->getMemberDriver()->logout();
 				}
-
 				if($this->getMemberDriver()->login($_POST['fields'])) {
 					/**
 					 * Fired just after a Member has successfully logged in, this delegate
