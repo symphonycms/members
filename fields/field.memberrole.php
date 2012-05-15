@@ -92,7 +92,7 @@
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			// Get Role in system
 			$roles = RoleManager::fetch();
@@ -104,6 +104,7 @@
 			}
 
 			$label = new XMlElement('label', __('Default Member Role'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Select(
 				"fields[{$this->get('sortorder')}][default_role]", $options
 			));
@@ -111,7 +112,7 @@
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);

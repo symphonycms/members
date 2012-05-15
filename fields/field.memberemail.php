@@ -93,7 +93,7 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);

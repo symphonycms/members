@@ -4,6 +4,6 @@
 }
 .secondary label > i:hover {
 	white-space:normal;
-	height:auto;
+	height: auto;
 	background: rgba(255, 255, 255, 0.8);
 }

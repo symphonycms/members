@@ -101,15 +101,9 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$group = new XMLElement('div', null, array('class' => 'group'));
+			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
 
-			$div = new XMLElement('div');
-			$this->buildValidationSelect($div, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
-			$group->appendChild($div);
-
-			$wrapper->appendChild($group);
-
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);

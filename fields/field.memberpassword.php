@@ -249,9 +249,10 @@
 		// Validator ----------------------------------------------------------
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			$label = Widget::Label(__('Minimum Length'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Input(
 				"fields[{$order}][length]", $this->get('length')
 			));
@@ -267,6 +268,7 @@
 			}
 
 			$label = Widget::Label(__('Minimum Strength'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Select(
 				"fields[{$order}][strength]", $values
 			));
@@ -277,9 +279,10 @@
 		// Salt ---------------------------------------------------------------
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			$label = Widget::Label(__('Password Salt'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(
 				new XMLElement('i', __('A salt gives your passwords extra security. It cannot be changed once set'))
 			);
@@ -301,6 +304,7 @@
 
 			// Add Activiation Code Expiry
 			$div = new XMLElement('div');
+			$div->setAttribute('class', 'column');
 
 			$label = Widget::Label(__('Recovery Code Expiry'));
 			$label->appendChild(
@@ -316,18 +320,18 @@
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
 			}
 
-			if (isset($errors['code_expiry'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
-			}
-
 			$div->appendChild($label);
 			$div->appendChild($ul);
+
+			if (isset($errors['code_expiry'])) {
+				$div = Widget::wrapFormElementWithError($div, $errors['code_expiry']);
+			}
 
 			$group->appendChild($div);
 			$wrapper->appendChild($group);
 
 			// Add checkboxes
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);

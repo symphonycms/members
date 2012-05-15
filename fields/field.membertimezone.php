@@ -194,8 +194,10 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
-			$label = new XMLElement('label', __('Available Zones'));
+			$group = new XMLElement('div', null, array('class' => 'two columns'));
 
+			$label = new XMLElement('label', __('Available Zones'));
+			$label->setAttribute('class', 'column');
 			$zones = is_array($this->get('available_zones'))
 				? $this->get('available_zones')
 				: explode(',', $this->get('available_zones'));
@@ -210,9 +212,10 @@
 				"fields[{$this->get('sortorder')}][available_zones][]", $options, array('multiple' => 'multiple')
 			));
 
-			$wrapper->appendChild($label);
+			$group->appendChild($label);
+			$wrapper->appendChild($group);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);

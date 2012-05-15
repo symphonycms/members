@@ -194,10 +194,11 @@
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			// Add Activiation Code Expiry
 			$div = new XMLElement('div');
+			$div->setAttribute('class', 'column');
 
 			$label = Widget::Label(__('Activation Code Expiry'));
 			$label->appendChild(
@@ -213,12 +214,12 @@
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
 			}
 
-			if (isset($errors['code_expiry'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
-			}
-
 			$div->appendChild($label);
 			$div->appendChild($ul);
+
+			if (isset($errors['code_expiry'])) {
+				$div = Widget::wrapFormElementWithError($div, $errors['code_expiry']);
+			}
 
 			// Get Roles in system
 			$roles = RoleManager::fetch();
@@ -230,6 +231,7 @@
 			}
 
 			$label = new XMlElement('label', __('Role for Members who are awaiting activation'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Select(
 				"fields[{$this->get('sortorder')}][activation_role_id]", $options
 			));
@@ -240,13 +242,13 @@
 			$group->appendChild($div);
 			$wrapper->appendChild($group);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 
 			// Add Deny Login
 			$div->appendChild(Widget::Input("fields[{$this->get('sortorder')}][deny_login]", 'no', 'hidden'));
 
 			$label = Widget::Label();
-			$label->setAttribute('class', 'meta');
+			$label->setAttribute('class', 'column');
 			$input = Widget::Input("fields[{$this->get('sortorder')}][deny_login]", 'yes', 'checkbox');
 
 			if ($this->get('deny_login') == 'yes') $input->setAttribute('checked', 'checked');
