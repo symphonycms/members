@@ -387,9 +387,9 @@
 			$handle = $this->get('element_name');
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
-		//	Password
+			// Password
 			$password = $data['password'];
 			$password_set = Symphony::Database()->fetchVar('id', 0, sprintf("
 					SELECT
@@ -428,7 +428,7 @@
 				);
 			}
 
-			//	Error?
+			// Error?
 			if(!is_null($error)) {
 				$group = Widget::wrapFormElementWithError($group, $error);
 				$wrapper->appendChild($group);
@@ -445,6 +445,7 @@
 			$required = ($this->get('required') == 'yes');
 
 			$label = Widget::Label(__($title));
+			$label->setAttribute('class', 'column');
 			if(!$required) $label->appendChild(new XMLElement('i', __('Optional')));
 
 			$input = Widget::Input("fields{$name}", null, 'password', array('autocomplete' => 'off'));
@@ -464,13 +465,13 @@
 			$password = trim($data['password']);
 			$confirm = trim($data['confirm']);
 
-			//	If the field is required, we should have both a $username and $password.
+			// If the field is required, we should have both a $username and $password.
 			if($required && !isset($data['optional']) && (empty($password))) {
 				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
-			//	Check password
+			// Check password
 			if(!empty($password) || !empty($confirm)) {
 				if($confirm !== $password) {
 					$message = __('%s confirmation does not match.', array($this->get('label')));
@@ -496,7 +497,7 @@
 			return self::__OK__;
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id = null){
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id = null){
 			$status = self::__OK__;
 			$required = ($this->get('required') == "yes");
 
@@ -504,9 +505,9 @@
 
 			$password = trim($data['password']);
 
-			//	We only want to run the processing if the password has been altered
-			//	or if the entry hasn't been created yet. If someone attempts to change
-			//	their username, but not their password, this will be caught by checkPostFieldData
+			// We only want to run the processing if the password has been altered
+			// or if the entry hasn't been created yet. If someone attempts to change
+			// their username, but not their password, this will be caught by checkPostFieldData
 			if(!empty($password) || is_null($entry_id)) {
 				return array(
 					'password'	=> $this->encodePassword($password),
