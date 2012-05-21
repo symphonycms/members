@@ -158,8 +158,26 @@
 		}
 
 		/**
+		 * Generates a random password for a member, using
+		 * `openssl_random_pseudo_bytes` on PHP5.3, or falling back to a
+		 * simple `uniqid` variant for other systems.
+		 *
+		 * @link http://php.net/manual/en/function.openssl-random-pseudo-bytes.php
+		 * @link http://php.net/manual/en/function.uniqid.php
+		 * @return string
+		 */
+		public function generatePassword() {
+			if(function_exists('openssl_random_pseudo_bytes')) {
+				return openssl_random_pseudo_bytes(20);
+			}
+			else {
+				return str_shuffle(uniqid());
+			}
+		}
+
+		/**
 		 * Given a string, this function will encode it using the
-		 * field's salt and the sha1 algorithm
+		 * field's salt and the `sha1` algorithm
 		 *
 		 * @param string $password
 		 * @return string
