@@ -17,16 +17,15 @@
 	</author>
   </authors>
   <releases>
-	<release version="1.2dev" date="unreleased" min="2.3">
+	<release version="1.2RC1" date="2012-05-27" min="2.3">
 	  * Update for Symphony 2.3
-	  * Support for multiple member sections
 	  * Lazy load Member fields for better performance
 	</release>
-	<release version="1.1.1" date="2011-08-13" min="2.2.1">
+	<release version="1.1.1" date="2011-08-13" min="2.2.1" max='2.2.x'>
 	  * Fix update script in 1.1
 	  * Explicitly set the CHARSET to be UTF8 when creating new tables.
 	</release>
-	<release version="1.1" date="2011-08-06" min="2.2.1">
+	<release version="1.1" date="2011-08-06" min="2.2.1" max='2.2.x'>
 	  * Member: Username uniqueness is now done by `handle`, rather than `value`
 	  * Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
 	  * Fix sorting and output parameter of the Member: Activation field
@@ -34,7 +33,7 @@
 	  * Addition of the Italian localisation
 	  * Other minor miscellaneous tweaks and fixes
 	</release>
-	<release version="1.0" date="2011-06-01" min="2.2.1">
+	<release version="1.0" date="2011-06-01" min="2.2.1" max='2.2.x'>
 	  * Initial release
 	</release>
   </releases>
