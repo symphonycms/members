@@ -186,7 +186,7 @@
 		public function install(){
 
 			Symphony::Configuration()->set('cookie-prefix', 'sym-members', 'members');
-			Administration::instance()->saveConfig();
+			Symphony::Configuration()->write();
 
 			return Symphony::Database()->import("
 				DROP TABLE IF EXISTS `tbl_members_roles`;
@@ -230,7 +230,7 @@
 		 */
 		public function uninstall(){
 			Symphony::Configuration()->remove('members');
-			Administration::instance()->saveConfig();
+			Symphony::Configuration()->write();
 
 			return Symphony::Database()->query("
 				DROP TABLE IF EXISTS
@@ -285,7 +285,7 @@
 				Symphony::Configuration()->remove('identity', 'members');
 				Symphony::Configuration()->remove('email', 'members');
 				Symphony::Configuration()->remove('authentication', 'members');
-				Administration::instance()->saveConfig();
+				Symphony::Configuration()->write();
 			}
 
 			if(version_compare($previousVersion, '1.1 Beta 1', '<') || version_compare($previousVersion, '1.1.1RC1', '<')) {
@@ -769,6 +769,7 @@
 		 * Saves the Member Section to the configuration
 		 *
 		 * @uses savePreferences
+		 * @return boolean
 		 */
 		public function savePreferences(array &$context){
 			$settings = $context['settings'];
@@ -776,7 +777,7 @@
 			// Active Section
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
 
-			Administration::instance()->saveConfig();
+			return Symphony::Configuration()->write();
 		}
 
 	/*-------------------------------------------------------------------------

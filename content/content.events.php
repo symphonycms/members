@@ -64,7 +64,7 @@
 			}
 
 			// Return successful
-			if(Administration::instance()->saveConfig()) {
+			if(Symphony::Configuration()->write()) {
 				$this->_status = AjaxPage::STATUS_OK;
 				$this->_Result->appendChild(
 					new XMLElement('message', __('Preferences saved.'))
