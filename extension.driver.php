@@ -455,7 +455,7 @@
 		 *
 		 * @param string $type
 		 *
-		 * @return string $type;
+		 * @return string
 		 */
 		public static function getFieldType($type) {
 
@@ -719,7 +719,7 @@
 		 * @uses AddCustomPreferenceFieldsets
 		 * @todo Look at how this could be expanded so users can log into multiple sections. This is not in scope for 1.0
 		 *
-		 * @param XMLElement $context
+		 * @param array $context
 		 */
 		public function appendPreferences($context) {
 			$fieldset = new XMLElement('fieldset');
