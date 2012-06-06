@@ -167,10 +167,10 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function toggleFieldData($data, $newState){
+		public function toggleFieldData($data, $newState, $entry_id){
 			$data['activated'] = $newState;
 
-			if($data['activated'] == "no") {
+			if($data['activated'] == 'no') {
 				$data = array_merge($data, $this->generateCode($entry_id));
 			}
 			else {
@@ -218,7 +218,7 @@
 			$div->appendChild($ul);
 
 			if (isset($errors['code_expiry'])) {
-				$div = Widget::wrapFormElementWithError($div, $errors['code_expiry']);
+				$div = Widget::Error($div, $errors['code_expiry']);
 			}
 
 			// Get Roles in system
@@ -312,12 +312,12 @@
 			$label = Widget::Label($this->get('label'));
 			if(!$isActivated) {
 				$label->appendChild(Widget::Select(
-					'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options
+					'fields'.$prefix.'['.$this->get('element_name').']'.$postfix, $options
 				));
 			}
 			else {
 				$label->appendChild(Widget::Input(
-					'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, 'yes', 'hidden'
+					'fields'.$prefix.'['.$this->get('element_name').']'.$postfix, 'yes', 'hidden'
 				));
 			}
 
@@ -356,7 +356,7 @@
 			}
 
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);
@@ -376,7 +376,7 @@
 					$data = array('activated' => $data);
 				}
 
-				if($data['activated'] == "no") {
+				if($data['activated'] == 'no') {
 					$data = array_merge($data, $this->generateCode($entry_id));
 				}
 				else {

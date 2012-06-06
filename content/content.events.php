@@ -70,7 +70,7 @@
 					new XMLElement('message', __('Preferences saved.'))
 				);
 				$this->_Result->appendChild(
-					new XMLElement('timestamp', '<![CDATA[' . DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__) . ']]>')
+					new XMLElement('timestamp', '<![CDATA[' . Widget::Time(null,__SYM_TIME_FORMAT__)->generate() . ']]>')
 				);
 			}
 		}

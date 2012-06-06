@@ -60,9 +60,8 @@
 		 * @return integer
 		 */
 		public function findMemberIDFromCredentials(array $credentials) {
-			extract($credentials);
 
-			if((is_null($username) && is_null($email))) return null;
+			if((is_null($credentials['username']) && is_null($credentials['email']))) return null;
 
 			$identity = SymphonyMember::setIdentityField($credentials);
 
@@ -153,6 +152,8 @@
 		 * @param boolean $isHashed
 		 *  Defaults to false, which will encode the password value before attempting
 		 *  to log the user in
+		 *
+		 * @throws Exception
 		 * @return boolean
 		 */
 		public function login(array $credentials, $isHashed = false) {
@@ -334,6 +335,8 @@
 		 * enter it. The use of the 'optional' key will only trigger validation should
 		 * they enter a value in the password field, in which it assumes the user is
 		 * trying to update their password.
+		 *
+		 * @param array $context
 		 */
 		public function filter_UpdatePassword(array &$context) {
 			if(!is_null(extension_Members::getFieldHandle('authentication'))) {
@@ -345,6 +348,10 @@
 		 * Part 2 - Update Password, logs the user in
 		 * If the user changed their password, we need to login them back into the
 		 * system with their new password.
+		 *
+		 * @param array $context
+		 *
+		 * @return bool
 		 */
 		public function filter_UpdatePasswordLogin(array $context) {
 			// If the user didn't update their password, or no Identity field exists return

@@ -315,7 +315,7 @@
 			$label->appendChild($input);
 
 			if (isset($errors['salt'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['salt']);
+				$label = Widget::Error($label, $errors['salt']);
 			}
 
 			$group->appendChild($label);
@@ -342,7 +342,7 @@
 			$div->appendChild($ul);
 
 			if (isset($errors['code_expiry'])) {
-				$div = Widget::wrapFormElementWithError($div, $errors['code_expiry']);
+				$div = Widget::Error($div, $errors['code_expiry']);
 			}
 
 			$group->appendChild($div);
@@ -448,7 +448,7 @@
 
 			// Error?
 			if(!is_null($error)) {
-				$group = Widget::wrapFormElementWithError($group, $error);
+				$group = Widget::Error($group, $error);
 				$wrapper->appendChild($group);
 			}
 			else {
