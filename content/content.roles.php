@@ -413,7 +413,8 @@
 			if(array_key_exists('delete', $_POST['action'])) {
 				return $this->__actionDelete($this->_context[1], extension_Members::baseURL() . 'roles/');
 			}
-			else if(array_key_exists('save', $_POST['action'])) {
+
+			if(array_key_exists('save', $_POST['action'])) {
 				$isNew = ($this->_context[0] !== "edit");
 				$fields = $_POST['fields'];
 
