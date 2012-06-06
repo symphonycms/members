@@ -60,7 +60,6 @@
 		 * @return integer
 		 */
 		public function findMemberIDFromCredentials(array $credentials) {
-			//extract($credentials);
 
 			if((is_null($credentials['username']) && is_null($credentials['email']))) return null;
 
