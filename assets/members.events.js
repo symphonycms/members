@@ -44,7 +44,7 @@ jQuery(document).ready(function() {
 
 			return false;
 		}
-	}
+	};
 
 	// Save our the Event's email preference
 	jQuery('form').on('submit', Symphony.Members.memberEventSave);
