@@ -167,11 +167,11 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function toggleFieldData($data, $newState){
+		public function toggleFieldData($data, $newState, $entry_id){
 			$data['activated'] = $newState;
 
 			if($data['activated'] == 'no') {
-				$data = array_merge($data, $this->generateCode());
+				$data = array_merge($data, $this->generateCode($entry_id));
 			}
 			else {
 				$data['timestamp'] = DateTimeObj::get('Y-m-d H:i:s', time());
