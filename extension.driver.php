@@ -454,18 +454,18 @@
 		 * etc.
 		 *
 		 * @param string $type
-		 * @return $type;
+		 *
+		 * @return string $type;
 		 */
 		public static function getFieldType($type) {
-			$type = 'member' . $type;
 
 			switch($type) {
-				case "memberauthentication":
-					return "memberpassword";
-				case "memberidentity":
-					return "memberusername";
+				case 'authentication':
+					return 'memberpassword';
+				case 'identity':
+					return 'memberusername';
 				default:
-					return $type;
+					return 'member' . $type;
 			}
 		}
 
@@ -567,7 +567,7 @@
 				DateTimeObj::setDefaultTimezone($tz);
 			}
 			catch(Exception $ex) {
-				Symphony::$Log->pushToLog(__('Members Timezone') . ': ' . $ex->getMessage(), $code, true);
+				Symphony::Log()->pushToLog(__('Members Timezone') . ': ' . $ex->getMessage(), $ex->getCode(), true);
 			}
 		}
 
@@ -601,6 +601,8 @@
 		 * events to do various functionality. This negates the need for custom events
 		 *
 		 * @uses AppendEventFilter
+		 *
+		 * @param $context
 		 */
 		public function appendFilter($context) {
 			$selected = !is_array($context['selected']) ? array() : $context['selected'];
@@ -715,8 +717,9 @@
 		 * for migration during development.
 		 *
 		 * @uses AddCustomPreferenceFieldsets
-		 * @todo Look at how this could be expanded so users can log into multiple
-		 * sections. This is not in scope for 1.0
+		 * @todo Look at how this could be expanded so users can log into multiple sections. This is not in scope for 1.0
+		 *
+		 * @param XMLElement $context
 		 */
 		public function appendPreferences($context) {
 			$fieldset = new XMLElement('fieldset');
@@ -748,7 +751,7 @@
 				array(null, false, null)
 			);
 			foreach($member_sections as $section_id => $section) {
-  				$options[] = array($section_id, ($section_id == extension_Members::getMembersSection()), $section['name']);
+				$options[] = array($section_id, ($section_id == extension_Members::getMembersSection()), $section['name']);
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
@@ -769,6 +772,8 @@
 		 * Saves the Member Section to the configuration
 		 *
 		 * @uses savePreferences
+		 *
+		 * @param array $context
 		 * @return boolean
 		 */
 		public function savePreferences(array &$context){
@@ -881,8 +886,8 @@
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
 				if($row = PageManager::fetchPageByType('403')) {
-					$row['type'] = FrontendPage::fetchPageTypes($row['id']);
-					$row['filelocation'] = FrontendPage::resolvePageFileLocation($row['path'], $row['handle']);
+					$row['type'] = PageManager::fetchPageTypes($row['id']);
+					$row['filelocation'] = PageManager::resolvePageFileLocation($row['path'], $row['handle']);
 
 					$context['page_data'] = $row;
 					return;
@@ -910,6 +915,8 @@
 		 * each event
 		 *
 		 * @uses AdminPagePreGenerate
+		 *
+		 * @param $context
 		 */
 		public function appendAssets(&$context) {
 			if(class_exists('Administration')
@@ -952,6 +959,9 @@
 		 * before returning.
 		 *
 		 * @uses EventPreSaveFilter
+		 *
+		 * @param array $context
+		 * @return null
 		 */
 		public function checkEventPermissions(array &$context){
 			// If this system has no Roles, or the event is set to ignore role permissions
@@ -960,7 +970,8 @@
 				is_null(extension_Members::getFieldHandle('role')) ||
 				(method_exists($context['event'], 'ignoreRolePermissions') && $context['event']->ignoreRolePermissions() == true)
 			) {
-				return $this->__processEventFilters($context);
+				$this->__processEventFilters($context);
+				return null;
 			}
 
 			// Prior to Symphony 2.2.2, the EventPreSaveFilter delegate doesn't
@@ -1061,30 +1072,25 @@
 				}
 			}
 
-			try {
-				$role = RoleManager::fetch($role_id);
-				$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
-				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
+			$role = RoleManager::fetch($role_id);
+			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
+			$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 
-				$context['messages'][] = array(
-					'permission',
-					$success,
-					($success === false) ? __('You are not authorised to perform this action.') : null
-				);
-			}
-			catch (Exception $ex) {
-				// Unsure of what the possible Exceptions would be here, so lets
-				// just throw for now for the sake of discovery.
-				throw new $ex;
-			}
+			$context['messages'][] = array(
+				'permission',
+				$success,
+				($success === false) ? __('You are not authorised to perform this action.') : null
+			);
 
 			// Process the Filters for this event.
-			return $this->__processEventFilters($context);
+			$this->__processEventFilters($context);
 		}
 
 		/**
 		 * We can safely assume at this stage of the process that whatever user has
 		 * requested this event has permission to actually do so.
+		 *
+		 * @param array $context
 		 */
 		private function __processEventFilters(array &$context) {
 			// Process the Member Lock Role
@@ -1107,6 +1113,8 @@
 		 * Any post save behaviour
 		 *
 		 * @uses EventPostSaveFilter
+		 *
+		 * @param array $context
 		 */
 		public function processPostSaveFilter(array &$context) {
 			// Process updating a Member's Password
