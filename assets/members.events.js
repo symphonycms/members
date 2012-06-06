@@ -17,7 +17,7 @@ jQuery(document).ready(function() {
 					notifier.find('.members').trigger('detach.notify');
 				},
 				success: function(data, response) {
-					if(response == "success") {
+					if(response === "success") {
 						notifier.trigger('attach.notify', [
 							Symphony.Language.get('Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>', {
 								time: jQuery(data).find('timestamp').text(),
