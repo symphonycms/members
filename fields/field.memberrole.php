@@ -203,7 +203,7 @@
 
 			$label = Widget::Label($this->get('label'));
 			$label->appendChild(Widget::Select(
-				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix,
+				'fields'.$prefix.'['.$this->get('element_name').']'.$postfix,
 				$options,
 				!is_null($activation_role_id) ? array('disabled' => 'disabled') : array())
 			);
@@ -222,13 +222,13 @@
 						array('class' => 'help frame'))
 					);
 					$label->appendChild(
-						Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $default_role_id, 'hidden')
+						Widget::Input('fields'.$prefix.'['.$this->get('element_name').']'.$postfix, $default_role_id, 'hidden')
 					);
 				}
 			}
 
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);
