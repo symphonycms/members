@@ -67,10 +67,10 @@
 		public function getToggleStates() {
 			$zones = explode(",", $this->get('available_zones'));
 
+			$options = array();
 			foreach($zones as $zone) {
 				$timezones = DateTimeObj::getTimezones($zone);
 
-				$options = array();
 				foreach($timezones as $timezone) {
 					$tz = new DateTime('now', new DateTimeZone($timezone));
 
@@ -196,7 +196,7 @@
 			$label = $this->buildTZSelection($data, $prefix, $postfix);
 
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);
