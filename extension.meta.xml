@@ -17,9 +17,10 @@
 	</author>
   </authors>
   <releases>
-	<release version="1.2RC1" date="2012-05-27" min="2.3">
+	<release version="1.2RC2" date="2012-06-08" min="2.3">
 	  * Update for Symphony 2.3
 	  * Lazy load Member fields for better performance
+	  * Added Greek translation
 	</release>
 	<release version="1.1.1" date="2011-08-13" min="2.2.1" max='2.2.x'>
 	  * Fix update script in 1.1
