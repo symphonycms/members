@@ -458,7 +458,6 @@
 		 * @return string
 		 */
 		public static function getFieldType($type) {
-
 			switch($type) {
 				case 'authentication':
 					return 'memberpassword';

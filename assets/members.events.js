@@ -22,7 +22,7 @@ jQuery(document).ready(function() {
 							Symphony.Language.get('Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>', {
 								time: jQuery(data).find('timestamp').text(),
 								new_url: Symphony.Context.get('root') + '/symphony/blueprints/events/new/',
-								url: Symphony.Context.get('root') + '/symphony/blueprints/components/'
+								url: Symphony.Context.get('root') + '/symphony/blueprints/events/'
 							}),
 							'success members'
 						]);
