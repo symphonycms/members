@@ -141,7 +141,7 @@ There are two global events that are available on any page your website:
 
 	<form method="post" autocomplete='off'>
 		<input type='hidden' name='redirect' value='{$your-redirect-url}' />
-		<input name="member-action[action]" type="submit" value="Logout" />
+		<input name="member-action[logout]" type="submit" value="Logout" />
 	</form>
 
 or
