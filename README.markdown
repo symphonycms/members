@@ -21,17 +21,17 @@ Frontend membership extension for Symphony CMS. This version represents `1.2RC2`
 
 6.	On the frontend, Members can login using standard forms. Below is an example, where `{Member: Username element_name}` should be substituted with your field handles, eg. `fields[username]`.
 
-	<form method="post" autocomplete='off'>
-		<label>Username
-			<input name="fields[{Member: Username element_name}]" type="text" />
-		</label>
-		<label>Password
-			<input name="fields[{Member: Password element_name}]" type="password" />
-		</label>
+        <form method="post" autocomplete='off'>
+            <label>Username
+                <input name="fields[{Member: Username element_name}]" type="text" />
+            </label>
+            <label>Password
+                <input name="fields[{Member: Password element_name}]" type="password" />
+            </label>
 
-		<input name="redirect" type="hidden" value="{$your-redirect-url}" />
-		<input name="member-action[login]" type="submit" value="Login" />
-	</form>
+            <input name="redirect" type="hidden" value="{$your-redirect-url}" />
+            <input name="member-action[login]" type="submit" value="Login" />
+        </form>
 
 Event information will be returned in the XML similar to the following example:
 
