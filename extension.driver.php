@@ -5,6 +5,7 @@
 
 	include_once(EXTENSIONS . '/members/lib/class.role.php');
 	include_once(EXTENSIONS . '/members/lib/class.members.php');
+	include_once(EXTENSIONS . '/members/lib/member.symphony.php');
 
 	Class extension_Members extends Extension {
 
