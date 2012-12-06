@@ -60,7 +60,6 @@
 		 * @return integer
 		 */
 		public function findMemberIDFromCredentials(array $credentials) {
-
 			if((is_null($credentials['username']) && is_null($credentials['email']))) return null;
 
 			$identity = SymphonyMember::setIdentityField($credentials);
@@ -158,7 +157,7 @@
 		 */
 		public function login(array $credentials, $isHashed = false) {
 			$username = $email = $password = null;
-			$data = array();
+			$data = extension_Members::$_errors = array();
 
 			// Map POST data to simple terms
 			if(isset($credentials[extension_Members::getFieldHandle('identity')])) {
