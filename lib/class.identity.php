@@ -22,14 +22,10 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_required = true;
 			$this->set('required', 'yes');
-
-			if(!(self::$driver instanceof Extension)){
-				self::$driver = Symphony::ExtensionManager()->create('members');
-			}
 		}
 
 		public function mustBeUnique() {
@@ -59,6 +55,10 @@
 		 * @return Entry
 		 */
 		public function fetchMemberFromID($member_id){
+			if(!(Identity::$driver instanceof Extension)){
+				Identity::$driver = Symphony::ExtensionManager()->create('members');
+			}
+
 			return Identity::$driver->getMemberDriver()->initialiseMemberObject($member_id);
 		}
 

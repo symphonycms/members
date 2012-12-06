@@ -52,7 +52,7 @@
 
 			// Add Save Changes
 			$div->appendChild(Widget::Input('members[event]', 'activate-account', 'hidden'));
-			$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
 
 			return '
 				<p>This event takes an activation code and an identifier for the Member (either Email or Username) to activate their account.

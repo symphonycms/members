@@ -45,9 +45,8 @@
 				));
 			}
 
-			else{
-				$sectionManager = new SectionManager(Administration::instance());
-				$section = $sectionManager->fetch(extension_Members::getMembersSection());
+			else {
+				$section = SectionManager::fetch(extension_Members::getMembersSection());
 
 				$with_selected_roles = array();
 				$hasRoles = !is_null(extension_Members::getFieldHandle('role'));
@@ -116,9 +115,7 @@
 				$options[1] = array('label' => __('Move Members To'), 'options' => $with_selected_roles);
 			}
 
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
-
+			$tableActions->appendChild(Widget::Apply($options));
 			$this->Form->appendChild($tableActions);
 		}
 
@@ -208,6 +205,9 @@
 					);
 				}
 			}
+			$this->insertBreadcrumbs(array(
+				Widget::Anchor(__('Member Roles'), extension_members::baseURL() . 'roles/'),
+			));
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
@@ -221,8 +221,7 @@
 
 			$this->Form->appendChild($fieldset);
 
-			$EventManager = new EventManager(Administration::instance());
-			$events = $EventManager->listAll();
+			$events = EventManager::listAll();
 
 			$fieldset = new XMLElement('fieldset');
 			$fieldset->setAttribute('class', 'settings type-file');
@@ -241,7 +240,7 @@
 						__('User can create new entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][create]",
-							EventPermissions::CREATE,
+							(string)EventPermissions::CREATE,
 							'checkbox',
 							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -255,7 +254,7 @@
 						__('User cannot edit existing entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
-							EventPermissions::NO_PERMISSIONS,
+							(string)EventPermissions::NO_PERMISSIONS,
 							'radio',
 							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -268,7 +267,7 @@
 						__('User can edit their own entries only'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
-							EventPermissions::OWN_ENTRIES,
+							(string)EventPermissions::OWN_ENTRIES,
 							'radio',
 							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -281,7 +280,7 @@
 						__('User can edit all entries'),
 						Widget::Input(
 							"fields[permissions][{$event_handle}][edit]",
-							EventPermissions::ALL_ENTRIES,
+							(string)EventPermissions::ALL_ENTRIES,
 							'radio',
 							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : NULL)
 						)->generate(),
@@ -290,7 +289,7 @@
 				);
 
 				// Create an Event instance
-				$ev = $EventManager->create($event_handle, array());
+				$ev = EventManager::create($event_handle, array());
 
 				$aTableBody[] = Widget::TableRow(
 					array(
@@ -336,12 +335,12 @@
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
 
 			$options = array();
-			$pages = Symphony::Database()->fetch("SELECT id FROM `tbl_pages` ORDER BY sortorder ASC");
+			$pages = PageManager::fetch(false, array('id'));
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],
 					in_array($page['id'], $fields['page_access']),
-					'/' . Administration::instance()->resolvePagePath($page['id'])
+					'/' . PageManager::resolvePagePath($page['id'])
 				);
 			}
 
@@ -414,7 +413,8 @@
 			if(array_key_exists('delete', $_POST['action'])) {
 				return $this->__actionDelete($this->_context[1], extension_Members::baseURL() . 'roles/');
 			}
-			else if(array_key_exists('save', $_POST['action'])) {
+
+			if(array_key_exists('save', $_POST['action'])) {
 				$isNew = ($this->_context[0] !== "edit");
 				$fields = $_POST['fields'];
 

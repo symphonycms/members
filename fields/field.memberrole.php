@@ -8,8 +8,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Role');
 			$this->_showassociation = false;
 		}
@@ -92,7 +92,7 @@
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			// Get Role in system
 			$roles = RoleManager::fetch();
@@ -104,6 +104,7 @@
 			}
 
 			$label = new XMlElement('label', __('Default Member Role'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Select(
 				"fields[{$this->get('sortorder')}][default_role]", $options
 			));
@@ -111,7 +112,7 @@
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
@@ -165,7 +166,7 @@
 			$activation_role_id = null;
 			$activation = extension_Members::getField('activation');
 			if(!is_null($activation) && !is_null($entry_id)) {
-				$entry = extension_Members::$entryManager->fetch($entry_id);
+				$entry = EntryManager::fetch($entry_id);
 				$entry = $entry[0];
 
 				if($entry instanceof Entry && $entry->getData($activation->get('id'), true)->activated != 'yes') {
@@ -202,7 +203,7 @@
 
 			$label = Widget::Label($this->get('label'));
 			$label->appendChild(Widget::Select(
-				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix,
+				'fields'.$prefix.'['.$this->get('element_name').']'.$postfix,
 				$options,
 				!is_null($activation_role_id) ? array('disabled' => 'disabled') : array())
 			);
@@ -221,20 +222,20 @@
 						array('class' => 'help frame'))
 					);
 					$label->appendChild(
-						Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $default_role_id, 'hidden')
+						Widget::Input('fields'.$prefix.'['.$this->get('element_name').']'.$postfix, $default_role_id, 'hidden')
 					);
 				}
 			}
 
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);
 			}
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 
 			if(is_null($data)) {
@@ -284,9 +285,8 @@
 
 				$forbidden_pages = $role->get('forbidden_pages');
 				if(is_array($forbidden_pages) & !empty($forbidden_pages)) {
-					$page_data = Symphony::Database()->fetch(sprintf(
-						"SELECT * FROM `tbl_pages` WHERE id IN (%s)",
-						implode(',', $forbidden_pages)
+					$page_data = PageManager::fetch(false, array('*'), array(
+						sprintf('id IN (%s)', implode(',', $forbidden_pages))
 					));
 
 					if(is_array($page_data) && !empty($page_data)) {

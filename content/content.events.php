@@ -64,13 +64,13 @@
 			}
 
 			// Return successful
-			if(Administration::instance()->saveConfig()) {
+			if(Symphony::Configuration()->write()) {
 				$this->_status = AjaxPage::STATUS_OK;
 				$this->_Result->appendChild(
 					new XMLElement('message', __('Preferences saved.'))
 				);
 				$this->_Result->appendChild(
-					new XMLElement('timestamp', '<![CDATA[' . DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__) . ']]>')
+					new XMLElement('timestamp', '<![CDATA[' . Widget::Time(null,__SYM_TIME_FORMAT__)->generate() . ']]>')
 				);
 			}
 		}

@@ -24,16 +24,11 @@
 
 	Abstract Class Members implements Member {
 
-		protected static $driver = null;
 		protected static $member_id = 0;
 		protected static $isLoggedIn = false;
 
 		public $Member = null;
 		public $cookie = null;
-
-		public function __construct($driver) {
-			self::$driver = $driver;
-		}
 
 	/*-------------------------------------------------------------------------
 		Utilities:
@@ -73,12 +68,12 @@
 
 		public function fetchMemberFromID($member_id = null) {
 			if(!is_null($member_id)) {
-				$Member = extension_Members::$entryManager->fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = EntryManager::fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
 
 			else if(self::$member_id !== 0) {
-				$Member = extension_Members::$entryManager->fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = EntryManager::fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
 				return $Member[0];
 			}
 

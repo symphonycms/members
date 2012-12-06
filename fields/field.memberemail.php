@@ -10,8 +10,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Email');
 			$this->_required = true;
 			$this->set('required', 'yes');
@@ -93,7 +93,7 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
@@ -135,7 +135,7 @@
 
 			//	If the field is required
 			if($required && empty($email)) {
-				$message = __('\'%s\' is a required field.', array($this->get('label')));
+				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
@@ -159,7 +159,7 @@
 			return self::__OK__;
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id = null){
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id = null){
 			$status = self::__OK__;
 
 			if(empty($data)) return array();
@@ -179,12 +179,7 @@
 
 			// Filter is an regexp.
 			if(self::isFilterRegex($data[0])) {
-				$pattern = str_replace('regexp:', '', $data[0]);
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND (
-								`t$field_id`.value REGEXP '$pattern'
-								OR `t$field_id`.entry_id REGEXP '$pattern'
-							) ";
+				$this->buildRegexSQL($data[0], array('value', 'entry_id'), $joins, $where);
 			}
 
 			// Filter has + in it.
@@ -221,9 +216,13 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 			if(!isset($data['value'])) return;
 
+			$mail = explode('@', General::sanitize($data['value']));
+
 			$wrapper->appendChild(
 				new XMLElement($this->get('element_name'), General::sanitize($data['value']), array(
-					'hash' => md5($data['value'])
+					'hash' => md5($data['value']),
+					'alias' => $mail[0],
+					'domain' => $mail[1]
 				))
 			);
 		}

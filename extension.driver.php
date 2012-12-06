@@ -5,13 +5,14 @@
 
 	include_once(EXTENSIONS . '/members/lib/class.role.php');
 	include_once(EXTENSIONS . '/members/lib/class.members.php');
+	include_once(EXTENSIONS . '/members/lib/member.symphony.php');
 
 	Class extension_Members extends Extension {
 
 		/**
-		 * @var boolean $initialised
+		 * @var integer $members_section
 		 */
-		private static $initialised = false;
+		private static $initialised = null;
 
 		/**
 		 * @var integer $members_section
@@ -81,114 +82,25 @@
 		public static $_failed_login_attempt = false;
 
 		/**
-		 * An instance of the EntryManager class. Keep in mind that the Field Manager
-		 * and Section Manager are accessible via `$entryManager->fieldManager` and
-		 * `$entryManager->sectionManager` respectively.
-		 *
-		 * @var EntryManager $entryManager
-		 */
-		public static $entryManager = null;
-
-		/**
 		 * Only create a Member object on the Frontend of the site.
 		 * There is no need to create this in the Administration context
 		 * as authenticated users are Authors and are handled by Symphony,
 		 * not this extension.
 		 */
 		public function __construct() {
-			if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
-				$this->Member = new SymphonyMember($this);
-			}
-
-			extension_Members::$entryManager = new EntryManager(Symphony::Engine());
-
 			if(!extension_Members::$initialised) {
-				extension_Members::initialise();
+				if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
+					Symphony::ExtensionManager()->notifyMembers('InitialiseMember', '/frontend/', array(
+						'member' => &$this->Member
+					));
+
+					if(is_null($this->Member)) {
+						$this->Member = new SymphonyMember;
+					}
+				}
+
+				extension_Members::$initialised = true;
 			}
-		}
-
-		/**
-		 * Loops over the configuration to detect the capabilities of this
-		 * Members setup. Populates two array's, one for Field objects, and
-		 * one for Field handles.
-		 */
-		public static function initialise() {
-			extension_Members::$initialised = true;
-			$sectionManager = extension_Members::$entryManager->sectionManager;
-			$membersSectionSchema = array();
-
-			if(
-				!is_null(extension_Members::getMembersSection()) &&
-				is_numeric(extension_Members::getMembersSection())
-			) {
-				$memberSection = $sectionManager->fetch(
-					extension_Members::getMembersSection()
-				);
-
-				if($memberSection instanceof Section) {
-					$membersSectionSchema = $memberSection->fetchFieldsSchema();
-				}
-				else {
-					Symphony::$Log->pushToLog(
-						__("The Member's section, %d, saved in the configuration could not be found.", array(extension_Members::getMembersSection())),
-						E_ERROR, true
-					);
-				}
-			}
-
-			foreach($membersSectionSchema as $field) {
-				if($field['type'] == 'membertimezone') {
-					extension_Members::initialiseField($field, 'timezone');
-					continue;
-				}
-
-				if($field['type'] == 'memberrole') {
-					extension_Members::initialiseField($field, 'role');
-					continue;
-				}
-
-				if($field['type'] == 'memberactivation') {
-					extension_Members::initialiseField($field, 'activation');
-					continue;
-				}
-
-				if($field['type'] == 'memberusername') {
-					extension_Members::initialiseField($field, 'identity');
-					continue;
-				}
-
-				if($field['type'] == 'memberemail') {
-					extension_Members::initialiseField($field, 'email');
-					continue;
-				}
-
-				if($field['type'] == 'memberpassword') {
-					extension_Members::initialiseField($field, 'authentication');
-					continue;
-				}
-			}
-		}
-
-		private static function initialiseField($field, $name) {
-			extension_Members::$fields[$name] = extension_Members::$entryManager->fieldManager->fetch($field['id']);
-
-			if(extension_Members::$fields[$name] instanceof Field) {
-				extension_Members::$handles[$name] = $field['element_name'];
-			}
-		}
-
-		public function about(){
-			return array(
-				'name' 			=> 'Members',
-				'version' 		=> '1.1.1',
-				'release-date'	=> '2011-08-13',
-				'author' => array(
-					'name'		=> 'Symphony Team',
-					'website'	=> 'http://www.symphony-cms.com',
-					'email'		=> 'team@symphony-cms.com'
-				),
-				'description'	=> 'Frontend Membership extension for Symphony CMS'
-			);
 		}
 
 		public function fetchNavigation(){
@@ -275,7 +187,7 @@
 		public function install(){
 
 			Symphony::Configuration()->set('cookie-prefix', 'sym-members', 'members');
-			Administration::instance()->saveConfig();
+			Symphony::Configuration()->write();
 
 			return Symphony::Database()->import("
 				DROP TABLE IF EXISTS `tbl_members_roles`;
@@ -319,7 +231,7 @@
 		 */
 		public function uninstall(){
 			Symphony::Configuration()->remove('members');
-			Administration::instance()->saveConfig();
+			Symphony::Configuration()->write();
 
 			return Symphony::Database()->query("
 				DROP TABLE IF EXISTS
@@ -374,7 +286,7 @@
 				Symphony::Configuration()->remove('identity', 'members');
 				Symphony::Configuration()->remove('email', 'members');
 				Symphony::Configuration()->remove('authentication', 'members');
-				Administration::instance()->saveConfig();
+				Symphony::Configuration()->write();
 			}
 
 			if(version_compare($previousVersion, '1.1 Beta 1', '<') || version_compare($previousVersion, '1.1.1RC1', '<')) {
@@ -393,7 +305,7 @@
 				}
 
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
-					if(!extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
+					if(!Symphony::Database()->tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						// Add handle field
 						Symphony::Database()->query(sprintf(
 							"ALTER TABLE `tbl_entries_data_%d` ADD `handle` VARCHAR(255) DEFAULT NULL",
@@ -459,7 +371,7 @@
 				}
 
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
-					if(extension_Members::tableContainsField('tbl_entries_data_' . $field, 'handle')) {
+					if(Symphony::Database()->tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						try {
 							// Drop handle field
 							Symphony::Database()->query(sprintf(
@@ -536,21 +448,56 @@
 		}
 
 		/**
+		 * Given a string representing a field type, return the actual field type
+		 * that will be saved in Symphony. This is mainly for legacy reasons, where
+		 * the Members extension uses slightly different types to what is actually
+		 * saved. For example, `role` is `memberrole`, `authentication` is `memberpassword`
+		 * etc.
+		 *
+		 * @param string $type
+		 *
+		 * @return string
+		 */
+		public static function getFieldType($type) {
+			switch($type) {
+				case 'authentication':
+					return 'memberpassword';
+				case 'identity':
+					return 'memberusername';
+				default:
+					return 'member' . $type;
+			}
+		}
+
+		/**
 		 * Where `$name` is one of the following values, `role`, `timezone`,
 		 * `email`, `activation`, `authentication` and `identity`, this function
 		 * will return a Field instance. Typically this allows extensions to access
 		 * the Fields that are currently being used in the active Members section.
-		 * If no `$name` is given, an array of all Member fields will be returned.
 		 *
-		 * @param string $name
-		 * @return Field
+		 * @param string $type
+		 * @param integer $section_id
+		 *  The Section ID to find the given `$type` in. If this isn't provided this
+		 *  extension will just look for any Fields with the given `$type`
+		 * @return Field|null
+		 *  If `$type` is not given, or no Field was found, null will be returned.
 		 */
-		public static function getField($name = null) {
-			if(is_null($name)) return extension_Members::$fields;
+		public static function getField($type = null, $section_id = null) {
+			if(is_null($type)) return null;
 
-			if(!isset(extension_Members::$fields[$name])) return null;
+			$type = self::getFieldType($type);
 
-			return extension_Members::$fields[$name];
+			// Check to see if this name has been stored in our 'static' cache
+			// If it hasn't, lets go find it (for better or worse)
+			if(!isset(extension_Members::$fields[$type])) {
+				self::initialiseField($type, $section_id);
+			}
+
+			// No field, return null
+			if(!isset(extension_Members::$fields[$type])) return null;
+
+			// If it has, return it.
+			return extension_Members::$fields[$type];
 		}
 
 		/**
@@ -561,15 +508,43 @@
 		 * If no `$name` is given, an array of all Member field handles will
 		 * be returned.
 		 *
-		 * @param string $name
+		 * @param string $type
+		 * @param integer $section_id
+		 *  The Section ID to find the given `$type` in. If this isn't provided this
+		 *  extension will just look for any Fields with the given `$type`
 		 * @return string
 		 */
-		public static function getFieldHandle($name = null) {
-			if(is_null($name)) return extension_Members::$handles;
+		public static function getFieldHandle($type = null, $section_id = null) {
+			$type = self::getFieldType($type);
 
-			if(!isset(extension_Members::$handles[$name])) return null;
+			// Check to see if this name has been stored in our 'static' cache
+			// If it hasn't, lets go find it (for better or worse)
+			if(!isset(extension_Members::$handles[$type])) {
+				self::initialiseField($type, $section_id);
+			}
 
-			return extension_Members::$handles[$name];
+			// No field, return null
+			if(!isset(extension_Members::$handles[$type])) return null;
+
+			// Return the handle
+			return extension_Members::$handles[$type];
+		}
+
+		/**
+		 * Given a `$type` and potentially `$section_id`, fetch the Field
+		 * instance and populate the static `$fields` and `$handles` arrays
+		 *
+		 * @param string $type
+		 * @param integer $section_id
+		 */
+		public static function initialiseField($type, $section_id = null) {
+			$field = FieldManager::fetch(null, $section_id, 'ASC', 'sortorder', $type);
+
+			if(!empty($field)) {
+				$field = current($field);
+				extension_Members::$fields[$type] = $field;
+				extension_Members::$handles[$type] = $field->get('element_name');
+			}
 		}
 
 		/**
@@ -592,7 +567,7 @@
 				DateTimeObj::setDefaultTimezone($tz);
 			}
 			catch(Exception $ex) {
-				Symphony::$Log->pushToLog(__('Members Timezone') . ': ' . $ex->getMessage(), $code, true);
+				Symphony::Log()->pushToLog(__('Members Timezone') . ': ' . $ex->getMessage(), $ex->getCode(), true);
 			}
 		}
 
@@ -626,6 +601,8 @@
 		 * events to do various functionality. This negates the need for custom events
 		 *
 		 * @uses AppendEventFilter
+		 *
+		 * @param $context
 		 */
 		public function appendFilter($context) {
 			$selected = !is_array($context['selected']) ? array() : $context['selected'];
@@ -730,12 +707,6 @@
 			return $options;
 		}
 
-		public static function tableContainsField($table, $field){
-			$results = Symphony::Database()->fetch("DESC `{$table}` `{$field}`");
-
-			return (is_array($results) && !empty($results));
-		}
-
 	/*-------------------------------------------------------------------------
 		Preferences:
 	-------------------------------------------------------------------------*/
@@ -746,8 +717,9 @@
 		 * for migration during development.
 		 *
 		 * @uses AddCustomPreferenceFieldsets
-		 * @todo Look at how this could be expanded so users can log into multiple
-		 * sections. This is not in scope for 1.0
+		 * @todo Look at how this could be expanded so users can log into multiple sections. This is not in scope for 1.0
+		 *
+		 * @param array $context
 		 */
 		public function appendPreferences($context) {
 			$fieldset = new XMLElement('fieldset');
@@ -758,8 +730,7 @@
 			$label = new XMLElement('label', __('Active Members Section'));
 
 			// Get the Sections that contain a Member field.
-			$sectionManager = self::$entryManager->sectionManager;
-			$sections = $sectionManager->fetch();
+			$sections = SectionManager::fetch();
 			$member_sections = array();
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
@@ -780,7 +751,7 @@
 				array(null, false, null)
 			);
 			foreach($member_sections as $section_id => $section) {
-  				$options[] = array($section_id, ($section_id == extension_Members::getMembersSection()), $section['name']);
+				$options[] = array($section_id, ($section_id == extension_Members::getMembersSection()), $section['name']);
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section]', $options));
@@ -801,6 +772,9 @@
 		 * Saves the Member Section to the configuration
 		 *
 		 * @uses savePreferences
+		 *
+		 * @param array $context
+		 * @return boolean
 		 */
 		public function savePreferences(array &$context){
 			$settings = $context['settings'];
@@ -808,7 +782,7 @@
 			// Active Section
 			Symphony::Configuration()->set('section', $settings['members']['section'], 'members');
 
-			Administration::instance()->saveConfig();
+			return Symphony::Configuration()->write();
 		}
 
 	/*-------------------------------------------------------------------------
@@ -863,7 +837,6 @@
 				if($isLoggedIn) {
 					$this->getMemberDriver()->logout();
 				}
-
 				if($this->getMemberDriver()->login($_POST['fields'])) {
 					/**
 					 * Fired just after a Member has successfully logged in, this delegate
@@ -912,14 +885,9 @@
 
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
-				if($row = Symphony::Database()->fetchRow(0,"
-					SELECT `p`.*
-					FROM `tbl_pages` as `p`
-					LEFT JOIN `tbl_pages_types` AS `pt` ON(`p`.id = `pt`.page_id)
-					WHERE `pt`.type = '403'
-				")) {
-					$row['type'] = FrontendPage::fetchPageTypes($row['id']);
-					$row['filelocation'] = FrontendPage::resolvePageFileLocation($row['path'], $row['handle']);
+				if($row = PageManager::fetchPageByType('403')) {
+					$row['type'] = PageManager::fetchPageTypes($row['id']);
+					$row['filelocation'] = PageManager::resolvePageFileLocation($row['path'], $row['handle']);
 
 					$context['page_data'] = $row;
 					return;
@@ -947,6 +915,8 @@
 		 * each event
 		 *
 		 * @uses AdminPagePreGenerate
+		 *
+		 * @param $context
 		 */
 		public function appendAssets(&$context) {
 			if(class_exists('Administration')
@@ -989,6 +959,9 @@
 		 * before returning.
 		 *
 		 * @uses EventPreSaveFilter
+		 *
+		 * @param array $context
+		 * @return null
 		 */
 		public function checkEventPermissions(array &$context){
 			// If this system has no Roles, or the event is set to ignore role permissions
@@ -997,7 +970,8 @@
 				is_null(extension_Members::getFieldHandle('role')) ||
 				(method_exists($context['event'], 'ignoreRolePermissions') && $context['event']->ignoreRolePermissions() == true)
 			) {
-				return $this->__processEventFilters($context);
+				$this->__processEventFilters($context);
+				return null;
 			}
 
 			// Prior to Symphony 2.2.2, the EventPreSaveFilter delegate doesn't
@@ -1011,7 +985,7 @@
 				$entry_id = (int)$context['entry_id'];
 				$action = 'edit';
 			}
-			else if(isset($_POST['id'])){
+			else if(isset($_POST['id']) && !empty($_POST['id'])) {
 				$entry_id = (int)$_POST['id'];
 				$action = 'edit';
 			}
@@ -1077,7 +1051,7 @@
 							if(!empty($fields)) {
 								foreach($fields as $field_id) {
 									if($isOwner === true) break;
-									$field = self::$entryManager->fieldManager->fetch($field_id);
+									$field = FieldManager::fetch($field_id);
 									if($field instanceof Field) {
 										// So we are trying to find all entries that have selected the Member entry
 										// to determine ownership. This check will use the `fetchAssociatedEntryIDs`
@@ -1098,30 +1072,25 @@
 				}
 			}
 
-			try {
-				$role = RoleManager::fetch($role_id);
-				$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
-				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
+			$role = RoleManager::fetch($role_id);
+			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
+			$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 
-				$context['messages'][] = array(
-					'permission',
-					$success,
-					($success === false) ? __('You are not authorised to perform this action.') : null
-				);
-			}
-			catch (Exception $ex) {
-				// Unsure of what the possible Exceptions would be here, so lets
-				// just throw for now for the sake of discovery.
-				throw new $ex;
-			}
+			$context['messages'][] = array(
+				'permission',
+				$success,
+				($success === false) ? __('You are not authorised to perform this action.') : null
+			);
 
 			// Process the Filters for this event.
-			return $this->__processEventFilters($context);
+			$this->__processEventFilters($context);
 		}
 
 		/**
 		 * We can safely assume at this stage of the process that whatever user has
 		 * requested this event has permission to actually do so.
+		 *
+		 * @param array $context
 		 */
 		private function __processEventFilters(array &$context) {
 			// Process the Member Lock Role
@@ -1144,6 +1113,8 @@
 		 * Any post save behaviour
 		 *
 		 * @uses EventPostSaveFilter
+		 *
+		 * @param array $context
 		 */
 		public function processPostSaveFilter(array &$context) {
 			// Process updating a Member's Password

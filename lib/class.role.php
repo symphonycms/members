@@ -16,7 +16,7 @@
 		 * @return integer
 		 *  The newly created Role's ID
 		 */
-		public function add(array $data) {
+		public static function add(array $data) {
 			Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
 			$role_id = Symphony::Database()->getInsertID();
 
@@ -56,7 +56,7 @@
 		 * @param array $data
 		 * @return boolean
 		 */
-		public function edit($role_id, array $data) {
+		public static function edit($role_id, array $data) {
 			if(is_null($role_id)) return false;
 
 			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
@@ -104,7 +104,7 @@
 		 * @param boolean $purge_members
 		 * @return boolean
 		 */
-		public function delete($role_id, $purge_members = false) {
+		public static function delete($role_id, $purge_members = false) {
 			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", " `role_id` = " . $role_id);
 			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", " `role_id` = " . $role_id);
 			Symphony::Database()->delete("`tbl_members_roles`", " `id` = " . $role_id);
@@ -127,8 +127,7 @@
 				 */
 				Symphony::ExtensionManager()->notifyMembers('Delete', '/publish/', array('entry_id' => &$checked));
 
-				$entryManager = new EntryManager(Symphony::Engine());
-				$entryManager->delete($members);
+				EntryManager::delete($members);
 			}
 
 			return true;

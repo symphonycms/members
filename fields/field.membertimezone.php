@@ -8,8 +8,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Timezone');
 			$this->_showassociation = false;
 		}
@@ -57,64 +57,6 @@
 		}
 
 		/**
-		 * This functions acts as a standard way to get the zones
-		 * available on the system. For PHP5.2, these constants are
-		 * just copied from PHP5.3
-		 *
-		 * @link http://au2.php.net/manual/en/class.datetimezone.php
-		 * @return array
-		 */
-		public function getZones() {
-			if(PHP_VERSION_ID >= 50300) {
-				$ref = new ReflectionClass('DateTimeZone');
-				return $ref->getConstants();
-			}
-			else {
-				return array(
-					'AFRICA' => 1,
-					'AMERICA' => 2,
-					'ANTARCTICA' => 4,
-					'ARCTIC' => 8,
-					'ASIA' => 16,
-					'ATLANTIC' => 32,
-					'AUSTRALIA' => 64,
-					'EUROPE' => 128,
-					'INDIAN' => 256,
-					'PACIFIC' => 512,
-					'UTC' => 1024
-				);
-			}
-		}
-
-		/**
-		 * This functions acts as a standard way to get the timezones
-		 * regardless of PHP version. It accepts a single parameter,
-		 * zone, which returns the timezones associated with that 'zone'
-		 *
-		 * @link http://au2.php.net/manual/en/class.datetimezone.php
-		 * @link http://au2.php.net/manual/en/datetimezone.listidentifiers.php
-		 * @param string $zone
-		 *  The zone for the timezones the field wants. This maps to the
-		 *  DateTimeZone constants
-		 * @return array
-		 */
-		public function getTimezones($zone) {
-			// PHP5.3 supports the `$what` parameter of the listIdentifiers function
-			if(PHP_VERSION_ID >= 50300) {
-				return DateTimeZone::listIdentifiers(constant('DateTimeZone::' . $zone));
-			}
-			else {
-				$timezones = DateTimeZone::listIdentifiers();
-
-				foreach($timezones as $index => $timezone) {
-					if(stripos($timezone, $zone) === false) unset($timezones[$index]);
-				}
-
-				return $timezones;
-			}
-		}
-
-		/**
 		 * Creates a list of Timezones for the With Selected dropdown in the backend.
 		 * This list has the limitation that the timezones cannot be grouped as the
 		 * With Selected menu already uses `<optgroup>` to separate the toggling of
@@ -125,10 +67,10 @@
 		public function getToggleStates() {
 			$zones = explode(",", $this->get('available_zones'));
 
+			$options = array();
 			foreach($zones as $zone) {
-				$timezones = $this->getTimezones($zone);
+				$timezones = DateTimeObj::getTimezones($zone);
 
-				$options = array();
 				foreach($timezones as $timezone) {
 					$tz = new DateTime('now', new DateTimeZone($timezone));
 
@@ -164,7 +106,7 @@
 			$zones = explode(",", $this->get('available_zones'));
 
 			foreach($zones as $zone) {
-				$timezones = $this->getTimezones($zone);
+				$timezones = DateTimeObj::getTimezones($zone);
 
 				$options = array();
 				foreach($timezones as $timezone) {
@@ -194,13 +136,15 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
-			$label = new XMLElement('label', __('Available Zones'));
+			$group = new XMLElement('div', null, array('class' => 'two columns'));
 
+			$label = new XMLElement('label', __('Available Zones'));
+			$label->setAttribute('class', 'column');
 			$zones = is_array($this->get('available_zones'))
 				? $this->get('available_zones')
 				: explode(',', $this->get('available_zones'));
 
-			foreach($this->getZones() as $zone => $value) {
+			foreach(DateTimeObj::getZones() as $zone => $value) {
 				if($value >= 1024) break;
 
 				$options[] = array($zone, in_array($zone, $zones), ucwords(strtolower($zone)));
@@ -210,9 +154,10 @@
 				"fields[{$this->get('sortorder')}][available_zones][]", $options, array('multiple' => 'multiple')
 			));
 
-			$wrapper->appendChild($label);
+			$group->appendChild($label);
+			$wrapper->appendChild($group);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
@@ -251,7 +196,7 @@
 			$label = $this->buildTZSelection($data, $prefix, $postfix);
 
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);

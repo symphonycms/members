@@ -35,7 +35,7 @@
 				$div->appendChild($label);
 
 				$div->appendChild(Widget::Input('members[event]', 'reset-password', 'hidden'));
-				$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
+				$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
 			}
 
 			return '

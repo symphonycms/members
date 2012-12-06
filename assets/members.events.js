@@ -1,4 +1,5 @@
 jQuery(document).ready(function() {
+	var notifier = jQuery('#header').find('.notifier');
 
 	Symphony.Language.add({
 		'Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>': false,
@@ -12,49 +13,39 @@ jQuery(document).ready(function() {
 				url: Symphony.Context.get('root') + '/symphony/extension/members/events/',
 				async: false,
 				data: jQuery('form').serialize(),
+				beforeSend: function() {
+					notifier.find('.members').trigger('detach.notify');
+				},
 				success: function(data, response) {
-					if(response == "success") {
-						Symphony.Message.post(
+					if(response === "success") {
+						notifier.trigger('attach.notify', [
 							Symphony.Language.get('Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>', {
 								time: jQuery(data).find('timestamp').text(),
 								new_url: Symphony.Context.get('root') + '/symphony/blueprints/events/new/',
-								url: Symphony.Context.get('root') + '/symphony/blueprints/components/'
+								url: Symphony.Context.get('root') + '/symphony/blueprints/events/'
 							}),
-							'success'
-						);
+							'success members'
+						]);
 					}
 					else {
-						Symphony.Message.post(
+						notifier.trigger('attach.notify', [
 							Symphony.Language.get('An error occurred while processing this form.'),
-							'error'
-						);
+							'error members'
+						]);
 					}
-					Symphony.Members.applyMessage();
 				},
 				error: function(data, response) {
-					Symphony.Message.post(
+					notifier.trigger('attach.notify', [
 						Symphony.Language.get('An error occurred while processing this form.'),
-						'error'
-					);
-					Symphony.Members.applyMessage();
+						'error members'
+					]);
 				}
 			});
 
 			return false;
-		},
-		applyMessage: function() {
-			// Dim system messages
-			Symphony.Message.fade('silence', 10000);
-
-			// Relative times in system messages
-			jQuery('abbr.timeago').each(function() {
-				var time = jQuery(this).parent();
-				time.html(time.html().replace(Symphony.Language.get('at') + ' ', ''));
-			});
-			Symphony.Message.timer();
 		}
-	}
+	};
 
 	// Save our the Event's email preference
-	jQuery('form').live('submit', Symphony.Members.memberEventSave);
+	jQuery('form').on('submit', Symphony.Members.memberEventSave);
 });

@@ -14,8 +14,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Password');
 			$this->_required = true;
 
@@ -158,8 +158,26 @@
 		}
 
 		/**
+		 * Generates a random password for a member, using
+		 * `openssl_random_pseudo_bytes` on PHP5.3, or falling back to a
+		 * simple `uniqid` variant for other systems.
+		 *
+		 * @link http://php.net/manual/en/function.openssl-random-pseudo-bytes.php
+		 * @link http://php.net/manual/en/function.uniqid.php
+		 * @return string
+		 */
+		public function generatePassword() {
+			if(function_exists('openssl_random_pseudo_bytes')) {
+				return openssl_random_pseudo_bytes(20);
+			}
+			else {
+				return str_shuffle(uniqid());
+			}
+		}
+
+		/**
 		 * Given a string, this function will encode it using the
-		 * field's salt and the sha1 algorithm
+		 * field's salt and the `sha1` algorithm
 		 *
 		 * @param string $password
 		 * @return string
@@ -249,9 +267,10 @@
 		// Validator ----------------------------------------------------------
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			$label = Widget::Label(__('Minimum Length'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Input(
 				"fields[{$order}][length]", $this->get('length')
 			));
@@ -267,6 +286,7 @@
 			}
 
 			$label = Widget::Label(__('Minimum Strength'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Select(
 				"fields[{$order}][strength]", $values
 			));
@@ -277,9 +297,10 @@
 		// Salt ---------------------------------------------------------------
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			$label = Widget::Label(__('Password Salt'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(
 				new XMLElement('i', __('A salt gives your passwords extra security. It cannot be changed once set'))
 			);
@@ -294,13 +315,14 @@
 			$label->appendChild($input);
 
 			if (isset($errors['salt'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['salt']);
+				$label = Widget::Error($label, $errors['salt']);
 			}
 
 			$group->appendChild($label);
 
 			// Add Activiation Code Expiry
 			$div = new XMLElement('div');
+			$div->setAttribute('class', 'column');
 
 			$label = Widget::Label(__('Recovery Code Expiry'));
 			$label->appendChild(
@@ -316,18 +338,18 @@
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
 			}
 
-			if (isset($errors['code_expiry'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
-			}
-
 			$div->appendChild($label);
 			$div->appendChild($ul);
+
+			if (isset($errors['code_expiry'])) {
+				$div = Widget::Error($div, $errors['code_expiry']);
+			}
 
 			$group->appendChild($div);
 			$wrapper->appendChild($group);
 
 			// Add checkboxes
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
@@ -383,9 +405,9 @@
 			$handle = $this->get('element_name');
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
-		//	Password
+			// Password
 			$password = $data['password'];
 			$password_set = Symphony::Database()->fetchVar('id', 0, sprintf("
 					SELECT
@@ -424,9 +446,9 @@
 				);
 			}
 
-			//	Error?
+			// Error?
 			if(!is_null($error)) {
-				$group = Widget::wrapFormElementWithError($group, $error);
+				$group = Widget::Error($group, $error);
 				$wrapper->appendChild($group);
 			}
 			else {
@@ -441,6 +463,7 @@
 			$required = ($this->get('required') == 'yes');
 
 			$label = Widget::Label(__($title));
+			$label->setAttribute('class', 'column');
 			if(!$required) $label->appendChild(new XMLElement('i', __('Optional')));
 
 			$input = Widget::Input("fields{$name}", null, 'password', array('autocomplete' => 'off'));
@@ -460,13 +483,13 @@
 			$password = trim($data['password']);
 			$confirm = trim($data['confirm']);
 
-			//	If the field is required, we should have both a $username and $password.
+			// If the field is required, we should have both a $username and $password.
 			if($required && !isset($data['optional']) && (empty($password))) {
-				$message = __('\'%s\' is a required field.', array($this->get('label')));
+				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
-			//	Check password
+			// Check password
 			if(!empty($password) || !empty($confirm)) {
 				if($confirm !== $password) {
 					$message = __('%s confirmation does not match.', array($this->get('label')));
@@ -492,7 +515,7 @@
 			return self::__OK__;
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id = null){
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id = null){
 			$status = self::__OK__;
 			$required = ($this->get('required') == "yes");
 
@@ -500,9 +523,9 @@
 
 			$password = trim($data['password']);
 
-			//	We only want to run the processing if the password has been altered
-			//	or if the entry hasn't been created yet. If someone attempts to change
-			//	their username, but not their password, this will be caught by checkPostFieldData
+			// We only want to run the processing if the password has been altered
+			// or if the entry hasn't been created yet. If someone attempts to change
+			// their username, but not their password, this will be caught by checkPostFieldData
 			if(!empty($password) || is_null($entry_id)) {
 				return array(
 					'password'	=> $this->encodePassword($password),

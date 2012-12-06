@@ -35,7 +35,7 @@
 				$div->appendChild($label);
 
 				$div->appendChild(Widget::Input('members[event]', 'generate-recovery-code', 'hidden'));
-				$div->appendChild(Widget::Input(null, __('Save Changes'), 'submit', array('accesskey' => 's')));
+				$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
 			}
 
 			return '
@@ -140,12 +140,12 @@
 				return $result;
 			}
 
-			// Generate new password
-			$newPassword = General::generatePassword();
-
-			// Set the Entry password to be reset and the current timestamp
+			// Find the Authentication fiedl
 			$auth = extension_Members::getField('authentication');
 			$status = Field::__OK__;
+
+			// Generate new password
+			$newPassword = $auth->generatePassword();
 
 			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
 			$entry_data = $entry->getData();
@@ -155,6 +155,7 @@
 				'password' => General::hash($newPassword . $member_id, 'sha1'),
 			), $status);
 
+			// Set the Entry password to be reset and the current timestamp
 			$data['recovery-code'] = $data['password'];
 			$data['reset'] = 'yes';
 			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());

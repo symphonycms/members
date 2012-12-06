@@ -80,8 +80,3 @@ table.role-permissions td label span {
 table.role-permissions td.create span {
 	display: none;
 }
-
-table.role-permissions td.create {
-	/*border-left: 1px solid #E6E6E5;
-	border-right: 1px solid #E6E6E5;*/
-}

@@ -14,8 +14,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Activation');
 			$this->_showassociation = false;
 		}
@@ -167,10 +167,10 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function toggleFieldData($data, $newState){
+		public function toggleFieldData($data, $newState, $entry_id){
 			$data['activated'] = $newState;
 
-			if($data['activated'] == "no") {
+			if($data['activated'] == 'no') {
 				$data = array_merge($data, $this->generateCode($entry_id));
 			}
 			else {
@@ -194,10 +194,11 @@
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			// Add Activiation Code Expiry
 			$div = new XMLElement('div');
+			$div->setAttribute('class', 'column');
 
 			$label = Widget::Label(__('Activation Code Expiry'));
 			$label->appendChild(
@@ -213,12 +214,12 @@
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
 			}
 
-			if (isset($errors['code_expiry'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['code_expiry']);
-			}
-
 			$div->appendChild($label);
 			$div->appendChild($ul);
+
+			if (isset($errors['code_expiry'])) {
+				$div = Widget::Error($div, $errors['code_expiry']);
+			}
 
 			// Get Roles in system
 			$roles = RoleManager::fetch();
@@ -230,6 +231,7 @@
 			}
 
 			$label = new XMlElement('label', __('Role for Members who are awaiting activation'));
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Select(
 				"fields[{$this->get('sortorder')}][activation_role_id]", $options
 			));
@@ -240,13 +242,13 @@
 			$group->appendChild($div);
 			$wrapper->appendChild($group);
 
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 
 			// Add Deny Login
 			$div->appendChild(Widget::Input("fields[{$this->get('sortorder')}][deny_login]", 'no', 'hidden'));
 
 			$label = Widget::Label();
-			$label->setAttribute('class', 'meta');
+			$label->setAttribute('class', 'column');
 			$input = Widget::Input("fields[{$this->get('sortorder')}][deny_login]", 'yes', 'checkbox');
 
 			if ($this->get('deny_login') == 'yes') $input->setAttribute('checked', 'checked');
@@ -310,12 +312,12 @@
 			$label = Widget::Label($this->get('label'));
 			if(!$isActivated) {
 				$label->appendChild(Widget::Select(
-					'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, $options
+					'fields'.$prefix.'['.$this->get('element_name').']'.$postfix, $options
 				));
 			}
 			else {
 				$label->appendChild(Widget::Input(
-					'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, 'yes', 'hidden'
+					'fields'.$prefix.'['.$this->get('element_name').']'.$postfix, 'yes', 'hidden'
 				));
 			}
 
@@ -354,19 +356,18 @@
 			}
 
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);
 			}
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 
 			if(is_null($data) && !is_null($entry_id)) {
-				$entryManager = new EntryManager(Symphony::Engine());
-				$entry = $entryManager->fetch($entry_id);
+				$entry = EntryManager::fetch($entry_id);
 
 				$data = $entry[0]->getData($this->get('id'));
 			}
@@ -375,7 +376,7 @@
 					$data = array('activated' => $data);
 				}
 
-				if($data['activated'] == "no") {
+				if($data['activated'] == 'no') {
 					$data = array_merge($data, $this->generateCode($entry_id));
 				}
 				else {

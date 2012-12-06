@@ -8,8 +8,8 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Member: Username');
 			$this->set('required', 'yes');
 		}
@@ -101,15 +101,9 @@
 		public function displaySettingsPanel(&$wrapper, $errors=NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$group = new XMLElement('div', null, array('class' => 'group'));
+			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
 
-			$div = new XMLElement('div');
-			$this->buildValidationSelect($div, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
-			$group->appendChild($div);
-
-			$wrapper->appendChild($group);
-
-			$div = new XMLElement('div', null, array('class' => 'compact'));
+			$div = new XMLElement('div', null, array('class' => 'two columns'));
 			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
@@ -149,7 +143,7 @@
 
 			//	If the field is required
 			if(($this->get('required') == "yes") && empty($username)) {
-				$message = __('\'%s\' is a required field.', array($this->get('label')));
+				$message = __('%s is a required field.', array($this->get('label')));
 				return self::__MISSING_FIELDS__;
 			}
 
