@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.2RC2
+- Version: 1.2
 - Author: Symphony Team
-- Release Date: 8th June 2012
+- Release Date: 6th December 2012
 - Requirements: Symphony 2.3
 
-Frontend membership extension for Symphony CMS. This version represents `1.2RC2` which is an update to the Members extension for the upcoming Symphony 2.3. Do not use this on production sites (yet).
+Frontend membership extension for Symphony CMS. This version represents `1.2` which is the first version of the Members extension to support Symphony 2.3.
 
 ## Installation and Setup
 
