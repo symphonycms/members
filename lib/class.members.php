@@ -1,10 +1,11 @@
 <?php
 
-	function __autoload($name) {
+	function loadMemberImplementations($name) {
 		if(preg_match('/Member$/', $name)) {
 			require_once EXTENSIONS . '/members/lib/member.' . strtolower(preg_replace('/Member$/', '', $name)) . '.php';
 		}
 	}
+	spl_autoload_register('loadMemberImplementations');
 
 	Interface Member {
 		// Authentication
