@@ -91,7 +91,7 @@
 		 * @param integer $member_id
 		 * @return Entry|null
 		 */
-		public function fetchMemberIDBy($needle, $member_id) {
+		public function fetchMemberIDBy($needle, $member_id = null) {
 			if(is_array($needle)) {
 				extract($needle);
 			}
@@ -112,10 +112,13 @@
 					SELECT `entry_id`, `reset`
 					FROM `tbl_entries_data_%d`
 					WHERE `password` = '%s'
-					AND `entry_id` = %d
+					AND %s
 					LIMIT 1
 				",
-				$this->get('id'), $password, Symphony::Database()->cleanValue($member_id)
+				$this->get('id'), $password, 
+				is_null($member_id) 
+					? '1 = 1' 
+					: sprintf('`entry_id` = %d', Symphony::Database()->cleanValue($member_id))
 			));
 
 			// Check that if the password has been reset that it is still valid

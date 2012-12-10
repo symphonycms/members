@@ -61,7 +61,7 @@
 		 * @param string|array $needle
 		 * @return Entry
 		 */
-		public function fetchMemberIDBy($needle) {
+		public function fetchMemberIDBy($needle, $member_id = null) {
 			if(is_array($needle)) {
 				extract($needle);
 			}

@@ -9,12 +9,11 @@
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
 
-			if(is_null(extension_Members::getFieldHandle('role')) && !is_null(extension_Members::getMembersSection())) {
+			if(!FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
 				$this->pageAlert(
-					__('There is no Member: Role field in the active Members section. <a href="%s%d/">Add Member: Role field?</a>',
+					__('There are no Member: Role fields in this Symphony installation. <a href="%s">Add Member: Role field?</a>',
 					array(
-						SYMPHONY_URL . '/blueprints/sections/edit/',
-						extension_Members::getMembersSection()
+						SYMPHONY_URL . '/blueprints/sections/'
 					)),
 					Alert::NOTICE
 				);
@@ -25,6 +24,7 @@
 			));
 
 			$roles = RoleManager::fetch();
+			$membersSections = extension_Members::discoverMemberSections();
 
 			$aTableHead = array(
 				array(__('Name'), 'col'),
@@ -39,17 +39,21 @@
 				));
 			}
 
-			else if(is_null(extension_Members::getMembersSection())) {
+			else if(empty($membersSections)) {
 				$aTableBody = array(Widget::TableRow(
-					array(Widget::TableData(__('No Member section has been specified in <a href="%s">Preferences</a>. Please do this first.', array(SYMPHONY_URL.'/system/preferences/')), 'inactive', NULL, count($aTableHead)))
+					array(Widget::TableData(__('No Member sections exist in Symphony. <a href="%s">Create a Section?</a>',
+					array(
+						SYMPHONY_URL . '/blueprints/sections/'
+					))
+					, 'inactive', NULL, count($aTableHead)))
 				));
 			}
 
 			else {
-				$section = SectionManager::fetch(extension_Members::getMembersSection());
+				$hasRoles = FieldManager::isFieldUsed(extension_Members::getFieldType('role'));
+				$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
 
 				$with_selected_roles = array();
-				$hasRoles = !is_null(extension_Members::getFieldHandle('role'));
 
 				foreach($roles as $role){
 					// Setup each cell
@@ -62,16 +66,17 @@
 					}
 
 					// Get the number of members for this role, as long as it's not the Public Role.
-					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
-						$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
-							"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-							extension_Members::getField('role')->get('id'), $role->get('id')
-						));
+					if($hasRoles && $role->get('id') !== Role::PUBLIC_ROLE) {
+						$member_count = 0;
 
-						$td2 = Widget::TableData(Widget::Anchor(
-							"$member_count",
-							SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . extension_Members::getFieldHandle('role') . ':' . $role->get('id')
-						));
+						foreach($roleFields as $roleField) {
+							$member_count += Symphony::Database()->fetchVar('count', 0, sprintf(
+								"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+								$roleField->get('id'), $role->get('id')
+							));
+						}
+
+						$td2 = Widget::TableData($member_count);
 					}
 
 					else if($role->get('id') == Role::PUBLIC_ROLE) {
@@ -87,7 +92,7 @@
 
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$with_selected_roles[] = array(
-							"move::" . $role->get('id'), false,$role->get('name')
+							"move::" . $role->get('id'), false, $role->get('name')
 						);
 					}
 				}
@@ -132,7 +137,7 @@
 				if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
 
 				if(!$existing = RoleManager::fetch($role_id)){
-					throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'), 'error');
+					throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'));
 				}
 			}
 
@@ -216,7 +221,7 @@
 			$label = Widget::Label(__('Name'));
 			$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
 
-			if(isset($this->_errors['name'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['name']));
+			if(isset($this->_errors['name'])) $fieldset->appendChild(Widget::Error($label, $this->_errors['name']));
 			else $fieldset->appendChild($label);
 
 			$this->Form->appendChild($fieldset);
@@ -359,7 +364,6 @@
 			}
 
 			$this->Form->appendChild($div);
-
 		}
 
 		public function __actionIndex() {
@@ -367,6 +371,7 @@
 
 			if(is_array($checked) && !empty($checked)) {
 				if(preg_match('/move::(\d+)/i', $_POST['with-selected'], $match)) {
+					$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
 					$target_role = $match[1];
 
 					if(!$replacement = RoleManager::fetch($target_role)) return false;
@@ -374,12 +379,13 @@
 					foreach($checked as $role_id){
 						if($role_id == $target_role) continue;
 
-						Symphony::Database()->query(sprintf(
-							"UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d",
-							extension_members::getField('role')->get('id'),
-							$target_role,
-							$role_id
-						));
+						foreach($roleFields as $roleField) {
+							Symphony::Database()->query(sprintf("
+									UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d
+								",
+								$roleField->get('id'), $target_role, $role_id
+							));
+						}
 					}
 
 					return true;
@@ -423,7 +429,7 @@
 					if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
 
 					if(!$existing = RoleManager::fetch($role_id)){
-						throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'), 'error');
+						throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'));
 					}
 				}
 
@@ -444,11 +450,9 @@
 					}
 				}
 				// If we are editing, we need to only run this check if the Role name has been altered
-				else {
-					if($handle != $existing->get('handle') && RoleManager::fetchRoleIDByHandle($handle)){
-						$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
-						return false;
-					}
+				else if($handle != $existing->get('handle') && RoleManager::fetchRoleIDByHandle($handle)){
+					$this->_errors['name'] = __('A role with the name <code>%s</code> already exists.', array($name));
+					return false;
 				}
 
 				$data['roles'] = array(
@@ -469,10 +473,8 @@
 						redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/created/');
 					}
 				}
-				else {
-					if(RoleManager::edit($role_id, $data)) {
-						redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/saved/');
-					}
+				else if(RoleManager::edit($role_id, $data)) {
+					redirect(extension_members::baseURL() . 'roles/edit/' . $role_id . '/saved/');
 				}
 			}
 		}
@@ -487,8 +489,8 @@
 					);
 				}
 
-				if(!$existing = RoleManager::fetch($role_id)){
-					throw new SymphonyErrorPage(__('The role you requested to delete does not exist.'), __('Role not found'), 'error');
+				if(!$existing = RoleManager::fetch($role_id)) {
+					throw new SymphonyErrorPage(__('The role you requested to delete does not exist.'), __('Role not found'));
 				}
 
 				// @todo What should happen to any Members that had this Role?

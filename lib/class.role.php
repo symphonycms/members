@@ -109,25 +109,46 @@
 			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", " `role_id` = " . $role_id);
 			Symphony::Database()->delete("`tbl_members_roles`", " `id` = " . $role_id);
 
+			$role_fields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+
 			if($purge_members) {
-				$members = Symphony::Database()->fetchCol('entry_id', sprintf(
-					"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-					extension_Members::getField('role')->get('id'), $role_id
-				));
+				$members = array();
+				foreach($role_fields as $role_field) {
+					$members_of_role = Symphony::Database()->fetchCol('entry_id', sprintf(
+						"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+						$role_field->get('id'), $role_id
+					));
+
+					$members = array_merge($members, $members_of_role);
+				}
 
 				/**
-				 * Prior to deletion of entries. Array of Entry ID's is provided.
-				 * The array can be manipulated
+				 * Prior to deletion of entries. An array of Entry ID's is provided which
+				 * can be manipulated. This delegate was renamed from `Delete` to `EntryPreDelete`
+				 * in Symphony 2.3.
 				 *
-				 * @delegate Delete
+				 * @delegate EntryPreDelete
 				 * @param string $context
 				 * '/publish/'
-				 * @param array $checked
+				 * @param array $entry_id
 				 *  An array of Entry ID's passed by reference
 				 */
-				Symphony::ExtensionManager()->notifyMembers('Delete', '/publish/', array('entry_id' => &$checked));
+				Symphony::ExtensionManager()->notifyMembers('EntryPreDelete', '/publish/', array('entry_id' => &$members));
 
 				EntryManager::delete($members);
+
+				/**
+				 * After the deletion of entries, this delegate provides an array of Entry ID's
+				 * that were deleted.
+				 *
+				 * @since Symphony 2.3
+				 * @delegate EntryPostDelete
+				 * @param string $context
+				 * '/publish/'
+				 * @param array $entry_id
+				 *  An array of Entry ID's that were deleted.
+				 */
+				Symphony::ExtensionManager()->notifyMembers('EntryPostDelete', '/publish/', array('entry_id' => $members));
 			}
 
 			return true;

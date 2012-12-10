@@ -62,7 +62,7 @@
 			return Identity::$driver->getMemberDriver()->initialiseMemberObject($member_id);
 		}
 
-		abstract public function fetchMemberIDBy($needle);
+		abstract public function fetchMemberIDBy($needle, $member_id = null);
 
 	/*-------------------------------------------------------------------------
 		Publish:
@@ -82,7 +82,7 @@
 
 			// Error?
 			if(!is_null($error)) {
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $error));
+				$wrapper->appendChild(Widget::Error($label, $error));
 			}
 			else {
 				$wrapper->appendChild($label);

@@ -15,6 +15,7 @@
 
 		// Finding
 		public static function setIdentityField(array $credentials, $simplified = true);
+		public function getMemberSectionID();
 		public function findMemberIDFromCredentials(array $credentials);
 		public function fetchMemberFromID($member_id = null);
 
@@ -35,12 +36,18 @@
 		Utilities:
 	-------------------------------------------------------------------------*/
 
+		public function getMember() {
+			return $this->Member;
+		}
+
 		public function getMemberID() {
 			return self::$member_id;
 		}
 
-		public function getMember() {
-			return $this->Member;
+		public function getMemberSectionID() {
+			if(is_null($this->cookie)) $this->initialiseCookie();
+
+			return $this->cookie->get('members-section-id');
 		}
 
 	/*-------------------------------------------------------------------------
@@ -61,6 +68,32 @@
 			}
 
 			return $this->Member;
+		}
+
+		/**
+		 * This function will adjust the locale for the currently logged in
+		 * user if the active Member section has a Member: Timezone field.
+		 *
+		 * @param integer $member_id
+		 * @return void
+		 */
+		public function updateSystemTimezoneOffset() {
+			if(is_null($this->Member)) return;
+
+			$timezone = extension_Members::getField('timezone', $this->getMember()->get('section_id'));
+
+			if(!$timezone instanceof fieldMemberTimezone) return;
+
+			$tz = $timezone->getMemberTimezone($this->getMemberID());
+
+			if(is_null($tz)) return;
+
+			try {
+				DateTimeObj::setDefaultTimezone($tz);
+			}
+			catch(Exception $ex) {
+				Symphony::Log()->pushToLog(__('Members Timezone') . ': ' . $ex->getMessage(), $ex->getCode(), true);
+			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -117,6 +150,7 @@
 			$this->initialiseMemberObject();
 
 			$context['params']['member-id'] = $this->getMemberID();
+			$context['params']['member-section-id'] = $this->getMemberSectionID();
 
 			if(!is_null(extension_Members::getFieldHandle('role'))) {
 				$role_data = $this->getMember()->getData(extension_Members::getField('role')->get('id'));
@@ -140,6 +174,7 @@
 				$result->setAttributearray(array(
 					'logged-in' => 'yes',
 					'id' => $this->getMemberID(),
+					'section-id' => $this->getMemberSectionID(),
 					'result' => 'success'
 				));
 			}

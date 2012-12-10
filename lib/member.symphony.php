@@ -99,15 +99,14 @@
 
 				// If the member isn't activated and a Role field doesn't exist
 				// just return false.
-				if(!$isActivated) {
-					if(is_null(extension_Members::getFieldHandle('role'))) {
-						extension_Members::$_errors[extension_Members::getFieldHandle('activation')] = array(
-							'message' => __('Member is not activated.'),
-							'type' => 'invalid',
-							'label' => extension_Members::getField('activation')->get('label')
-						);
-						return false;
-					}
+				if(!$isActivated && !FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
+					extension_Members::$_errors[extension_Members::getFieldHandle('activation')] = array(
+						'message' => __('Member is not activated.'),
+						'type' => 'invalid',
+						'label' => extension_Members::getField('activation')->get('label')
+					);
+
+					return false;
 				}
 			}
 
@@ -124,7 +123,7 @@
 			// things until they active their account.
 			if(!is_null(extension_Members::getFieldHandle('activation'))) {
 				if($member->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
-					if(!is_null(extension_Members::getFieldHandle('role'))) {
+					if(FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
 						$member->setData(
 							extension_Members::getField('role')->get('id'),
 							extension_Members::getField('activation')->get('activation_role_id')
@@ -227,6 +226,7 @@
 					$this->initialiseMemberObject();
 
 					$this->cookie->set('id', $id);
+					$this->cookie->set('members-section-id', $this->getMember()->get('section_id'));
 
 					if(isset($username)) {
 						$this->cookie->set('username', $data['username']);
@@ -285,7 +285,7 @@
 
 		public function filter_LockRole(array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
-			if(!is_null(extension_Members::getFieldHandle('role'))) {
+			if(FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
 					$member = parent::fetchMemberFromID(
