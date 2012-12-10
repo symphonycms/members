@@ -160,14 +160,22 @@
 			$data['reset'] = 'yes';
 			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
 
-			// Overwrite the password with the old password data. This prevents
-			// a users account from being locked out if it it just reset by a random
-			// member of the public
-			$data['password'] = $entry_data[$auth->get('id')]['password'];
-			$data['length'] = $entry_data[$auth->get('id')]['length'];
-			$data['strength'] = $entry_data[$auth->get('id')]['strength'];
+			// If the Member has entry data for the Authentication field, update it
+			if(array_key_exists((int)$auth->get('id'), $entry_data)) {
+				// Overwrite the password with the old password data. This prevents
+				// a users account from being locked out if it it just reset by a random
+				// member of the public
+				$data['password'] = $entry_data[$auth->get('id')]['password'];
+				$data['length'] = $entry_data[$auth->get('id')]['length'];
+				$data['strength'] = $entry_data[$auth->get('id')]['strength'];
 
-			Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
+				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
+			}
+			// No entry data exists, create it!
+			else {
+				$data['entry_id'] = $member_id;
+				Symphony::Database()->insert($data, 'tbl_entries_data_' . $auth->get('id'));
+			}
 
 			// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
 			// and Email Template Manager extensions use this delegate to send any
