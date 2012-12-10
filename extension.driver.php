@@ -100,7 +100,20 @@
 
 				if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
 
-					// Allow extensions to add their own Member class.
+					/**
+					 * This delegate fires as soon as possible to allow other extensions
+					 * the chance to overwrite the default Member class. This allows
+					 * for other types of Member objects to be used with the Members
+					 * extension. If the given `$member` is left as null, then
+					 * the default `SymphonyMember` will be initialised.
+					 *
+					 * @delegate InitialiseMember
+					 * @param string $context
+					 *  '/frontend/'
+					 * @param object $member
+					 *  Excepted to be a instance of a class that implements the `Member`
+					 *  interface. Defaults to null.
+					 */
 					Symphony::ExtensionManager()->notifyMembers('InitialiseMember', '/frontend/', array(
 						'member' => &$this->Member
 					));

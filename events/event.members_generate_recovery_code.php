@@ -178,6 +178,24 @@
 				Symphony::Database()->insert($data, 'tbl_entries_data_' . $auth->get('id'));
 			}
 
+			/**
+			 * Fired just after a Member has requested a recovery code so they
+			 * can reset their password.
+			 *
+			 * @delegate MembersPostForgotPassword
+			 * @param string $context
+			 *  '/frontend/'
+			 * @param integer $member_id
+			 *  The Member ID of the member who just requested a recovery
+			 *  code.
+			 * @param string $recovery_code
+			 *  The recovery code that was generated for this Member
+			 */
+			Symphony::ExtensionManager()->notifyMembers('MembersPostForgotPassword', '/frontend/', array(
+				'member_id' => $member_id,
+				'recovery_code' => $data['recovery-code']
+			));
+
 			// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
 			// and Email Template Manager extensions use this delegate to send any
 			// emails attached to this event

@@ -244,6 +244,19 @@
 				// reset to no.
 				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
 
+				/**
+				 * Fired just after a Member has reset their password.
+				 *
+				 * @delegate MembersPostResetPassword
+				 * @param string $context
+				 *  '/frontend/'
+				 * @param integer $member_id
+				 *  The Member ID of the member who just reset their password
+				 */
+				Symphony::ExtensionManager()->notifyMembers('MembersPostResetPassword', '/frontend/', array(
+					'member_id' => $member_id
+				));
+
 				// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
 				// and Email Template Manager extensions use this delegate to send any
 				// emails attached to this event

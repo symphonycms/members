@@ -175,6 +175,23 @@
 				Symphony::Database()->insert($data, 'tbl_entries_data_' . $activation->get('id'));
 			}
 
+			/**
+			 * Fired just after a Member has regenerated their activation code
+			 * for their account.
+			 *
+			 * @delegate MembersPostRegenerateActivationCode
+			 * @param string $context
+			 *  '/frontend/'
+			 * @param integer $member_id
+			 *  The Member ID of the member who just requested a new activation code
+			 * @param string $activation_code
+			 *  The new activation code for this Member
+			 */
+			Symphony::ExtensionManager()->notifyMembers('MembersPostRegenerateActivationCode', '/frontend/', array(
+				'member_id' => $member_id,
+				'activation_code' => $data['code']
+			));
+
 			// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
 			// and Email Template Manager extensions use this delegate to send any
 			// emails attached to this event

@@ -217,6 +217,21 @@
 				extension_Members::getFieldHandle('authentication') => $entry->getData(extension_Members::getField('authentication')->get('id'), true)->password
 			));
 
+			/**
+			 * Fired just after a Member has successfully activated their
+			 * account. This delegate is fired just before the user is logged
+			 * in (if the auto login setting is truthy)
+			 *
+			 * @delegate MembersPostActivation
+			 * @param string $context
+			 *  '/frontend/'
+			 * @param integer $member_id
+			 *  The Member ID of the member who just activated their account
+			 */
+			Symphony::ExtensionManager()->notifyMembers('MembersPostActivation', '/frontend/', array(
+				'member_id' => $member_id
+			));
+
 			// Only login if the Activation field allows auto login.
 			if(extension_Members::getSetting('activate-account-auto-login') == 'no' || $driver->getMemberDriver()->login($data_fields, true)) {
 				// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
