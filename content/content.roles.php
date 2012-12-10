@@ -27,8 +27,7 @@
 			$membersSections = extension_Members::discoverMemberSections();
 
 			$aTableHead = array(
-				array(__('Name'), 'col'),
-				array(__('Members'), 'col')
+				array(__('Name'), 'col')
 			);
 
 			$aTableBody = array();
@@ -54,6 +53,7 @@
 				$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
 
 				$with_selected_roles = array();
+				$i = 0;
 
 				foreach($roles as $role){
 					// Setup each cell
@@ -66,17 +66,30 @@
 					}
 
 					// Get the number of members for this role, as long as it's not the Public Role.
-					if($hasRoles && $role->get('id') !== Role::PUBLIC_ROLE) {
-						$member_count = 0;
+					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
+						$columns = array($td1);
 
 						foreach($roleFields as $roleField) {
-							$member_count += Symphony::Database()->fetchVar('count', 0, sprintf(
+							$section = SectionManager::fetch($roleField->get('parent_section'));
+							$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
 								"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
 								$roleField->get('id'), $role->get('id')
 							));
+
+							// If it's the first time we're looping over the available sections
+							// then change the table header, otherwise just ignore it as it's
+							// been done before
+							if($i === 1) {
+								$aTableHead[] = array($section->get('name'), 'col');
+							}
+
+							$columns[] = Widget::TableData(Widget::Anchor(
+								"$member_count",
+								SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . $roleField->get('element_name') . ':' . $role->get('id')
+							));
 						}
 
-						$td2 = Widget::TableData($member_count);
+						$aTableBody[] = Widget::TableRow($columns);
 					}
 
 					else if($role->get('id') == Role::PUBLIC_ROLE) {
@@ -88,13 +101,15 @@
 					}
 
 					// Add cells to a row
-					$aTableBody[] = Widget::TableRow(array($td1, $td2));
+					if($i === 0) $aTableBody[] = Widget::TableRow(array($td1, $td2));
 
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$with_selected_roles[] = array(
 							"move::" . $role->get('id'), false, $role->get('name')
 						);
 					}
+
+					$i++;
 				}
 			}
 
