@@ -191,7 +191,9 @@ The Members: Update Password filter is useful on Events where the member may upd
 
 ## Roles and Permissions
 
-The Members extension comes with a single default Role, Public. This role cannot be deleted, but it can be renamed and modified to suit your installation. This Role is assumed by any Frontend member who is not authenticated. Roles allow you to set Frontend event and page permissions.
+The Members extension comes with a single default Role, Public. This role cannot be deleted, but it can be renamed and modified to suit your requirements. This Role is assumed by any Frontend member who is not authenticated and by default, does not allow users to use any Events. Remember to modify the Public role to open up Events as necessary.
+
+Roles allow you to prevent access to certain pages and/or prevent what users can do with your Events. Read more about [Event Permissions](https://github.com/symphonycms/members/wiki/Event-Permissions) on the wiki.
 
 ## Email Templates
 
