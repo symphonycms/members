@@ -12,8 +12,8 @@
 				'name' => 'Members: Generate Recovery Code',
 				'author' => array(
 					'name' => 'Symphony CMS',
-					'website' => 'http://symphony-cms.com',
-					'email' => 'team@symphony-cms.com'),
+					'website' => 'http://getsymphony.com',
+					'email' => 'team@getsymphony.com'),
 				'version' => 'Members 1.0',
 				'release-date' => '2011-05-10'
 			);
@@ -52,6 +52,7 @@
 					&lt;label&gt;Username: &lt;input name="fields[username]" type="text" value="{$username}"/&gt;&lt;/label&gt;
 					or
 					&lt;label&gt;Email: &lt;input name="fields[email]" type="text" value="{$email}"/&gt;&lt;/label&gt;
+					&lt;input type="hidden" name="members-section-id" value="{$your-section-id}"/&gt;
 					&lt;input type="submit" name="action['.self::ROOTELEMENT.']" value="Reset Password"/&gt;
 					&lt;input type="hidden" name="redirect" value="{$root}/"/&gt;
 				&lt;/form&gt;

@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.2
+- Version: 1.3dev
 - Author: Symphony Team
-- Release Date: 6th December 2012
+- Release Date: unreleased
 - Requirements: Symphony 2.3
 
-Frontend membership extension for Symphony CMS. This version represents `1.2` which is the first version of the Members extension to support Symphony 2.3.
+Frontend membership extension for Symphony CMS. This version represents `1.3dev` which is a development build for the upcoming 1.3 release.
 
 ## Installation and Setup
 
@@ -152,6 +152,23 @@ or
 
 You can create new member records using standard Symphony events on your active members section. The [wiki](https://github.com/symphonycms/members/wiki/Members%3A-New) contains information about the response XML to expect from the fields provided by the Members extension.
 
+## Multiple Section support
+
+Since Members 1.3, multiple section support is possible allowing you to create complex sites that house different types of Member data. One example of this could be having Customers and Administration sections, each with different field configurations.
+
+For the most part, upgrading your existing Members installation to 1.3 is seamless as the extension will fallback to existing behaviour if only one Members section is detected in your build.
+
+However, once you start to create multiple sections you will need to add a hidden field to your forms to tell Symphony exactly what section you'd like Members to verify this data against:
+
+	<input name="members-section-id" type="hidden" value="{$your-section-id}" />
+
+This field will need to be added to your Login form at the very least as it tells Symphony to verify the credentials against the given Section schema (so you cannot have Customers logging into the Administration section etc.)
+
+### What's changed
+
+- A `members-section-id` parameter is available for logged in users
+- You no longer need to specify the active Members section in the Preferences
+
 ## Filters
 
 This extension provides three event filters that you can add to your events to make them useful to Members:
@@ -178,4 +195,4 @@ The Members extension comes with a single default Role, Public. This role cannot
 
 ## Email Templates
 
-The [Email Template Filter](http://symphony-cms.com/download/extensions/view/20743/) or [Email Template Manager](http://symphony-cms.com/download/extensions/view/64322/) can be used to email information specific to the Members extension such as Member Registration, Password Reset and Activation Codes. These extensions allow Email Templates to be added as Event Filters to your events. Check the documentation for either extension to evaluate them for your situation. All bugs relating to those extensions should be reported to the respective extension, not the Members extension.
+The [Email Template Filter](http://getsymphony.com/download/extensions/view/20743/) or [Email Template Manager](http://getsymphony.com/download/extensions/view/64322/) can be used to email information specific to the Members extension such as Member Registration, Password Reset and Activation Codes. These extensions allow Email Templates to be added as Event Filters to your events. Check the documentation for either extension to evaluate them for your situation. All bugs relating to those extensions should be reported to the respective extension, not the Members extension.
