@@ -13,6 +13,15 @@ class MemberSection {
 	}
 
 	/**
+	 * Returns the data of this section as an object
+	 *
+	 * @return object
+	 */
+	public function getData() {
+		return (object)$this->data;
+	}
+
+	/**
 	 * Where `$name` is one of the following values, `role`, `timezone`,
 	 * `email`, `activation`, `authentication` and `identity`, this function
 	 * will return a Field instance. Typically this allows extensions to access

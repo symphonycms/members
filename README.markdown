@@ -167,7 +167,7 @@ This field will need to be added to your Login form at the very least as it tell
 ### What's changed
 
 - A `members-section-id` parameter is available for logged in users
-- You no longer need to specify the active Members section in the Preferences
+- The Member Roles page will now show the member breakdowns per section
 
 ## Filters
 

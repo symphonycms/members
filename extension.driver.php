@@ -96,10 +96,10 @@
 		public function __construct() {
 			if(!extension_Members::$initialised) {
 				// Find all possible member sections
-				$sections = extension_Members::discoverMemberSections();
+				$config_sections = explode(',',extension_Members::getSetting('section'));
+				extension_Members::initialiseMemberSections($config_sections);
 
 				if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
-
 					/**
 					 * This delegate fires as soon as possible to allow other extensions
 					 * the chance to overwrite the default Member class. This allows
@@ -127,17 +127,17 @@
 					$members_section_id = $this->getMemberDriver()->getMemberSectionID();
 
 					// If there is only one section... this just got easy
-					if(count($sections) === 1) {
-						extension_Members::$member_section = key($sections);
+					if(count($config_sections) === 1) {
+						extension_Members::$member_section = current($config_sections);
 					}
 					// Set the active section by looking for a section ID in the
 					// $_REQUEST or $_SESSION. Added security by only setting
 					// the active section if that section can actually be a valid
 					// members section
-					else if(isset($_REQUEST['members-section-id']) && array_key_exists((int)$_REQUEST['members-section-id'], $sections)) {
+					else if(isset($_REQUEST['members-section-id']) && in_array((int)$_REQUEST['members-section-id'], $config_sections)) {
 						extension_Members::$members_section = (int)$_REQUEST['members-section-id'];
 					}
-					else if(isset($members_section_id) && array_key_exists((int)$members_section_id, $sections)) {
+					else if(isset($members_section_id) && in_array((int)$members_section_id, $config_sections)) {
 						extension_Members::$members_section = (int)$members_section_id;
 					}
 				}
@@ -193,6 +193,16 @@
 					'page' => '/backend/',
 					'delegate' => 'AdminPagePreGenerate',
 					'callback' => 'appendAssets'
+				),
+				array(
+					'page'	=> '/system/preferences/',
+					'delegate'	=> 'AddCustomPreferenceFieldsets',
+					'callback'	=> 'appendPreferences'
+				),
+				array(
+					'page'	=> '/system/preferences/',
+					'delegate'	=> 'Save',
+					'callback'	=> 'savePreferences'
 				),
 				array(
 					'page'		=> '/blueprints/events/new/',
@@ -428,11 +438,6 @@
 					}
 				}
 			}
-
-			if(version_compare($previousVersion, '1.3dev', '<')) {
-				Symphony::Configuration()->remove('section', 'members');
-				Symphony::Configuration()->write();
-			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -468,39 +473,6 @@
 
 			$value = Symphony::Configuration()->get($handle, 'members');
 			return ((is_numeric($value) && $value == 0) || is_null($value) || empty($value)) ? null : $value;
-		}
-
-		/**
-		 * Returns all the sections that contain one of the required member
-		 * fields (extension_Members::$member_fields). The resulting associative
-		 * array contains information about each of the Sections.
-		 *
-		 * @todo Optimise this, this will query every section and field schema
-		 *  in the entire installation. Perhaps reverting to 1.2 where you have
-		 *  to set your Members in the Preferences page is the best way to
-		 *  have performance and control?
-		 * @return array
-		 */
-		public static function discoverMemberSections() {
-			// Get the Sections that contain a Member field.
-			$sections = SectionManager::fetch();
-			$member_sections = array();
-			if(is_array($sections) && !empty($sections)) {
-				foreach($sections as $section) {
-					$schema = $section->fetchFieldsSchema();
-
-					foreach($schema as $field) {
-						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
-
-						if(array_key_exists($section->get('id'), $member_sections)) continue;
-
-						$member_sections[$section->get('id')] = new MemberSection($section->get('id'), $section->get());
-					}
-				}
-			}
-
-			extension_Members::$member_sections = $member_sections;
-			return $member_sections;
 		}
 
 		/**
@@ -580,6 +552,23 @@
 			}
 
 			return extension_Members::$member_sections[$section_id]->getFieldHandle($type);
+		}
+
+		/**
+		 * Given an array of Section ID's, initialise instances of MemberSection
+		 * and save the resulting array into `extension_Members::$member_sections`
+		 *
+		 * @param array $sections
+		 *  An array of section ID's
+		 * @return array
+		 */
+		public static function initialiseMemberSections(array $sections = array()) {
+			$sections = SectionManager::fetch($sections);
+			foreach($sections as $section) {
+				extension_Members::$member_sections[$section->get('id')] = new MemberSection($section->get('id'), $section->get());
+			}
+
+			return extension_Members::$member_sections;
 		}
 
 		/**
@@ -727,6 +716,78 @@
 			catch(Exception $ex) {}
 
 			return $options;
+		}
+
+			/*-------------------------------------------------------------------------
+		Preferences:
+		-------------------------------------------------------------------------*/
+
+		/**
+		* Allows a user to select which section they would like to use as their
+		* active members section. This allows developers to build multiple sections
+		* for migration during development.
+		*
+		* @uses AddCustomPreferenceFieldsets
+		* @todo Look at how this could be expanded so users can log into multiple sections. This is not in scope for 1.0
+		*
+		* @param array $context
+		*/
+		public function appendPreferences($context) {
+			$fieldset = new XMLElement('fieldset');
+			$fieldset->setAttribute('class', 'settings');
+			$fieldset->appendChild(new XMLElement('legend', __('Members')));
+			$fieldset->appendChild(
+				new XMLElement('p', __('A Members section will at minimum contain either a Member: Email or a Member: Username field'), array('class' => 'help'))
+			);
+
+			$div = new XMLElement('div');
+			$label = new XMLElement('label', __('Active Members Section'));
+
+			// Get the Sections that contain a Member field.
+			$sections = SectionManager::fetch();
+			$config_sections = explode(',', extension_Members::getSetting('section'));
+			$member_sections = array();
+			if(is_array($sections) && !empty($sections)) {
+				foreach($sections as $section) {
+					$schema = $section->fetchFieldsSchema();
+
+					foreach($schema as $field) {
+						if(!in_array($field['type'], extension_Members::$member_fields)) continue;
+
+						if(array_key_exists($section->get('id'), $member_sections)) continue;
+
+						$member_sections[$section->get('id')] = $section->get('name');
+					}
+				}
+			}
+
+			// Build the options
+			$options = array(
+				array(null, false, null)
+			);
+			foreach($sections as $section_id => $section) {
+				$options[] = array($section_id, (in_array($section_id, $config_sections)), $section);
+			}
+
+			$label->appendChild(Widget::Select('settings[members][section][]', $options, array('multiple' => 'multiple')));
+			$div->appendChild($label);
+
+			$fieldset->appendChild($div);
+
+			$context['wrapper']->appendChild($fieldset);
+		}
+
+		/**
+		* Handles multiple sections, by creating a string so that Symphony can
+		* save the Configuration file.
+		*
+		* @uses savePreferences
+		*
+		* @param array $context
+		* @return boolean
+		*/
+		public function savePreferences(array &$context){
+			$context['settings']['members']['section'] = implode(',', $context['settings']['members']['section']);
 		}
 
 	/*-------------------------------------------------------------------------
