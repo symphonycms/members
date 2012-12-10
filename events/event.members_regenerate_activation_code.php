@@ -166,8 +166,14 @@
 				'activated' => 'no',
 			), $status);
 
-			// Update the database setting activation to yes.
-			Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
+			// If the Member has entry data for the Activation field, update it to yes
+			if(array_key_exists((int)$activation->get('id'), $entry->getData())) {
+				Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
+			}
+			else {
+				$data['entry_id'] = $member_id;
+				Symphony::Database()->insert($data, 'tbl_entries_data_' . $activation->get('id'));
+			}
 
 			// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
 			// and Email Template Manager extensions use this delegate to send any
