@@ -211,6 +211,11 @@
 				// Create new password using the auth field so simulate the checkPostFieldData
 				// and processRawFieldData functions.
 				$message = '';
+
+				// For the purposes of this event, the auth field should ALWAYS be required
+				// as we have to set a password (ie. handle the case where this field is
+				// actually optional) RE: #193
+				$auth->set('required', 'yes');
 				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $member_id);
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
@@ -267,4 +272,3 @@
 			return $result;
 		}
 	}
-
