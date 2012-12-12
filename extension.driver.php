@@ -746,6 +746,7 @@
 			// Get the Sections that contain a Member field.
 			$sections = SectionManager::fetch();
 			$config_sections = explode(',', extension_Members::getSetting('section'));
+
 			$member_sections = array();
 			if(is_array($sections) && !empty($sections)) {
 				foreach($sections as $section) {
@@ -766,7 +767,7 @@
 				array(null, false, null)
 			);
 			foreach($sections as $section_id => $section) {
-				$options[] = array($section_id, (in_array($section_id, $config_sections)), $section);
+				$options[] = array($section->get('id'), (in_array($section->get('id'), $config_sections)), $section->get('name'));
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section][]', $options, array('multiple' => 'multiple')));
