@@ -143,8 +143,8 @@
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
 					$where .= " AND (
 									`t$field_id$key`.value = '$bit'
-									OR `t$field_id`.handle = '$bit'
-									OR `t$field_id`.entry_id = '$bit'
+									OR `t$field_id$key`.handle = '$bit'
+									OR `t$field_id$key`.entry_id = '$bit'
 								) ";
 				}
 			}

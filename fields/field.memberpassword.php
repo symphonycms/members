@@ -1,6 +1,9 @@
 <?php
 
-	Class fieldMemberPassword extends Field{
+	require_once FACE . '/interface.exportablefield.php';
+	require_once FACE . '/interface.importablefield.php';
+
+	Class fieldMemberPassword extends Field implements ExportableField, ImportableField {
 
 		protected static $_strengths = array();
 
@@ -567,12 +570,54 @@
 			$wrapper->appendChild($pw);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL){
+		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null){
 			if(empty($data)) return __('None');
 
 			return parent::prepareTableValue(array(
 				'value' => __(ucwords($data['strength'])) . ' (' . $data['length'] . ')'
-			), $link);
+			), $link, $entry_id);
+		}
+
+	/*-------------------------------------------------------------------------
+		Import:
+	-------------------------------------------------------------------------*/
+
+		/**
+		 * Give the field some data and ask it to return a value.
+		 *
+		 * @param mixed $data
+		 * @param integer $entry_id
+		 * @return array
+		 */
+		public function prepareImportValue($data, $entry_id = null) {
+			if (empty($data)) return array();
+
+			$password = trim($data['password']);
+
+			// We only want to run the processing if the password has been altered
+			// or if the entry hasn't been created yet. If someone attempts to change
+			// their username, but not their password, this will be caught by checkPostFieldData
+			if (!empty($password) || is_null($entry_id)) {
+				return array(
+					'password'	=> $this->encodePassword($password),
+					'strength'	=> FieldMemberPassword::checkPassword($password),
+					'length'	=> strlen($password)
+				);
+			}
+		}
+
+	/*-------------------------------------------------------------------------
+		Export:
+	-------------------------------------------------------------------------*/
+
+		public function getExportModes() {
+			return array(
+				ExportableField::POSTDATA
+			);
+		}
+
+		public function prepareExportValue($data, $mode, $entry_id = null) {
+			return null;
 		}
 
 	/*-------------------------------------------------------------------------

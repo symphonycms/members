@@ -1,8 +1,10 @@
 <?php
 
-    require_once(EXTENSIONS . '/members/lib/class.identity.php');
+    require_once EXTENSIONS . '/members/lib/class.identity.php';
+	require_once FACE . '/interface.exportablefield.php';
+	require_once FACE . '/interface.importablefield.php';
 
-	Class fieldMemberEmail extends Identity {
+	Class fieldMemberEmail extends Identity implements ExportableField, ImportableField {
 
 		protected static $validator = '/^\w(?:\.?[\w%+-]+)*@\w(?:[\w-]*\.)+?[a-z]{2,}$/i';
 
@@ -167,6 +169,43 @@
 			return array(
 				'value' => trim($data)
 			);
+		}
+
+	/*-------------------------------------------------------------------------
+		Import:
+	-------------------------------------------------------------------------*/
+
+		/**
+		 * Give the field some data and ask it to return a value.
+		 *
+		 * @param mixed $data
+		 * @param integer $entry_id
+		 * @return array
+		 */
+		public function prepareImportValue($data, $entry_id = null) {
+			if (empty($data)) return array();
+
+			return array(
+				'value' => trim($data)
+			);
+		}
+
+	/*-------------------------------------------------------------------------
+		Export:
+	-------------------------------------------------------------------------*/
+
+		public function getExportModes() {
+			return array(
+				ExportableField::POSTDATA
+			);
+		}
+
+		public function prepareExportValue($data, $mode, $entry_id = null) {
+			if (isset($data['value'])) {
+				return $data['value'];
+			}
+
+			return null;
 		}
 
 	/*-------------------------------------------------------------------------

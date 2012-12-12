@@ -1,6 +1,6 @@
 <?php
 
-	require_once(TOOLKIT . '/fields/field.select.php');
+	require_once TOOLKIT . '/fields/field.select.php';
 
 	Class fieldMemberTimezone extends fieldSelect {
 

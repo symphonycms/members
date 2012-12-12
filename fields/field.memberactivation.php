@@ -1,6 +1,7 @@
 <?php
 
-	require_once(TOOLKIT . '/fields/field.select.php');
+	require_once TOOLKIT . '/fields/field.select.php';
+	require_once FACE . '/interface.importablefield.php';
 
 	/**
 	 * Activation field. If added to a Members section, it generates and stores
@@ -8,7 +9,7 @@
 	 * sends emails, and displays as a checkbox in the backend publish area.
 	 */
 
-	Class fieldMemberActivation extends fieldSelect {
+	Class fieldMemberActivation extends fieldSelect implements ImportableField {
 
 	/*-------------------------------------------------------------------------
 		Definition:
@@ -366,6 +367,21 @@
 		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 
+			return $this->prepareImportValue($data, $entry_id);
+		}
+
+	/*-------------------------------------------------------------------------
+		Import:
+	-------------------------------------------------------------------------*/
+
+		/**
+		 * Give the field some data and ask it to return a value.
+		 *
+		 * @param mixed $data
+		 * @param integer $entry_id
+		 * @return string|null
+		 */
+		public function prepareImportValue($data, $entry_id = null) {
 			if(is_null($data) && !is_null($entry_id)) {
 				$entry = EntryManager::fetch($entry_id);
 
@@ -418,10 +434,10 @@
 			$wrapper->appendChild($el);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL) {
+		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null) {
 			return parent::prepareTableValue(array(
 				'value' => ($data['activated'] == 'yes') ? __('Activated') : __('Not Activated')
-			), $link);
+			), $link, $entry_id);
 		}
 
 		public function getParameterPoolValue($data, $entry_id = null) {

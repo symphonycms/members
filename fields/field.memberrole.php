@@ -1,6 +1,6 @@
 <?php
 
-	require_once(TOOLKIT . '/fields/field.select.php');
+	require_once TOOLKIT . '/fields/field.select.php';
 
 	Class fieldMemberRole extends fieldSelect {
 
@@ -343,7 +343,7 @@
 
 			return parent::prepareTableValue(array(
 				'value' => $role instanceof Role ? General::sanitize($role->get('name')) : null
-			), $link);
+			), $link, $entry_id);
 		}
 
 		public function getParameterPoolValue($data, $entry_id = null) {
