@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.3dev
+- Version: 1.3beta1
 - Author: Symphony Team
 - Release Date: unreleased
-- Requirements: Symphony 2.3
+- Requirements: Symphony 2.3.1
 
-Frontend membership extension for Symphony CMS. This version represents `1.3dev` which is a development build for the upcoming 1.3 release.
+Frontend membership extension for Symphony CMS. This version represents `1.3beta1` which is a development build for the upcoming 1.3 release.
 
 ## Installation and Setup
 

@@ -17,7 +17,17 @@
 	</author>
   </authors>
   <releases>
-	<release version="1.2" date="2012-12-06" min="2.3">
+	<release version="1.3beta1" date="unreleased" min="2.3.1">
+	  * [#201](https://github.com/symphonycms/members/issues/201) Use spl_autoload_register instead of __autoload
+      * [#193](https://github.com/symphonycms/members/issues/193) When resetting a password, always enforce that the password be required
+	  * [#192](https://github.com/symphonycms/members/issues/192) Fix the password recovery process so that it will work if there is no password data for the user
+	  * [#175](https://github.com/symphonycms/members/issues/175) Ability to override the default Symphony member
+	  * [#173](https://github.com/symphonycms/members/issues/173) Multiple section support
+	  * [#165](https://github.com/symphonycms/members/issues/165) Implement MembersPostRegenerateActivationCode, MembersPostActivation, MembersPostForgotPassword, MembersPostResetPassword and InitialiseMember delegates.
+	  * Support Importable/Exportable field interfaces
+	  * Other minor fixes :)
+	  </release>
+	<release version="1.2" date="2012-12-06" min="2.3" max='2.3.x'>
 	  * Update for Symphony 2.3
 	  * Lazy load Member fields for better performance
 	  * Added Greek translation
