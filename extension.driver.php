@@ -128,7 +128,7 @@
 
 					// If there is only one section... this just got easy
 					if(count($config_sections) === 1) {
-						extension_Members::$member_section = current($config_sections);
+						extension_Members::$members_section = current($config_sections);
 					}
 					// Set the active section by looking for a section ID in the
 					// $_REQUEST or $_SESSION. Added security by only setting
