@@ -935,7 +935,7 @@
 				// Event Info
 				if(
 					$context['oPage'] instanceof contentBlueprintsEvents &&
-					$callback['context'][0] == "info" &&
+					!empty($callback['context']) && $callback['context'][0] == "info" &&
 					in_array($callback['context'][1], extension_Members::$member_events)
 				) {
 					Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.events.js', 10001, false);

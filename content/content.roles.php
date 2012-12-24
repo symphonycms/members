@@ -24,7 +24,8 @@
 			));
 
 			$roles = RoleManager::fetch();
-			$membersSections = extension_Members::discoverMemberSections();
+			// Find all possible member sections
+			$config_sections = explode(',',extension_Members::getSetting('section'));
 
 			$aTableHead = array(
 				array(__('Name'), 'col')
@@ -38,7 +39,7 @@
 				));
 			}
 
-			else if(empty($membersSections)) {
+			else if(empty($config_sections)) {
 				$aTableBody = array(Widget::TableRow(
 					array(Widget::TableData(__('No Member sections exist in Symphony. <a href="%s">Create a Section?</a>',
 					array(
