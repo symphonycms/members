@@ -118,9 +118,9 @@
 					AND %s
 					LIMIT 1
 				",
-				$this->get('id'), $password, 
-				is_null($member_id) 
-					? '1 = 1' 
+				$this->get('id'), $password,
+				is_null($member_id)
+					? '1 = 1'
 					: sprintf('`entry_id` = %d', Symphony::Database()->cleanValue($member_id))
 			));
 
@@ -582,28 +582,21 @@
 		Import:
 	-------------------------------------------------------------------------*/
 
-		/**
-		 * Give the field some data and ask it to return a value.
-		 *
-		 * @param mixed $data
-		 * @param integer $entry_id
-		 * @return array
-		 */
-		public function prepareImportValue($data, $entry_id = null) {
-			if (empty($data)) return array();
+		public function getImportModes() {
+			return array(
+				'getPostdata' =>	ImportableField::ARRAY_VALUE
+			);
+		}
 
-			$password = trim($data['password']);
+		public function prepareImportValue($data, $mode, $entry_id = null) {
+			$message = null;
+			$modes = (object)$this->getImportModes();
 
-			// We only want to run the processing if the password has been altered
-			// or if the entry hasn't been created yet. If someone attempts to change
-			// their username, but not their password, this will be caught by checkPostFieldData
-			if (!empty($password) || is_null($entry_id)) {
-				return array(
-					'password'	=> $this->encodePassword($password),
-					'strength'	=> FieldMemberPassword::checkPassword($password),
-					'length'	=> strlen($password)
-				);
+			if($mode === $modes->getPostdata) {
+				return $this->processRawFieldData($data, Field::__OK__, $message, true, $entry_id);
 			}
+
+			return null;
 		}
 
 	/*-------------------------------------------------------------------------

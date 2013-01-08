@@ -111,7 +111,6 @@
 		 * code generated is still valid by comparing it's generation timestamp
 		 * with the maximum code expiry time.
 		 *
-		 * @todo possibly return if the code didn't exist or if it was expired
 		 * @param integer $entry_id
 		 * @return array
 		 */
@@ -367,40 +366,44 @@
 		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
 			$status = self::__OK__;
 
-			return $this->prepareImportValue($data, $entry_id);
+			return $this->prepareImportValue($data, ImportableField::ARRAY_VALUE, $entry_id);
 		}
 
 	/*-------------------------------------------------------------------------
 		Import:
 	-------------------------------------------------------------------------*/
 
-		/**
-		 * Give the field some data and ask it to return a value.
-		 *
-		 * @param mixed $data
-		 * @param integer $entry_id
-		 * @return string|null
-		 */
-		public function prepareImportValue($data, $entry_id = null) {
-			if(is_null($data) && !is_null($entry_id)) {
-				$entry = EntryManager::fetch($entry_id);
+		public function getImportModes() {
+			return array(
+				'getPostdata' =>	ImportableField::ARRAY_VALUE
+			);
+		}
 
-				$data = $entry[0]->getData($this->get('id'));
-			}
-			else {
-				if(!is_array($data)) {
-					$data = array('activated' => $data);
-				}
+		public function prepareImportValue($data, $mode, $entry_id = null) {
+			$message = null;
+			$modes = (object)$this->getImportModes();
 
-				if($data['activated'] == 'no') {
-					$data = array_merge($data, $this->generateCode($entry_id));
+			if($mode === $modes->getPostdata) {
+				if(is_null($data) && !is_null($entry_id)) {
+					$entry = EntryManager::fetch($entry_id);
+
+					$data = $entry[0]->getData($this->get('id'));
 				}
 				else {
-					$data['timestamp'] = DateTimeObj::get('Y-m-d H:i:s', time());
+					if(!is_array($data)) {
+						$data = array('activated' => $data);
+					}
+
+					if($data['activated'] == 'no') {
+						$data = array_merge($data, $this->generateCode($entry_id));
+					}
+					else {
+						$data['timestamp'] = DateTimeObj::get('Y-m-d H:i:s', time());
+					}
 				}
 			}
 
-			return $data;
+			return null;
 		}
 
 	/*-------------------------------------------------------------------------
