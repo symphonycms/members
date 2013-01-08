@@ -380,7 +380,6 @@
 		}
 
 		public function prepareImportValue($data, $mode, $entry_id = null) {
-			$message = null;
 			$modes = (object)$this->getImportModes();
 
 			if($mode === $modes->getPostdata) {
