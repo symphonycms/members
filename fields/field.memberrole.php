@@ -136,8 +136,7 @@
 				'default_role' => $this->get('default_role')
 			);
 
-			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
-			return Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
+			return FieldManager::saveSettings($id, $fields);
 		}
 
 	/*-------------------------------------------------------------------------
