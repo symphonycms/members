@@ -409,7 +409,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false, $mode = null, $entry_id = null){
-			if (!is_array($data) or is_null($data['activated'])) return;
+			if (!is_array($data) or !isset($data['activated'])) return;
 
 			$el = new XMLElement($this->get('element_name'));
 			$el->setAttribute('activated', $data['activated']);
