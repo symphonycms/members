@@ -85,6 +85,7 @@
 		protected function __trigger(){
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_REQUEST['fields'];
+			$this->driver = Symphony::ExtensionManager()->create('members');
 
 			// Add POST values to the Event XML
 			$post_values = new XMLElement('post-values');
@@ -92,6 +93,13 @@
 			// Create the post data cookie element
 			if (is_array($fields) && !empty($fields)) {
 				General::array_to_xml($post_values, $fields, true);
+			}
+
+			// Set the section ID
+			$result = $this->setMembersSection($result, $_REQUEST['members-section-id']);
+			if($result->getAttribute('result') === 'error') {
+				$result->appendChild($post_values);
+				return $result;
 			}
 
 			// Trigger the EventPreSaveFilter delegate. We are using this to make
@@ -104,7 +112,7 @@
 
 			// Check that there is a row with this recovery code and that they
 			// request a password reset
-			$auth = extension_Members::getField('authentication');
+			$auth = $this->driver->getMemberDriver()->section->getField('authentication');
 			if(!$auth instanceof fieldMemberPassword) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -119,7 +127,7 @@
 
 			// Check that either a Member: Username or Member: Email field
 			// has been detected
-			$identity = SymphonyMember::setIdentityField($fields, false);
+			$identity = $this->driver->getMemberDriver()->setIdentityField($fields, false);
 			if(!$identity instanceof Identity) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -132,7 +140,10 @@
 				return $result;
 			}
 
-			if(!isset($fields[extension_Members::getFieldHandle('authentication')]['recovery-code']) or empty($fields[extension_Members::getFieldHandle('authentication')]['recovery-code'])) {
+			if(
+				!isset($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code'])
+				or empty($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code'])
+			) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
@@ -151,7 +162,7 @@
 					FROM tbl_entries_data_%d
 					WHERE reset = 'yes'
 					AND `recovery-code` = '%s'
-				", $auth->get('id'), Symphony::Database()->cleanValue($fields[extension_Members::getFieldHandle('authentication')]['recovery-code'])
+				", $auth->get('id'), Symphony::Database()->cleanValue($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code'])
 			));
 
 			if(empty($row)) {
@@ -166,8 +177,7 @@
 			}
 			else {
 				// Retrieve Member Entry record
-				$driver = Symphony::ExtensionManager()->create('members');
-				$entry = $driver->getMemberDriver()->fetchMemberFromID($row['entry_id']);
+				$entry = $this->driver->getMemberDriver()->fetchMemberFromID($row['entry_id']);
 
 				// Check that the given Identity data matches the Member that the
 				// recovery code is for
@@ -265,10 +275,10 @@
 				if(extension_Members::getSetting('reset-password-auto-login') == "yes") {
 					// Instead of replicating the same logic, call the UpdatePasswordLogin which will
 					// handle relogging in the user.
-					$driver->getMemberDriver()->filter_UpdatePasswordLogin(array(
+					$this->driver->getMemberDriver()->filter_UpdatePasswordLogin(array(
 						'entry' => $entry,
 						'fields' => array(
-							extension_Members::getFieldHandle('authentication') => array(
+							$this->driver->getMemberDriver()->section->getFieldHandle('authentication') => array(
 								'password' => Symphony::Database()->cleanValue($fields[$auth->get('element_name')]['password'])
 							)
 						)

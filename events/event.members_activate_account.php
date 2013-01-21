@@ -81,6 +81,7 @@
 		protected function __trigger(){
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
+			$this->driver = Symphony::ExtensionManager()->create('members');
 
 			// Add POST values to the Event XML
 			$post_values = new XMLElement('post-values');
@@ -88,6 +89,13 @@
 			// Create the post data cookie element
 			if (is_array($fields) && !empty($fields)) {
 				General::array_to_xml($post_values, $fields, true);
+			}
+
+			// Set the section ID
+			$result = $this->setMembersSection($result, $_REQUEST['members-section-id']);
+			if($result->getAttribute('result') === 'error') {
+				$result->appendChild($post_values);
+				return $result;
 			}
 
 			// Trigger the EventPreSaveFilter delegate. We are using this to make
@@ -99,7 +107,7 @@
 			$this->addEmailTemplates('activate-account-template');
 
 			// Do sanity checks on the incoming data
-			$activation = extension_Members::getField('activation');
+			$activation = $this->driver->getMemberDriver()->section->getField('activation');
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -113,7 +121,7 @@
 			}
 
 			// Check that either a Member: Username or Member: Email field has been detected
-			$identity = SymphonyMember::setIdentityField($fields, false);
+			$identity = $this->driver->getMemberDriver()->setIdentityField($fields, false);
 			if(!$identity instanceof Identity) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -159,8 +167,7 @@
 			}
 
 			// Retrieve Member's entry
-			$driver = Symphony::ExtensionManager()->create('members');
-			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
+			$entry = $this->driver->getMemberDriver()->fetchMemberFromID($member_id);
 
 			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
 				$result->setAttribute('result', 'error');
@@ -214,7 +221,7 @@
 
 			// Simulate an array to login with.
 			$data_fields = array_merge($fields, array(
-				extension_Members::getFieldHandle('authentication') => $entry->getData(extension_Members::getField('authentication')->get('id'), true)->password
+				$this->driver->getMemberDriver()->section->getFieldHandle('authentication') => $entry->getData($this->driver->getMemberDriver()->section->getField('authentication')->get('id'), true)->password
 			));
 
 			/**
@@ -233,7 +240,7 @@
 			));
 
 			// Only login if the Activation field allows auto login.
-			if(extension_Members::getSetting('activate-account-auto-login') == 'no' || $driver->getMemberDriver()->login($data_fields, true)) {
+			if(extension_Members::getSetting('activate-account-auto-login') == 'no' || $this->driver->getMemberDriver()->login($data_fields, true)) {
 				// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
 				// and Email Template Manager extensions use this delegate to send any
 				// emails attached to this event

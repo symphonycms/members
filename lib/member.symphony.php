@@ -17,18 +17,18 @@
 		 *  the field handles to a normalised username/email.
 		 * @return Field
 		 */
-		public static function setIdentityField(array $credentials, $simplified = true) {
+		public function setIdentityField(array $credentials, $simplified = true) {
 			if($simplified) {
 				extract($credentials);
 			}
 			else {
 				// Map POST data to simple terms
-				if(isset($credentials[extension_Members::getFieldHandle('identity')])) {
-					$username = $credentials[extension_Members::getFieldHandle('identity')];
+				if(isset($credentials[$this->section->getFieldHandle('identity')])) {
+					$username = $credentials[$this->section->getFieldHandle('identity')];
 				}
 
-				if(isset($credentials[extension_Members::getFieldHandle('email')])) {
-					$email = $credentials[extension_Members::getFieldHandle('email')];
+				if(isset($credentials[$this->section->getFieldHandle('email')])) {
+					$email = $credentials[$this->section->getFieldHandle('email')];
 				}
 			}
 
@@ -39,11 +39,11 @@
 
 			// If email is supplied, use the Email field
 			if(!is_null($email) && (isset($email) && !empty($email))) {
-				$identity_field = extension_Members::getField('email');
+				$identity_field = $this->section->getField('email');
 			}
 			// If username is supplied, use the Username field
 			else if (!is_null($username) && (isset($username) && !empty($username))) {
-				$identity_field = extension_Members::getField('identity');
+				$identity_field = $this->section->getField('identity');
 			}
 
 			return $identity_field;
@@ -62,7 +62,7 @@
 		public function findMemberIDFromCredentials(array $credentials) {
 			if((is_null($credentials['username']) && is_null($credentials['email']))) return null;
 
-			$identity = SymphonyMember::setIdentityField($credentials);
+			$identity = $this->setIdentityField($credentials);
 
 			if(!$identity instanceof Field) return null;
 
@@ -71,7 +71,7 @@
 
 			// Validate against Password
 			// It's expected that $password is sha1'd and salted.
-			$auth = extension_Members::getField('authentication');
+			$auth = $this->section->getField('authentication');
 			if(!is_null($auth)) {
 				$member_id = $auth->fetchMemberIDBy($credentials, $member_id);
 			}
@@ -81,17 +81,17 @@
 			if(is_null($member_id)) return null;
 
 			// Check that if there's activiation, that this Member is activated.
-			if(!is_null(extension_Members::getFieldHandle('activation'))) {
+			if(!is_null($this->section->getFieldHandle('activation'))) {
 				$entry = EntryManager::fetch($member_id);
 
-				$isActivated = $entry[0]->getData(extension_Members::getField('activation')->get('id'), true)->activated == "yes";
+				$isActivated = $entry[0]->getData($this->section->getField('activation')->get('id'), true)->activated == "yes";
 
 				// If we are denying login for non activated members, lets do so now
-				if(extension_Members::getField('activation')->get('deny_login') == 'yes' && !$isActivated) {
-					extension_Members::$_errors[extension_Members::getFieldHandle('activation')] = array(
+				if($this->section->getField('activation')->get('deny_login') == 'yes' && !$isActivated) {
+					extension_Members::$_errors[$this->section->getFieldHandle('activation')] = array(
 						'message' => __('Member is not activated.'),
 						'type' => 'invalid',
-						'label' => extension_Members::getField('activation')->get('label')
+						'label' => $this->section->getField('activation')->get('label')
 					);
 
 					return null;
@@ -99,11 +99,11 @@
 
 				// If the member isn't activated and a Role field doesn't exist
 				// just return false.
-				if(!$isActivated && !FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
-					extension_Members::$_errors[extension_Members::getFieldHandle('activation')] = array(
+				if(!$isActivated && !FieldManager::isFieldUsed($this->section->getFieldType('role'))) {
+					extension_Members::$_errors[$this->section->getFieldHandle('activation')] = array(
 						'message' => __('Member is not activated.'),
 						'type' => 'invalid',
-						'label' => extension_Members::getField('activation')->get('label')
+						'label' => $this->section->getField('activation')->get('label')
 					);
 
 					return false;
@@ -121,12 +121,12 @@
 			// If the member isn't activated and a Role field exists, we need to override
 			// the current Role with the Activation Role. This may allow Members to view certain
 			// things until they active their account.
-			if(!is_null(extension_Members::getFieldHandle('activation'))) {
-				if($member->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
-					if(FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
+			if(!is_null($this->section->getFieldHandle('activation'))) {
+				if($member->getData($this->section->getField('activation')->get('id'), true)->activated != "yes") {
+					if(FieldManager::isFieldUsed($this->section->getFieldType('role'))) {
 						$member->setData(
-							extension_Members::getField('role')->get('id'),
-							extension_Members::getField('activation')->get('activation_role_id')
+							$this->section->getField('role')->get('id'),
+							$this->section->getField('activation')->get('activation_role_id')
 						);
 					}
 				}
@@ -159,12 +159,12 @@
 			$data = extension_Members::$_errors = array();
 
 			// Map POST data to simple terms
-			if(isset($credentials[extension_Members::getFieldHandle('identity')])) {
-				$username = $credentials[extension_Members::getFieldHandle('identity')];
+			if(isset($credentials[$this->section->getFieldHandle('identity')])) {
+				$username = $credentials[$this->section->getFieldHandle('identity')];
 			}
 
-			if(isset($credentials[extension_Members::getFieldHandle('email')])) {
-				$email = $credentials[extension_Members::getFieldHandle('email')];
+			if(isset($credentials[$this->section->getFieldHandle('email')])) {
+				$email = $credentials[$this->section->getFieldHandle('email')];
 			}
 
 			// Allow login via username OR email. This normalises the $data array from the custom
@@ -172,17 +172,19 @@
 			if(isset($username)) {
 				$data['username'] = Symphony::Database()->cleanValue($username);
 			}
-			else if(isset($email) && !is_null(extension_Members::getFieldHandle('email'))) {
+			else if(isset($email) && !is_null($this->section->getFieldHandle('email'))) {
 				$data['email'] = Symphony::Database()->cleanValue($email);
 			}
 
 			// Map POST data for password to `$password`
-			if(isset($credentials[extension_Members::getFieldHandle('authentication')])) {
-				$password = $credentials[extension_Members::getFieldHandle('authentication')];
+			if(isset($credentials[$this->section->getFieldHandle('authentication')])) {
+				$password = $credentials[$this->section->getFieldHandle('authentication')];
 
 				// Use normalised handles for the fields
 				if(!empty($password)) {
-					$data['password'] = $isHashed ? $password : extension_Members::getField('authentication')->encodePassword($password);
+					$data['password'] = $isHashed
+						? $password
+						: $this->section->getField('authentication')->encodePassword($password);
 				}
 				else {
 					$data['password'] = '';
@@ -190,27 +192,27 @@
 			}
 
 			// Check to ensure that we actually have some data to try and log a user in with.
-			if(empty($data['password']) && isset($credentials[extension_Members::getFieldHandle('authentication')])) {
-				extension_Members::$_errors[extension_Members::getFieldHandle('authentication')] = array(
-					'message' => __('%s is a required field.', array(extension_Members::getField('authentication')->get('label'))),
+			if(empty($data['password']) && isset($credentials[$this->section->getFieldHandle('authentication')])) {
+				extension_Members::$_errors[$this->section->getFieldHandle('authentication')] = array(
+					'message' => __('%s is a required field.', array($this->section->getField('authentication')->get('label'))),
 					'type' => 'missing',
-					'label' => extension_Members::getField('authentication')->get('label')
+					'label' => $this->section->getField('authentication')->get('label')
 				);
 			}
 
 			if(isset($data['username']) && empty($data['username'])) {
-				extension_Members::$_errors[extension_Members::getFieldHandle('identity')] = array(
-					'message' => __('%s is a required field.', array(extension_Members::getField('identity')->get('label'))),
+				extension_Members::$_errors[$this->section->getFieldHandle('identity')] = array(
+					'message' => __('%s is a required field.', array($this->section->getField('identity')->get('label'))),
 					'type' => 'missing',
-					'label' => extension_Members::getField('identity')->get('label')
+					'label' => $this->section->getField('identity')->get('label')
 				);
 			}
 
 			if(isset($data['email']) && empty($data['email'])) {
-				extension_Members::$_errors[extension_Members::getFieldHandle('email')] = array(
-					'message' => __('%s is a required field.', array(extension_Members::getField('email')->get('label'))),
+				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
+					'message' => __('%s is a required field.', array($this->section->getField('email')->get('label'))),
 					'type' => 'missing',
-					'label' => extension_Members::getField('email')->get('label')
+					'label' => $this->section->getField('email')->get('label')
 				);
 			}
 
@@ -285,7 +287,7 @@
 
 		public function filter_LockRole(array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
-			if(FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
+			if(FieldManager::isFieldUsed($this->section->getFieldType('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
 					$member = parent::fetchMemberFromID(
@@ -295,19 +297,19 @@
 					if(!$member instanceof Entry) return;
 
 					// If there is a Role set to this Member, lock the `$fields` role to the same value
-					$role_id = $member->getData(extension_Members::getField('role')->get('id'), true)->role_id;
-					$context['fields'][extension_Members::getFieldHandle('role')] = $role_id;
+					$role_id = $member->getData($this->section->getField('role')->get('id'), true)->role_id;
+					$context['fields'][$this->section->getFieldHandle('role')] = $role_id;
 				}
 				// New Member, so use the default Role
 				else {
-					$context['fields'][extension_Members::getFieldHandle('role')] = extension_Members::getField('role')->get('default_role');
+					$context['fields'][$this->section->getFieldHandle('role')] = $this->section->getField('role')->get('default_role');
 				}
 			}
 		}
 
 		public function filter_LockActivation(array &$context) {
 			// If there is an Activation field, this will force it to be no.
-			if(!is_null(extension_Members::getFieldHandle('activation'))) {
+			if(!is_null($this->section->getFieldHandle('activation'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
 					$member = parent::fetchMemberFromID(
@@ -317,12 +319,12 @@
 					if(!$member instanceof Entry) return;
 
 					// Lock the `$fields` activation to the same value as what is set to the Member
-					$activated = $member->getData(extension_Members::getField('activation')->get('id'), true)->activated;
-					$context['fields'][extension_Members::getFieldHandle('activation')] = $activated;
+					$activated = $member->getData($this->section->getField('activation')->get('id'), true)->activated;
+					$context['fields'][$this->section->getFieldHandle('activation')] = $activated;
 				}
 				// New Member, so set activation to 'no'
 				else {
-					$context['fields'][extension_Members::getFieldHandle('activation')] = 'no';
+					$context['fields'][$this->section->getFieldHandle('activation')] = 'no';
 				}
 			}
 		}
@@ -338,8 +340,8 @@
 		 * @param array $context
 		 */
 		public function filter_UpdatePassword(array &$context) {
-			if(!is_null(extension_Members::getFieldHandle('authentication'))) {
-				$context['fields'][extension_Members::getFieldHandle('authentication')]['optional'] = 'yes';
+			if(!is_null($this->section->getFieldHandle('authentication'))) {
+				$context['fields'][$this->section->getFieldHandle('authentication')]['optional'] = 'yes';
 			}
 		}
 
@@ -354,14 +356,14 @@
 		 */
 		public function filter_UpdatePasswordLogin(array $context) {
 			// If the user didn't update their password, or no Identity field exists return
-			if(empty($context['fields'][extension_Members::getFieldHandle('authentication')]['password'])) return;
+			if(empty($context['fields'][$this->section->getFieldHandle('authentication')]['password'])) return;
 
 			// Handle which is the Identity field, either the Member: Username or Member: Email field
-			$identity = is_null(extension_Members::getFieldHandle('identity')) ? 'email' : 'identity';
+			$identity = is_null($this->section->getFieldHandle('identity')) ? 'email' : 'identity';
 
 			$this->login(array(
-				extension_Members::getFieldHandle($identity) => $context['entry']->getData(extension_Members::getField($identity)->get('id'), true)->value,
-				extension_Members::getFieldHandle('authentication') => $context['fields'][extension_Members::getFieldHandle('authentication')]['password']
+				$this->section->getFieldHandle($identity) => $context['entry']->getData($this->section->getField($identity)->get('id'), true)->value,
+				$this->section->getFieldHandle('authentication') => $context['fields'][$this->section->getFieldHandle('authentication')]['password']
 			), false);
 
 			if(isset($_REQUEST['redirect'])) {

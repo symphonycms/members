@@ -67,7 +67,7 @@
 		protected function __trigger() {
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
-			$driver = Symphony::ExtensionManager()->create('members');
+			$this->driver = Symphony::ExtensionManager()->create('members');
 
 			// Add POST values to the Event XML
 			$post_values = new XMLElement('post-values');
@@ -77,8 +77,15 @@
 				General::array_to_xml($post_values, $fields, true);
 			}
 
+			// Set the section ID
+			$result = $this->setMembersSection($result, $_REQUEST['members-section-id']);
+			if($result->getAttribute('result') === 'error') {
+				$result->appendChild($post_values);
+				return $result;
+			}
+
 			// If a member is logged in, return early with an error
-			if($driver->getMemberDriver()->isLoggedIn()) {
+			if($this->driver->getMemberDriver()->isLoggedIn()) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('error', null, array(
@@ -100,7 +107,7 @@
 
 			// Check that either a Member: Username or Member: Password field
 			// has been detected
-			$identity = SymphonyMember::setIdentityField($fields, false);
+			$identity = $this->driver->getMemberDriver()->setIdentityField($fields, false);
 			if(!$identity instanceof Identity) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -142,13 +149,13 @@
 			}
 
 			// Find the Authentication fiedl
-			$auth = extension_Members::getField('authentication');
+			$auth = $this->driver->getMemberDriver()->section->getField('authentication');
 			$status = Field::__OK__;
 
 			// Generate new password
 			$newPassword = $auth->generatePassword();
 
-			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
+			$entry = $this->driver->getMemberDriver()->fetchMemberFromID($member_id);
 			$entry_data = $entry->getData();
 
 			// Generate a Recovery Code with the same logic as a normal password

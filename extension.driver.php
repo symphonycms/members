@@ -128,17 +128,17 @@
 
 					// If there is only one section... this just got easy
 					if(count($config_sections) === 1) {
-						extension_Members::$members_section = current($config_sections);
+						$this->setMembersSection(current($config_sections));
 					}
 					// Set the active section by looking for a section ID in the
 					// $_REQUEST or $_SESSION. Added security by only setting
 					// the active section if that section can actually be a valid
 					// members section
 					else if(isset($_REQUEST['members-section-id']) && in_array((int)$_REQUEST['members-section-id'], $config_sections)) {
-						extension_Members::$members_section = (int)$_REQUEST['members-section-id'];
+						$this->setMembersSection($_REQUEST['members-section-id']);
 					}
 					else if(isset($members_section_id) && in_array((int)$members_section_id, $config_sections)) {
-						extension_Members::$members_section = (int)$members_section_id;
+						$this->setMembersSection($members_section_id);
 					}
 				}
 
@@ -473,6 +473,25 @@
 
 			$value = Symphony::Configuration()->get($handle, 'members');
 			return ((is_numeric($value) && $value == 0) || is_null($value) || empty($value)) ? null : $value;
+		}
+
+		/**
+		 * Shortcut setter for the active Members Section.
+		 *
+		 * @param integer $section_id
+		 * @return boolean
+		 */
+		public function setMembersSection($section_id) {
+			$config_sections = explode(',',extension_Members::getSetting('section'));
+
+			if(in_array((int)$section_id, $config_sections)) {
+				extension_Members::$members_section = (int)$section_id;
+				$this->Member->setMemberSectionID(extension_Members::$member_sections[$section_id]);
+
+				return true;
+			}
+
+			return false;
 		}
 
 		/**

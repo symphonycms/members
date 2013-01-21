@@ -8,14 +8,17 @@
 	spl_autoload_register('loadMemberImplementations');
 
 	Interface Member {
+		// Utilities
+		public function setMemberSectionID(MemberSection $section);
+		public function getMemberSectionID();
+		public function setIdentityField(array $credentials, $simplified = true);
+
 		// Authentication
 		public function login(array $credentials);
 		public function logout();
 		public function isLoggedIn();
 
 		// Finding
-		public static function setIdentityField(array $credentials, $simplified = true);
-		public function getMemberSectionID();
 		public function findMemberIDFromCredentials(array $credentials);
 		public function fetchMemberFromID($member_id = null);
 
@@ -31,6 +34,8 @@
 
 		public $Member = null;
 		public $cookie = null;
+		public $section_id = null;
+		public $section = null;
 
 	/*-------------------------------------------------------------------------
 		Utilities:
@@ -42,6 +47,11 @@
 
 		public function getMemberID() {
 			return self::$member_id;
+		}
+
+		public function setMemberSectionID(MemberSection $section) {
+			$this->section = $section;
+			$this->section_id = (int)$section->getData()->id;
 		}
 
 		public function getMemberSectionID() {
@@ -80,7 +90,7 @@
 		public function updateSystemTimezoneOffset() {
 			if(is_null($this->Member)) return;
 
-			$timezone = extension_Members::getField('timezone', $this->getMember()->get('section_id'));
+			$timezone = $this->section->getField('timezone');
 
 			if(!$timezone instanceof fieldMemberTimezone) return;
 
@@ -125,7 +135,7 @@
 		public function findMemberIDFromIdentity($needle = null){
 			if(is_null($needle)) return null;
 
-			$identity = extension_Members::getField('identity');
+			$identity = $this->section->getField('identity');
 
 			return $identity->fetchMemberIDBy($needle);
 		}
@@ -152,16 +162,16 @@
 			$context['params']['member-id'] = $this->getMemberID();
 			$context['params']['member-section-id'] = $this->getMemberSectionID();
 
-			if(!is_null(extension_Members::getFieldHandle('role'))) {
-				$role_data = $this->getMember()->getData(extension_Members::getField('role')->get('id'));
+			if(!is_null($this->section->getFieldHandle('role'))) {
+				$role_data = $this->getMember()->getData($this->section->getField('role')->get('id'));
 				$role = RoleManager::fetch($role_data['role_id']);
 				if($role instanceof Role) {
 					$context['params']['member-role'] = $role->get('name');
 				}
 			}
 
-			if(!is_null(extension_Members::getFieldHandle('activation'))) {
-				if($this->getMember()->getData(extension_Members::getField('activation')->get('id'), true)->activated != "yes") {
+			if(!is_null($this->section->getFieldHandle('activation'))) {
+				if($this->getMember()->getData($this->section->getField('activation')->get('id'), true)->activated != "yes") {
 					$context['params']['member-activated'] = 'no';
 				}
 			}

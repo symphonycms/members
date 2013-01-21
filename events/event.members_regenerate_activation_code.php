@@ -65,6 +65,7 @@
 		protected function __trigger(){
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_POST['fields'];
+			$this->driver = Symphony::ExtensionManager()->create('members');
 
 			// Add POST values to the Event XML
 			$post_values = new XMLElement('post-values');
@@ -72,6 +73,13 @@
 			// Create the post data cookie element
 			if (is_array($fields) && !empty($fields)) {
 				General::array_to_xml($post_values, $fields, true);
+			}
+
+			// Set the section ID
+			$result = $this->setMembersSection($result, $_REQUEST['members-section-id']);
+			if($result->getAttribute('result') === 'error') {
+				$result->appendChild($post_values);
+				return $result;
 			}
 
 			// Trigger the EventPreSaveFilter delegate. We are using this to make
@@ -82,7 +90,7 @@
 			// Add any Email Templates for this event
 			$this->addEmailTemplates('regenerate-activation-code-template');
 
-			$activation = extension_Members::getField('activation');
+			$activation = $this->driver->getMemberDriver()->section->getField('activation');
 			if(!$activation instanceof fieldMemberActivation) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -97,7 +105,7 @@
 
 			// Check that either a Member: Username or Member: Password field
 			// has been detected
-			$identity = SymphonyMember::setIdentityField($fields, false);
+			$identity = $this->driver->getMemberDriver()->setIdentityField($fields, false);
 			if(!$identity instanceof Identity) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -144,8 +152,7 @@
 
 			// Check that the current member isn't already activated. If they
 			// are, no point in regenerating the code.
-			$driver = Symphony::ExtensionManager()->create('members');
-			$entry = $driver->getMemberDriver()->fetchMemberFromID($member_id);
+			$entry = $this->driver->getMemberDriver()->fetchMemberFromID($member_id);
 
 			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
 				$result->setAttribute('result', 'error');

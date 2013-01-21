@@ -8,6 +8,9 @@
 		public $filter_results = array();
 		public $filter_errors = array();
 
+		// Instance of the Members extension
+		public $driver = null;
+
 		// Don't allow a user to set permissions for any Members event
 		// in the Roles interface.
 		public function ignoreRolePermissions() {
@@ -50,6 +53,21 @@
 					explode(',',extension_Members::getSetting($template))
 				);
 			}
+		}
+
+		protected function setMembersSection(XMLElement $result, $member_section_id = null) {
+			// Set the section ID
+			if(isset($member_section_id) && $this->driver->setMembersSection($member_section_id) === false) {
+				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('error', null, array(
+						'type' => 'invalid',
+						'message' => __('Invalid Members section ID given.')
+					))
+				);
+			}
+
+			return $result;
 		}
 
 	/*-------------------------------------------------------------------------
