@@ -183,13 +183,15 @@
 
 		/**
 		 * Given a string, this function will encode it using the
-		 * field's salt and the `sha1` algorithm
+		 * field's salt and the `sha1` algorithm.
 		 *
+		 * @todo Update to use the new Cryptography class
 		 * @param string $password
 		 * @return string
 		 */
 		public function encodePassword($password) {
-			return General::hash($this->get('salt') . $password, 'sha1');
+			require_once TOOLKIT . '/class.cryptography.php';
+			return SHA1::hash($this->get('salt') . $password);
 		}
 
 		protected static function checkPassword($password) {
