@@ -60,7 +60,12 @@
 		 * @return integer
 		 */
 		public function findMemberIDFromCredentials(array $credentials) {
-			if((is_null($credentials['username']) && is_null($credentials['email']))) return null;
+			if((
+				(!isset($credentials['username']) || is_null($credentials['username']))
+				&& (!isset($credentials['email']) || is_null($credentials['email']))
+			)) {
+				return null;
+			}
 
 			$identity = $this->setIdentityField($credentials);
 

@@ -289,7 +289,7 @@
 			");
 		}
 
-		public function update($previousVersion) {
+		public function update($previousVersion = null) {
 			if(version_compare($previousVersion, '1.0 Beta 3', '<')) {
 				$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
 				if(!empty($activation_table)) {
@@ -817,13 +817,15 @@
 		public function checkFrontendPagePermissions($context) {
 			$isLoggedIn = false;
 			$errors = array();
+			$action = null;
 
 			// Checks $_REQUEST to see if a Member Action has been requested,
 			// member-action['login'] and member-action['logout']/?member-action=logout
 			// are the only two supported at this stage.
-			if(is_array($_REQUEST['member-action'])){
+			if(isset($_REQUEST['member-action']) && is_array($_REQUEST['member-action'])){
 				list($action) = array_keys($_REQUEST['member-action']);
-			} else {
+			}
+			else if(isset($_REQUEST['member-action'])) {
 				$action = $_REQUEST['member-action'];
 			}
 
