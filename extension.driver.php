@@ -684,23 +684,27 @@
 
 		public static function fetchEmailTemplates() {
 			$options = array();
+			$handles = Symphony::ExtensionManager()->listInstalledHandles();
+
 			// Email Template Filter
 			// @link http://getsymphony.com/download/extensions/view/20743/
 			try {
-				$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
-				if($driver instanceof Extension) {
-					$templates = $driver->getTemplates();
+				if(in_array('emailtemplatefilter', $handles)) {
+					$driver = Symphony::ExtensionManager()->getInstance('emailtemplatefilter');
+					if($driver instanceof Extension) {
+						$templates = $driver->getTemplates();
 
-					$g = array('label' => __('Email Template Filter'));
-					$group_options = array();
+						$g = array('label' => __('Email Template Filter'));
+						$group_options = array();
 
-					foreach($templates as $template) {
-						$group_options[] = array('etf-'.$template['id'], false, $template['name']);
-					}
-					$g['options'] = $group_options;
+						foreach($templates as $template) {
+							$group_options[] = array('etf-'.$template['id'], false, $template['name']);
+						}
+						$g['options'] = $group_options;
 
-					if(!empty($g['options'])) {
-						$options[] = $g;
+						if(!empty($g['options'])) {
+							$options[] = $g;
+						}
 					}
 				}
 			}
@@ -709,8 +713,7 @@
 			// Email Template Manager
 			// @link http://getsymphony.com/download/extensions/view/64322/
 			try {
-				$handles = Symphony::ExtensionManager()->listInstalledHandles();
-				if(in_array('email_template_manager', $handles)){
+				if(in_array('email_template_manager', $handles)) {
 					if(file_exists(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php') && !class_exists("EmailTemplateManager")) {
 						include_once(EXTENSIONS . '/email_template_manager/lib/class.emailtemplatemanager.php');
 					}
