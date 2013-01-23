@@ -207,7 +207,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-			if (!is_array($data) or !isset($data['value'] or empty($data['value'])) return;
+			if (!is_array($data) or !isset($data['value']) or empty($data['value'])) return;
 
 			$el = new XMLElement($this->get('element_name'));
 			$el->appendChild(
