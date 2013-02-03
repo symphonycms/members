@@ -190,7 +190,7 @@
 			parent::setFromPOST($settings);
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
@@ -408,7 +408,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false, $mode = null, $entry_id = null){
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null){
 			if (!is_array($data) or !isset($data['activated'])) return;
 
 			$el = new XMLElement($this->get('element_name'));

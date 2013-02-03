@@ -268,7 +268,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 			$order = $this->get('sortorder');
 
@@ -363,7 +363,7 @@
 			$wrapper->appendChild($div);
 		}
 
-		public function checkFields(&$errors, $checkForDuplicates = true) {
+		public function checkFields(array &$errors, $checkForDuplicates = true) {
 			parent::checkFields($errors, $checkForDuplicates);
 
 			$this->rememberSalt();
@@ -548,7 +548,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false) {
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null){
 			$pw = new XMLElement($this->get('element_name'));
 
 			// If reset is set, return the recovery-code

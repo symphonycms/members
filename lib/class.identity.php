@@ -93,7 +93,7 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id = null){
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null){
 			$status = self::__OK__;
 
 			if(empty($data)) return array();
@@ -108,13 +108,13 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function prepareTableValue($data, XMLElement $link=NULL){
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null){
 			if(empty($data)) return __('None');
 
 			return parent::prepareTableValue(array('value' => General::sanitize($data['value'])), $link);
 		}
 
-		public function getParameterPoolValue($data, $entry_id = null) {
+		public function getParameterPoolValue(array $data, $entry_id = null) {
 			return $data['value'];
 		}
 
@@ -128,13 +128,7 @@
 
 			// Filter is an regexp.
 			if(self::isFilterRegex($data[0])) {
-				$pattern = str_replace('regexp:', '', $data[0]);
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-				$where .= " AND (
-								`t$field_id`.value REGEXP '$pattern'
-								OR `t$field_id`.handle REGEXP '$pattern'
-								OR `t$field_id`.entry_id REGEXP '$pattern'
-							) ";
+				$this->buildRegexSQL($data[0], array('value', 'handle', 'entry_id'), $joins, $where);
 			}
 
 			// Filter has + in it.

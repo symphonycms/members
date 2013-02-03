@@ -92,7 +92,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
 			$div = new XMLElement('div', null, array('class' => 'two columns'));
@@ -257,7 +257,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null){
 			if(!isset($data['value'])) return;
 
 			$mail = explode('@', General::sanitize($data['value']));

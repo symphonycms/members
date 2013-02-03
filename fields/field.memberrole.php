@@ -73,7 +73,7 @@
 			return $states;
 		}
 
-		public function toggleFieldData($data, $newState){
+		public function toggleFieldData(array $data, $newState, $entry_id = null){
 			$data['role_id'] = $newState;
 			return $data;
 		}
@@ -88,7 +88,7 @@
 			parent::setFromPOST($settings);
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
@@ -118,7 +118,7 @@
 			$wrapper->appendChild($div);
 		}
 
-		public function checkFields(&$errors, $checkForDuplicates=true) {
+		public function checkFields(array &$errors, $checkForDuplicates = true) {
 			Field::checkFields($errors, $checkForDuplicates);
 		}
 
@@ -335,7 +335,7 @@
 			$wrapper->appendChild($element);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null) {
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null) {
 			$role_id = $this->getActivationRole($entry_id, $data['role_id']);
 
 			$role = RoleManager::fetch($role_id);
@@ -345,7 +345,7 @@
 			), $link, $entry_id);
 		}
 
-		public function getParameterPoolValue($data, $entry_id = null) {
+		public function getParameterPoolValue(array $data, $entry_id = null) {
 			$role_id = $this->getActivationRole($entry_id, $data['role_id']);
 
 			return $role_id;
@@ -355,7 +355,7 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false){
 
 			$field_id = $this->get('id');
 

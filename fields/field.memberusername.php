@@ -100,7 +100,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
 			parent::displaySettingsPanel($wrapper, $errors);
 
 			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');
@@ -128,8 +128,8 @@
 			return FieldManager::saveSettings($id, $fields);
 		}
 
-		public function setFromPOST($postdata){
-			parent::setFromPOST($postdata);
+		public function setFromPOST(array $settings = array()){
+			parent::setFromPOST($settings);
 			if($this->get('validator') == '') $this->remove('validator');
 		}
 
@@ -172,7 +172,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null){
 			if(!isset($data['value'])) return;
 
 			$wrapper->appendChild(

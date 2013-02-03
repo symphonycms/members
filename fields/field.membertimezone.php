@@ -133,7 +133,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div', null, array('class' => 'two columns'));
@@ -206,7 +206,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null){
 			if (!is_array($data) or !isset($data['value']) or empty($data['value'])) return;
 
 			$el = new XMLElement($this->get('element_name'));
