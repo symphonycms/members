@@ -386,6 +386,10 @@
 					$entry = EntryManager::fetch($entry_id);
 
 					$data = $entry[0]->getData($this->get('id'));
+					if(empty($data)) {
+						$data = $this->generateCode($entry_id);
+						$data['activated'] = 'no';
+					}
 				}
 				else {
 					if(!is_array($data)) {
