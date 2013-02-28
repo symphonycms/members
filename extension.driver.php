@@ -855,11 +855,19 @@
 						'member_id' => $this->getMemberDriver()->getMemberID(),
 						'member' => $this->getMemberDriver()->getMember()
 					));
+					Symphony::ExtensionManager()->notifyMembers('MembersLoginSuccess', '/frontend/', array(
+						'member_id' => $this->getMemberDriver()->getMemberID(),
+						'member' => $this->getMemberDriver()->getMember()
+					));
 
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
 				}
 				else {
 					self::$_failed_login_attempt = true;
+					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
+						'member_id' => $this->getMemberDriver()->getMemberID(),
+						'member' => $this->getMemberDriver()->getMember()
+					));
 				}
 			}
 
