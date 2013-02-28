@@ -367,9 +367,10 @@
 			$status = self::__OK__;
 
 			if(is_null($data) && !is_null($entry_id)) {
-				$entry = EntryManager::fetch($entry_id);
-
-				$data = $entry[0]->getData($this->get('id'));
+				//$entry = EntryManager::fetch($entry_id);
+                $data = $this->generateCode($entry_id);
+                $data['activated'] = 'no';
+				//$data = $entry[0]->getData($this->get('id'));
 			}
 			else {
 				if(!is_array($data)) {
