@@ -128,7 +128,7 @@
 			// things until they active their account.
 			if(!is_null($this->section->getFieldHandle('activation'))) {
 				if($member->getData($this->section->getField('activation')->get('id'), true)->activated != "yes") {
-					if(FieldManager::isFieldUsed($this->section->getFieldType('role'))) {
+					if(FieldManager::isFieldUsed($this->section->getFieldHandle('role'))) {
 						$member->setData(
 							$this->section->getField('role')->get('id'),
 							$this->section->getField('activation')->get('activation_role_id')
