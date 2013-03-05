@@ -65,7 +65,7 @@
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `password` varchar(40) default NULL,
+				  `password` varchar(150) default NULL,
 				  `recovery-code` varchar(40) default NULL,
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
