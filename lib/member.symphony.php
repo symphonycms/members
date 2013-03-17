@@ -370,10 +370,5 @@
 				$this->section->getFieldHandle($identity) => $context['entry']->getData($this->section->getField($identity)->get('id'), true)->value,
 				$this->section->getFieldHandle('authentication') => $context['fields'][$this->section->getFieldHandle('authentication')]['password']
 			), false);
-
-			if(isset($_REQUEST['redirect'])) {
-				redirect($_REQUEST['redirect']);
-			}
 		}
-
 	}
