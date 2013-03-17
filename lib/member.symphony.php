@@ -292,7 +292,7 @@
 
 		public function filter_LockRole(array &$context) {
 			// If there is a Role field, this will force it to be the Default Role.
-			if(FieldManager::isFieldUsed($this->section->getFieldType('role'))) {
+			if(FieldManager::isFieldUsed($this->section->getFieldHandle('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
 					$member = parent::fetchMemberFromID(
@@ -370,10 +370,5 @@
 				$this->section->getFieldHandle($identity) => $context['entry']->getData($this->section->getField($identity)->get('id'), true)->value,
 				$this->section->getFieldHandle('authentication') => $context['fields'][$this->section->getFieldHandle('authentication')]['password']
 			), false);
-
-			if(isset($_REQUEST['redirect'])) {
-				redirect($_REQUEST['redirect']);
-			}
 		}
-
 	}
