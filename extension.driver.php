@@ -651,6 +651,15 @@
 					__('Members: Update Password')
 				);
 			}
+
+			if(!FieldManager::isFieldUsed(self::getFieldType('activation'))) {
+				// Add Member: Login filter
+				$context['options'][] = array(
+					'member-login',
+					in_array('member-login', $selected),
+					__('Members: Login')
+				);
+			}
 		}
 
 		/**
@@ -1149,6 +1158,11 @@
 		public function processPostSaveFilter(array &$context) {
 			// Process updating a Member's Password
 			if (in_array('member-update-password', $context['event']->eParamFILTERS)) {
+				$this->getMemberDriver()->filter_UpdatePasswordLogin($context);
+			}
+
+			// Login Member from event
+			if (in_array('member-login', $context['event']->eParamFILTERS)) {
 				$this->getMemberDriver()->filter_UpdatePasswordLogin($context);
 			}
 		}
