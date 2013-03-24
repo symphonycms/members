@@ -943,11 +943,10 @@
 				else {
 					// No custom 403, just throw default 403
 					GenericExceptionHandler::$enabled = true;
-					throw new SymphonyErrorPage(
+					Frontend::instance()->throwCustomError(
 						__('The page you have requested has restricted access permissions.'),
 						__('Forbidden'),
-						'generic',
-						array('header' => 'HTTP/1.0 403 Forbidden')
+						Page::HTTP_STATUS_FORBIDDEN
 					);
 				}
 			}
