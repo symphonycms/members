@@ -7,12 +7,12 @@
 		public function view() {
 			// Ensure we have been set $_POST data from Members events
 			if(!array_key_exists('members', $_POST)) {
-				$this->_status = AjaxPage::STATUS_BAD;
+				$this->setHttpStatus(self::HTTP_STATUS_BAD_REQUEST);
 				return;
 			}
 			// Check that the CONFIG is writable
 			else if (!is_writable(CONFIG)) {
-				$this->_status = AjaxPage::STATUS_BAD;
+				$this->setHttpStatus(self::HTTP_STATUS_ERROR);
 				$this->_Result->appendChild(
 					new XMLElement('message', __('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'))
 				);
@@ -65,7 +65,7 @@
 
 			// Return successful
 			if(Symphony::Configuration()->write()) {
-				$this->_status = AjaxPage::STATUS_OK;
+				$this->setHttpStatus(self::HTTP_STATUS_OK);
 				$this->_Result->appendChild(
 					new XMLElement('message', __('Preferences saved.'))
 				);
