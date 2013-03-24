@@ -113,7 +113,6 @@
 			$wrapper->appendChild($group);
 
 			$div = new XMLElement('div', null, array('class' => 'two columns'));
-			$this->appendRequiredCheckbox($div);
 			$this->appendShowColumnCheckbox($div);
 			$wrapper->appendChild($div);
 		}
