@@ -17,9 +17,14 @@
 	</author>
   </authors>
   <releases>
+	<release version="1.3beta2" date="unreleased" min="2.3.2">
+	  * [#224](https://github.com/symphonycms/members/issues/224) As the Member: Role field is always required, don't show the required setting
+	  * [#44](https://github.com/symphonycms/members/issues/44) Add a Login after Registration filter
+	  * Various bug fixes for increased stablity and robustness
+	</release>
 	<release version="1.3beta1" date="unreleased" min="2.3.1">
 	  * [#201](https://github.com/symphonycms/members/issues/201) Use spl_autoload_register instead of __autoload
-      * [#193](https://github.com/symphonycms/members/issues/193) When resetting a password, always enforce that the password be required
+	  * [#193](https://github.com/symphonycms/members/issues/193) When resetting a password, always enforce that the password be required
 	  * [#192](https://github.com/symphonycms/members/issues/192) Fix the password recovery process so that it will work if there is no password data for the user
 	  * [#175](https://github.com/symphonycms/members/issues/175) Ability to override the default Symphony member
 	  * [#173](https://github.com/symphonycms/members/issues/173) Multiple section support
