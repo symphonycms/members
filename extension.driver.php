@@ -489,6 +489,9 @@
 
 				return true;
 			}
+			else {
+				throw new Exception(sprintf('Setting the active Members section to %d failed.', $section_id));
+			}
 
 			return false;
 		}
@@ -544,6 +547,9 @@
 			if(is_null($section_id)) {
 				throw new Exception('There are multiple Member sections in this installation, please refer to the README.');
 			}
+			else if(!isset(extension_Members::$member_sections[$section_id])) {
+				throw new Exception(sprintf('There is no Member section with the ID %d', $section_id));
+			}
 
 			return extension_Members::$member_sections[$section_id]->getField($type);
 		}
@@ -567,6 +573,9 @@
 
 			if(is_null($section_id)) {
 				throw new Exception('There are multiple Member sections in this installation, please refer to the README.');
+			}
+			else if(!isset(extension_Members::$member_sections[$section_id])) {
+				throw new Exception(sprintf('There is no Member section with the ID %d', $section_id));
 			}
 
 			return extension_Members::$member_sections[$section_id]->getFieldHandle($type);
