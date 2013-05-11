@@ -439,11 +439,11 @@
 			}
 
 			// Change length of the Password field for stronger cryptography. RE: #200
-			if(version_compare($previousVersion, '1.3')) {
+			if(version_compare($previousVersion, '1.3', '<')) {
 				$tables = array();
 
-				$field = extension_Members::getField('authentication');
-				if($field instanceof fieldMemberPassword) {
+				$table = Symphony::Database()->fetch("SHOW TABLES LIKE 'tbl_fields_memberpassword'");
+				if(!empty($table)) {
 					$password_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberpassword`");
 
 					if(is_array($password_tables) && !empty($password_tables)) {
