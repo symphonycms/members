@@ -52,7 +52,6 @@
 				  `field_id` int(11) unsigned NOT NULL,
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
-				  `salt` varchar(255) default NULL,
 				  `code_expiry` varchar(50) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
@@ -65,7 +64,7 @@
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
-				  `password` varchar(40) default NULL,
+				  `password` varchar(150) default NULL,
 				  `recovery-code` varchar(40) default NULL,
 				  `length` tinyint(2) NOT NULL,
 				  `strength` enum('weak', 'good', 'strong') NOT NULL,
@@ -92,9 +91,11 @@
 		 *
 		 * @param array|string $needle
 		 * @param integer $member_id
+		 * @param boolean $isHashed
 		 * @return Entry|null
 		 */
-		public function fetchMemberIDBy($needle, $member_id = null) {
+		public function fetchMemberIDBy($needle, $member_id = null, $isHashed = false) {
+			$valid = true;
 			if(is_array($needle)) {
 				extract($needle);
 			}
@@ -112,20 +113,50 @@
 			}
 
 			$data = Symphony::Database()->fetchRow(0, sprintf("
-					SELECT `entry_id`, `reset`
+					SELECT `entry_id`, `password`, `reset`
 					FROM `tbl_entries_data_%d`
-					WHERE `password` = '%s'
-					AND %s
+					WHERE %s
 					LIMIT 1
 				",
-				$this->get('id'), $password,
+				$this->get('id'),
 				is_null($member_id)
 					? '1 = 1'
 					: sprintf('`entry_id` = %d', Symphony::Database()->cleanValue($member_id))
 			));
 
+			if(!empty($data)) {
+				// The old passwords had salts, so add that the password
+				// for accurate comparsion to determine if migrating needs to happen
+				if($isHashed === false && strlen($data['password']) === 40 && !is_null($this->get('salt'))) {
+					$compare_password = $this->get('salt') . $password;
+				}
+				else {
+					$compare_password = $password;
+				}
+
+				var_dump(__FUNCTION__, $isHashed, $compare_password, $data['password']);
+
+				// Check if the password's match
+				if(Cryptography::compare($compare_password, $data['password'], $isHashed)) {
+					// Great! They match, but do we need to update the original password
+					// to a more secure algorithm now?
+					if(Cryptography::requiresMigration($data['password'])) {
+						Symphony::Database()->update(array(
+								'password' => $this->encodePassword($password)
+							),
+							'tbl_entries_data_' . $this->get('id'),
+							sprintf('`entry_id` = %d', Symphony::Database()->cleanValue($member_id))
+						);
+					}
+				}
+				// Passwords don't match, invalid password
+				else {
+					$valid = false;
+				}
+			}
+
 			// Check that if the password has been reset that it is still valid
-			if(!empty($data) && $data['reset'] == 'yes') {
+			if($valid && $data['reset'] == 'yes') {
 				$valid_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
 						SELECT `entry_id`
 						FROM `tbl_entries_data_%d`
@@ -152,7 +183,7 @@
 				}
 			}
 
-			if(!empty($data)) return $member_id;
+			if($valid) return $member_id;
 
 			extension_Members::$_errors[$this->get('element_name')] = array(
 				'message' => __('Invalid %s.', array($this->get('label'))),
@@ -182,16 +213,16 @@
 		}
 
 		/**
-		 * Given a string, this function will encode it using the
-		 * field's salt and the `sha1` algorithm.
+		 * Given a string, this function will encode the password
+		 * using the PBKDF2 algorithm.
 		 *
-		 * @todo Update to use the new Cryptography class
 		 * @param string $password
 		 * @return string
 		 */
 		public function encodePassword($password) {
 			require_once TOOLKIT . '/class.cryptography.php';
-			return SHA1::hash($this->get('salt') . $password);
+
+			return Cryptography::hash($password);
 		}
 
 		protected static function checkPassword($password) {
@@ -220,8 +251,14 @@
 			return false;
 		}
 
+		// Although the salt is no longer used, it is required to assist
+		// migrating Member passwords from earlier versions.
 		protected function rememberSalt() {
 			$field_id = $this->get('id');
+
+			if(!Symphony::Database()->tableContainsField('tbl_fields_memberpassword', 'salt')) {
+				return;
+			}
 
 			try {
 				$salt = Symphony::Database()->fetchVar('salt', 0, "
@@ -302,36 +339,9 @@
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
-		// Salt ---------------------------------------------------------------
+		// Add Activiation Code Expiry ------------------------------------------
 
-			$group = new XMLElement('div');
-			$group->setAttribute('class', 'two columns');
-
-			$label = Widget::Label(__('Password Salt'));
-			$label->setAttribute('class', 'column');
-			$label->appendChild(
-				new XMLElement('i', __('A salt gives your passwords extra security. It cannot be changed once set'))
-			);
-			$input = Widget::Input(
-				"fields[{$order}][salt]", $this->get('salt')
-			);
-
-			if ($this->get('salt')) {
-				$input->setAttribute('disabled', 'disabled');
-			}
-
-			$label->appendChild($input);
-
-			if (isset($errors['salt'])) {
-				$label = Widget::Error($label, $errors['salt']);
-			}
-
-			$group->appendChild($label);
-
-			// Add Activiation Code Expiry
 			$div = new XMLElement('div');
-			$div->setAttribute('class', 'column');
-
 			$label = Widget::Label(__('Recovery Code Expiry'));
 			$label->appendChild(
 				new XMLElement('i', __('How long a member\'s recovery code will be valid for before it expires'))
@@ -353,8 +363,7 @@
 				$div = Widget::Error($div, $errors['code_expiry']);
 			}
 
-			$group->appendChild($div);
-			$wrapper->appendChild($group);
+			$wrapper->appendChild($div);
 
 			// Add checkboxes
 			$div = new XMLElement('div', null, array('class' => 'two columns'));
@@ -365,12 +374,6 @@
 
 		public function checkFields(array &$errors, $checkForDuplicates = true) {
 			parent::checkFields($errors, $checkForDuplicates);
-
-			$this->rememberSalt();
-
-			if (trim($this->get('salt')) == '') {
-				$errors['salt'] = __('This is a required field.');
-			}
 
 			if (trim($this->get('code_expiry')) == '') {
 				$errors['code_expiry'] = __('This is a required field.');
@@ -396,9 +399,12 @@
 				'field_id' => $id,
 				'length' => $this->get('length'),
 				'strength' => $this->get('strength'),
-				'salt' => $this->get('salt'),
 				'code_expiry' => $this->get('code_expiry')
 			);
+
+			if($this->get('salt')) {
+				$fields['salt'] = $this->get('salt');
+			}
 
 			return FieldManager::saveSettings($id, $fields);
 		}

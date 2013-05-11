@@ -437,6 +437,27 @@
 					}
 				}
 			}
+
+			// Change length of the Password field for stronger cryptography. RE: #200
+			if(version_compare($previousVersion, '1.3')) {
+				$tables = array();
+
+				$field = extension_Members::getField('authentication');
+				if($field instanceof fieldMemberPassword) {
+					$password_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberpassword`");
+
+					if(is_array($password_tables) && !empty($password_tables)) {
+						$tables = array_merge($tables, $password_tables);
+					}
+				}
+
+				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
+					// Change Password field length
+					Symphony::Database()->query(sprintf(
+						'ALTER TABLE `tbl_entries_data_%d` CHANGE `password` `password` VARCHAR(150) DEFAULT NULL', $field
+					));
+				}
+			}
 		}
 
 	/*-------------------------------------------------------------------------

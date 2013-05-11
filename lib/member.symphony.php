@@ -38,11 +38,11 @@
 			}
 
 			// If email is supplied, use the Email field
-			if(!is_null($email) && (isset($email) && !empty($email))) {
+			if((isset($email) && !empty($email)) && !is_null($email)) {
 				$identity_field = $this->section->getField('email');
 			}
 			// If username is supplied, use the Username field
-			else if (!is_null($username) && (isset($username) && !empty($username))) {
+			else if ((isset($username) && !empty($username)) && !is_null($username)) {
 				$identity_field = $this->section->getField('identity');
 			}
 
@@ -57,9 +57,11 @@
 		 * Returns an Entry object given an array of credentials
 		 *
 		 * @param array $credentials
+		 * @param boolean $isHashed
+		 *  Defaults to false
 		 * @return integer
 		 */
-		public function findMemberIDFromCredentials(array $credentials) {
+		public function findMemberIDFromCredentials(array $credentials, $isHashed = false) {
 			if((
 				(!isset($credentials['username']) || is_null($credentials['username']))
 				&& (!isset($credentials['email']) || is_null($credentials['email']))
@@ -75,10 +77,9 @@
 			$member_id = $identity->fetchMemberIDBy($credentials);
 
 			// Validate against Password
-			// It's expected that $password is sha1'd and salted.
 			$auth = $this->section->getField('authentication');
 			if(!is_null($auth)) {
-				$member_id = $auth->fetchMemberIDBy($credentials, $member_id);
+				$member_id = $auth->fetchMemberIDBy($credentials, $member_id, $isHashed);
 			}
 
 			// No Member found, can't even begin to check Activation
@@ -151,12 +152,10 @@
 		 * An optional parameter, `$isHashed` refers to if the password provided
 		 * is hashed already, or requires hashing prior to logging in.
 		 *
+		 * @throws Exception
 		 * @param array $credentials
 		 * @param boolean $isHashed
-		 *  Defaults to false, which will encode the password value before attempting
-		 *  to log the user in
-		 *
-		 * @throws Exception
+		 *  Defaults to false
 		 * @return boolean
 		 */
 		public function login(array $credentials, $isHashed = false) {
@@ -184,16 +183,7 @@
 			// Map POST data for password to `$password`
 			if(isset($credentials[$this->section->getFieldHandle('authentication')])) {
 				$password = $credentials[$this->section->getFieldHandle('authentication')];
-
-				// Use normalised handles for the fields
-				if(!empty($password)) {
-					$data['password'] = $isHashed
-						? $password
-						: $this->section->getField('authentication')->encodePassword($password);
-				}
-				else {
-					$data['password'] = '';
-				}
+				$data['password'] = (!empty($password)) ? $password : '';
 			}
 
 			// Check to ensure that we actually have some data to try and log a user in with.
@@ -226,7 +216,7 @@
 				return false;
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data)) {
+			if($id = $this->findMemberIDFromCredentials($data, $isHashed)) {
 				try{
 					self::$member_id = $id;
 					$this->initialiseCookie();
@@ -242,7 +232,7 @@
 						$this->cookie->set('email', $data['email']);
 					}
 
-					$this->cookie->set('password', $data['password']);
+					$this->cookie->set('password', $this->getMember()->getData($this->section->getField('authentication')->get('id'), true)->password);
 
 					self::$isLoggedIn = true;
 
@@ -275,7 +265,7 @@
 				$data['email'] = $this->cookie->get('email');
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data)) {
+			if($id = $this->findMemberIDFromCredentials($data, true)) {
 				self::$member_id = $id;
 				self::$isLoggedIn = true;
 				return true;

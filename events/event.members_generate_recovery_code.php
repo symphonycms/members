@@ -160,11 +160,11 @@
 
 			// Generate a Recovery Code with the same logic as a normal password
 			$data = $auth->processRawFieldData(array(
-				'password' => General::hash($newPassword . $member_id, 'sha1'),
+				'password' => $auth->encodePassword($newPassword . $member_id),
 			), $status);
 
 			// Set the Entry password to be reset and the current timestamp
-			$data['recovery-code'] = $data['password'];
+			$data['recovery-code'] = SHA1::hash($newPassword . $member_id);
 			$data['reset'] = 'yes';
 			$data['expires'] = DateTimeObj::get('Y-m-d H:i:s', time());
 

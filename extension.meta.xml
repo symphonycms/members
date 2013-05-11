@@ -18,9 +18,10 @@
   </authors>
   <releases>
 	<release version="1.3beta2" date="unreleased" min="2.3.2">
+	  * [#200](https://github.com/symphonycms/members/issues/200) Implement Cryptography API for more secure passwords
 	  * [#224](https://github.com/symphonycms/members/issues/224) As the Member: Role field is always required, don't show the required setting
 	  * [#44](https://github.com/symphonycms/members/issues/44) Add a Login after Registration filter
-	  * Various bug fixes for increased stablity and robustness
+	  * Various bug fixes for increased stability and robustness
 	</release>
 	<release version="1.3beta1" date="unreleased" min="2.3.1">
 	  * [#201](https://github.com/symphonycms/members/issues/201) Use spl_autoload_register instead of __autoload
@@ -28,7 +29,7 @@
 	  * [#192](https://github.com/symphonycms/members/issues/192) Fix the password recovery process so that it will work if there is no password data for the user
 	  * [#175](https://github.com/symphonycms/members/issues/175) Ability to override the default Symphony member
 	  * [#173](https://github.com/symphonycms/members/issues/173) Multiple section support
-	  * [#165](https://github.com/symphonycms/members/issues/165) Implement MembersPostRegenerateActivationCode, MembersPostActivation, MembersPostForgotPassword, MembersPostResetPassword and InitialiseMember delegates.
+	  * [#165](https://github.com/symphonycms/members/issues/165) Implement `MembersPostRegenerateActivationCode`, `MembersPostActivation`, `MembersPostForgotPassword`, `MembersPostResetPassword` and `InitialiseMember` delegates.
 	  * Support Importable/Exportable field interfaces
 	  * Other minor fixes :)
 	  </release>
