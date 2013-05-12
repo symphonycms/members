@@ -134,8 +134,6 @@
 					$compare_password = $password;
 				}
 
-				var_dump(__FUNCTION__, $isHashed, $compare_password, $data['password']);
-
 				// Check if the password's match
 				if(Cryptography::compare($compare_password, $data['password'], $isHashed)) {
 					// Great! They match, but do we need to update the original password
