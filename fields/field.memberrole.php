@@ -267,6 +267,7 @@
 
 			$element = new XMLElement($this->get('element_name'), null, array(
 				'id' => $role->get('id'),
+				'assumed-id' => $data["role_id"],
 				'mode' => ($mode == "permissions") ? $mode : 'normal'
 			));
 			$element->appendChild(
