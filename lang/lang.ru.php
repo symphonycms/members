@@ -1,13 +1,13 @@
 <?php
 
 	$about = array(
-		'name' => 'Russian',
+		'name' => 'Русский',
 		'author' => array(
-			'name' => 'Danila Susak',
-			'email' => 'danilasusak@gmail.com',
-			'website' => ''
+			'name' => 'Александр Бирюков',
+			'email' => 'info@alexbirukov.ru',
+			'website' => 'http://alexbirukov.ru'
 		),
-		'release-date' => '2011-06-01'
+		'release-date' => '2013-10-07'
 	);
 
 	/**
@@ -17,6 +17,9 @@
 
 		'%s Automatically log the member in after activation' => 
 		'%s Осуществлять автоматический вход после активации',
+
+		'%s Automatically log the member in after changing their password' => 
+		'%s Автоматически осуществлять вход после смены пароля',
 
 		'%s Prevent unactivated members from logging in' => 
 		'%s Запретить не активированным пользователям осуществлять вход',
@@ -83,6 +86,9 @@
 
 		'Available Zones' => 
 		'Доступные зоны',
+
+		'Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>' => 
+		'Время действия кода может указана в слудеющих единицах времени: <code>1 day</code> или <code>2 hours</code>',
 
 		'Confirm' => 
 		'Подтверждение',
@@ -198,9 +204,6 @@
 		'No Identity field found.' => 
 		'Не найдено поля с определением пользователя',
 
-		'No Member section has been specified in %s. Please do this first.' => 
-		'Не определено ни одной сущности с Пользователями.Пожалуйста, сделайте это в первую очередь',
-
 		'No recovery code found.' => 
 		'Не найден код для восстановления',
 
@@ -224,6 +227,9 @@
 
 		'Regenerate Activation Code Email Template' => 
 		'Email Шаблон для повторной активации учетной записи',
+
+		'Reset Password Email Template' => 
+		'Email шаблон для сброса пароля',
 
 		'Role created at %1$s. <a href="%2$s" accesskey="c">Create another?</a> <a href="%3$s" accesskey="a">View all Roles</a>' => 
 		'Роль создана в %1$. <a href="%2$s" accesskey="c">Добавить еще?</a> <a href="%3$s" accesskey="a">Посмотреть все Роли</a>',
@@ -289,24 +295,21 @@
 		'Вы не можете запросить новый код для восстановления, пока вы не осуществите вход',
 
 		'Email Template Filter' => 
-		false,
+		'Email Template Filter',
 
 		'Email Template Manager' => 
-		false,
+		'Email Template Manager',
 
-		'Reset Password Email Template' => 
-		'Email шаблон для сброса пароля',
+		'The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.' => 
+		'Файл конфигурации Symphony, <code>/manifest/config.php</code>, защищён от записи. Вы не сможете сохранить изменения в настройках.',
 
-		'%s Automatically log the member in after changing their password' => 
-		'%s Автоматически осуществлять вход после смены пароля',
+		'No Member section has been specified in <a href="%s">Preferences</a>. Please do this first.' => 
+		'В <a href="%s">настройках</a> не указан раздел, отвечающий за хранение данных пользователей. Пожалуйста, укажите раздел.',
 
-		'How long a member\'s activation code will be valid for before it expires' => 
-		'Как долго код активации пользователя будет актуальным',
+		'An error occurred while processing this form. <a href="#error">See below for details.</a>' => 
+		'Произошла ошибка в процессе обработки данной формы. <a href="#error">Дополнительная информация.</a>',
 
-		'Code expiry must be a unit of time, such as <code>1 day</code> or <code>2 hours</code>' => 
-		'Время действия кода может указана в слудеющих единицах времени: <code>1 day</code> или <code>2 hours</code>',
-
-		'How long a member\'s recovery code will be valid for before it expires' => 
-		'Как долго код восстановления пароля пользователя будет актуальным',
+		'\'%s\' is a required field.' => 
+		'\'%s\' обязательное поле.',
 
 	);
