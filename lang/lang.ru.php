@@ -7,7 +7,7 @@
 			'email' => 'info@alexbirukov.ru',
 			'website' => 'http://alexbirukov.ru'
 		),
-		'release-date' => '2013-10-07'
+		'release-date' => '2013-10-09'
 	);
 
 	/**
@@ -28,7 +28,7 @@
 		'%s не может быть пустым.',
 
 		'%s confirmation does not match.' => 
-		'%s подтверждения пароля не совпадает.',
+		'%s и подтверждение пароля не совпадают.',
 
 		'%s contains invalid characters.' => 
 		'%s содержит недопустимые символы',
@@ -46,7 +46,7 @@
 		'%s слишком короткий. Как минимум должно содержать в себе %d символов.',
 
 		'A Members section will at minimum contain either a Member: Email or a Member: Username field' => 
-		'Пользовательская сущность должна содержать как минимум одно из этих полей: `Пользователь: Электронная почта` или `Пользователь: имя пользователя`',
+		'Раздел с пользователями должн содержать, как минимум одно из этих полей: `Пользователь: Электронная почта` или `Пользователь: имя пользователя`',
 
 		'A role with the name <code>%s</code> already exists.' => 
 		'Роль с данным именем <code>%s</code> уже существует.',
@@ -64,7 +64,7 @@
 		'Активированный',
 
 		'Activated %s' => 
-		'Активированы: %s',
+		'Активирован: %s',
 
 		'Activation Code Expiry' => 
 		'Срок кода активации',
@@ -79,10 +79,13 @@
 		'Ошибка активации. Код активации неверный или устарел.',
 
 		'Active Members Section' => 
-		'Сущность с Пользователями',
+		'Раздел с Пользователями',
 
 		'An error occurred while processing this form.' => 
 		'Во время обработки формы были обнаружены ошибки.',
+
+		'An error occurred while processing this form. <a href="#error">See below for details.</a>' => 
+		'Произошла ошибка в процессе обработки данной формы. <a href="#error">Дополнительная информация.</a>',
 
 		'Available Zones' => 
 		'Доступные зоны',
@@ -113,6 +116,12 @@
 
 		'Edit Own' => 
 		'Редактировать свои',
+
+		'Email Template Filter' => 
+		'Email Template Filter',
+
+		'Email Template Manager' => 
+		'Email Template Manager',
 
 		'Event' => 
 		'Событие',
@@ -175,10 +184,10 @@
 		'Часовой пояс',
 
 		'Members: Lock Activation' => 
-		'Пользователь: Оставить активацию учетной записи',
+		'Пользователь: Отложить активацию учетной записи',
 
 		'Members: Lock Role' => 
-		'Пользователь: Оставить роль',
+		'Пользователь: Автоматически выбрать роль',
 
 		'Members: Update Password' => 
 		'Пользователь: Обновить пароль',
@@ -203,6 +212,9 @@
 
 		'No Identity field found.' => 
 		'Не найдено поля с определением пользователя',
+
+		'No Member section has been specified in <a href="%s">Preferences</a>. Please do this first.' => 
+		'В <a href="%s">настройках</a> не указан раздел, отвечающий за хранение данных пользователей. Пожалуйста, укажите раздел.',
 
 		'No recovery code found.' => 
 		'Не найден код для восстановления',
@@ -255,6 +267,9 @@
 		'The Public role cannot be removed' => 
 		'Гостевая роль не может быть удалена',
 
+		'The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.' => 
+		'Файл конфигурации Symphony, <code>/manifest/config.php</code>, защищён от записи. Вы не сможете сохранить изменения в настройках.',
+
 		'The page you have requested has restricted access permissions.' => 
 		'Для просмотра страницы, которую вы запрашиваете, у вас недостаточно прав',
 
@@ -294,22 +309,10 @@
 		'You cannot generate a recovery code while being logged in.' => 
 		'Вы не можете запросить новый код для восстановления, пока вы не осуществите вход',
 
-		'Email Template Filter' => 
-		'Email Template Filter',
+		'How long a member\'s activation code will be valid for before it expires' => 
+		'На сколько долго будет действовать код активации',
 
-		'Email Template Manager' => 
-		'Email Template Manager',
-
-		'The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.' => 
-		'Файл конфигурации Symphony, <code>/manifest/config.php</code>, защищён от записи. Вы не сможете сохранить изменения в настройках.',
-
-		'No Member section has been specified in <a href="%s">Preferences</a>. Please do this first.' => 
-		'В <a href="%s">настройках</a> не указан раздел, отвечающий за хранение данных пользователей. Пожалуйста, укажите раздел.',
-
-		'An error occurred while processing this form. <a href="#error">See below for details.</a>' => 
-		'Произошла ошибка в процессе обработки данной формы. <a href="#error">Дополнительная информация.</a>',
-
-		'\'%s\' is a required field.' => 
-		'\'%s\' обязательное поле.',
+		'How long a member\'s recovery code will be valid for before it expires' => 
+		'На сколько долго будет действовать код восстановления',
 
 	);
