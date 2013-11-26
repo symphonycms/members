@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.3RC1
+- Version: 1.3RC2
 - Author: Symphony Team
-- Release Date: 11 May, 2013
+- Release Date: 26 November, 2013
 - Requirements: Symphony 2.3.2
 
-Frontend membership extension for Symphony CMS. This version represents `1.3RC1` which is a release candidate for the upcoming 1.3 release. It is considered stable, but is not recommended for production until officially released as 1.3.
+Frontend membership extension for Symphony CMS. This version represents `1.3RC2` which is a release candidate for the upcoming 1.3 release. It is considered stable, but is not recommended for production until officially released as 1.3.
 
 ## Installation and Setup
 
