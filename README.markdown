@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.3RC2
+- Version: 1.3
 - Author: Symphony Team
-- Release Date: 26 November, 2013
+- Release Date: 12 December, 2013
 - Requirements: Symphony 2.3.2
 
-Frontend membership extension for Symphony CMS. This version represents `1.3RC2` which is a release candidate for the upcoming 1.3 release. It is considered stable, but is not recommended for production until officially released as 1.3.
+Frontend membership extension for Symphony CMS. This version represents `1.3` which is considered stable.
 
 ## Installation and Setup
 
@@ -42,6 +42,10 @@ Event information will be returned in the XML similar to the following example:
 The `$member-id` and `$member-role` parameters will be added to the Page Parameters for you to use in your datasources to get information about the logged in member.
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
+
+## Updating from 1.2
+
+When updating from 1.2, you should not have to do anything except re-enable the extension from the Extensions page. This will increase the length of the password fields so that they can updated to the stronger algorithm as member's log in. When you start to use multiple sections, read the section in the README about [Multiple Section support](#multiple-section-support).
 
 ## Fields
 
