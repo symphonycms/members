@@ -105,7 +105,7 @@
 
 				// If the member isn't activated and a Role field doesn't exist
 				// just return false.
-				if(!$isActivated && !FieldManager::isFieldUsed($this->section->getFieldType('role'))) {
+				if(!$isActivated && !FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
 					extension_Members::$_errors[$this->section->getFieldHandle('activation')] = array(
 						'message' => __('Member is not activated.'),
 						'type' => 'invalid',
