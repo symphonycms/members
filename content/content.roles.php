@@ -146,6 +146,8 @@
 
 		public function __viewEdit() {
 			$isNew = true;
+			$time = Widget::Time();
+
 			// Verify role exists
 			if($this->_context[0] == 'edit') {
 				$isNew = false;
@@ -166,28 +168,24 @@
 				switch($this->_context[2]){
 					case 'saved':
 						$this->pageAlert(
-							__(
-								'Role updated at %1$s. <a href="%2$s" accesskey="c">Create another?</a> <a href="%3$s" accesskey="a">View all Roles</a>',
-								array(
-									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									extension_members::baseURL() . 'roles/new/',
-									extension_members::baseURL() . 'roles/',
-								)
-							),
-							Alert::SUCCESS);
+							__('Role updated at %s.', array($time->generate()))
+							. ' <a href="' . extension_members::baseURL() . 'roles/new/" accesskey="c">'
+							. __('Create another?')
+							. '</a> <a href="' . extension_members::baseURL() . 'roles/" accesskey="a">'
+							. __('View all Roles')
+							. '</a>'
+							, Alert::SUCCESS);
 						break;
 
 					case 'created':
 						$this->pageAlert(
-							__(
-								'Role created at %1$s. <a href="%2$s" accesskey="c">Create another?</a> <a href="%3$s" accesskey="a">View all Roles</a>',
-								array(
-									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									extension_members::baseURL() . 'roles/new/',
-									extension_members::baseURL() . 'roles/',
-								)
-							),
-							Alert::SUCCESS);
+							__('Role created at %s.', array($time->generate()))
+							. ' <a href="' . extension_members::baseURL() . 'roles/new/" accesskey="c">'
+							. __('Create another?')
+							. '</a> <a href="' . extension_members::baseURL() . 'roles/" accesskey="a">'
+							. __('View all Roles')
+							. '</a>'
+							, Alert::SUCCESS);
 						break;
 				}
 			}
