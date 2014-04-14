@@ -43,6 +43,10 @@ The `$member-id` and `$member-role` parameters will be added to the Page Paramet
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
+## Updating from 1.2
+
+When updating from 1.2, you should not have to do anything except re-enable the extension from the Extensions page. This will increase the length of the password fields so that they can updated to the stronger algorithm as member's log in. When you start to use multiple sections, read the section in the README about [Multiple Section support](#multiple-section-support).
+
 ## Fields
 
 This extension provides six additional fields:

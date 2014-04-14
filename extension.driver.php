@@ -938,7 +938,10 @@
 				$this->getMemberDriver()->updateSystemTimezoneOffset();
 
 				if($hasRoles) {
-					$role_data = $this->getMemberDriver()->getMember()->getData(extension_Members::getField('role')->get('id'));
+					$role_field = extension_Members::getField('role');
+					if($role_field) {
+						$role_data = $this->getMemberDriver()->getMember()->getData($role_field->get('id'));
+					}
 				}
 			}
 
