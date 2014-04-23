@@ -848,7 +848,8 @@
 		* @return boolean
 		*/
 		public function savePreferences(array &$context){
-			$context['settings']['members']['section'] = implode(',', $context['settings']['members']['section']);
+			$section = (isset($context['settings']['members']['section']) ? implode(',', $context['settings']['members']['section']) : '');
+			$context['settings']['members']['section'] = $section;
 		}
 
 	/*-------------------------------------------------------------------------
