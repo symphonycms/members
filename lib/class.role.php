@@ -260,7 +260,7 @@
 
 		/**
 		 * Sets the permissions for the current Role by loading them from
-		 * `tbl_member_roles_forbidden_pages` and `tbl_member_roles_event_permissions`.
+		 * `tbl_members_roles_forbidden_pages` and `tbl_members_roles_event_permissions`.
 		 * The permissions are set under `forbidden_pages` and `event_permissions` keys
 		 * that can be accessed via `Role->get('event_permissions')`.
 		 */
