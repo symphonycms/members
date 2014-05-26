@@ -246,7 +246,7 @@
 				CREATE TABLE `tbl_members_roles_event_permissions` (
 				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 				  `role_id` int(11) unsigned NOT NULL,
-				  `event` varchar(50) NOT NULL,
+				  `event` varchar(255) NOT NULL,
 				  `action` varchar(60) NOT NULL,
 				  `level` smallint(1) unsigned NOT NULL DEFAULT '0',
 				  PRIMARY KEY (`id`),
