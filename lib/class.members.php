@@ -196,9 +196,10 @@
 					foreach(extension_Members::$_errors as $type => $error) {
 						$result->appendChild(
 							new XMLElement($type, null, array(
+								'label' => General::sanitize($error['label']),
 								'type' => $error['type'],
 								'message' => $error['message'],
-								'label' => General::sanitize($error['label'])
+								'message-id' => $error['message-id'],
 							))
 						);
 					}

@@ -1,4 +1,5 @@
 <?php
+	require_once EXTENSIONS . '/members/lib/class.membersevent.php';
 
 	Class SymphonyMember extends Members {
 
@@ -189,25 +190,28 @@
 			// Check to ensure that we actually have some data to try and log a user in with.
 			if(empty($data['password']) && isset($credentials[$this->section->getFieldHandle('authentication')])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('authentication')] = array(
-					'message' => __('%s is a required field.', array($this->section->getField('authentication')->get('label'))),
+					'label' => $this->section->getField('authentication')->get('label'),
 					'type' => 'missing',
-					'label' => $this->section->getField('authentication')->get('label')
+					'message-id' => MemberEventMessages::FIELD_MISSING,
+					'message' => __('%s is a required field.', array($this->section->getField('authentication')->get('label'))),
 				);
 			}
 
 			if(isset($data['username']) && empty($data['username'])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('identity')] = array(
-					'message' => __('%s is a required field.', array($this->section->getField('identity')->get('label'))),
+					'label' => $this->section->getField('identity')->get('label'),
 					'type' => 'missing',
-					'label' => $this->section->getField('identity')->get('label')
+					'message-id' => MemberEventMessages::FIELD_MISSING,
+					'message' => __('%s is a required field.', array($this->section->getField('identity')->get('label'))),
 				);
 			}
 
 			if(isset($data['email']) && empty($data['email'])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
-					'message' => __('%s is a required field.', array($this->section->getField('email')->get('label'))),
+					'label' => $this->section->getField('email')->get('label'),
 					'type' => 'missing',
-					'label' => $this->section->getField('email')->get('label')
+					'message-id' => MemberEventMessages::FIELD_MISSING,
+					'message' => __('%s is a required field.', array($this->section->getField('email')->get('label'))),
 				);
 			}
 

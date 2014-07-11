@@ -116,9 +116,9 @@
 			if(!$auth instanceof fieldMemberPassword) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement('message', __('No Authentication field found.'), array(
 						'type' => 'invalid',
-						'message' => __('No Authentication field found.')
+						'message-id' => MemberEventMessages::FIELD_INVALID
 					))
 				);
 				$result->appendChild($post_values);
@@ -131,9 +131,9 @@
 			if(!$identity instanceof Identity) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
+					new XMLElement('message', __('No Identity field found.'), array(
 						'type' => 'invalid',
-						'message' => __('No Identity field found.')
+						'message-id' => MemberEventMessages::FIELD_INVALID
 					))
 				);
 				$result->appendChild($post_values);
@@ -147,9 +147,10 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
+						'label' => $auth->get('label'),
 						'type' => 'missing',
+						'message-id' => MemberEventMessages::FIELD_MISSING,
 						'message' =>  __('Recovery code is a required field.'),
-						'label' => $auth->get('label')
 					))
 				);
 
@@ -169,9 +170,10 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
+						'label' => $auth->get('label'),
 						'type' => 'invalid',
+						'message-id' => MemberEventMessages::FIELD_INVALID,
 						'message' => __('No recovery code found.'),
-						'label' => $auth->get('label')
 					))
 				);
 			}
@@ -187,9 +189,10 @@
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
 						new XMLElement($identity->get('element_name'), null, array(
+							'label' => $identity->get('label'),
 							'type' => 'invalid',
+							'message-id' => MemberEventMessages::MEMBER_INVALID,
 							'message' =>  __('Member not found.'),
-							'label' => $identity->get('label')
 						))
 					);
 					$result->appendChild($post_values);
@@ -209,9 +212,10 @@
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
 						new XMLElement($auth->get('element_name'), null, array(
+							'label' => $auth->get('label'),
 							'type' => 'invalid',
+							'message-id' => MemberEventMessages::RECOVERY_CODE_INVALID,
 							'message' => __('Recovery code has expired.'),
-							'label' => $auth->get('label')
 						))
 					);
 					$result->appendChild($post_values);
