@@ -260,6 +260,7 @@
 						new XMLElement($auth->get('element_name'), null, array(
 							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid',
 							'message' => $message,
+							'message-id' => ($status == Field::__MISSING_FIELDS__) ? MemberEventMessages::FIELD_MISSING : MemberEventMessages::FIELD_INVALID,
 							'label' => $auth->get('label')
 						))
 					);
