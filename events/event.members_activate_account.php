@@ -160,7 +160,7 @@
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
 						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID
+						'message-id' => MemberEventMessages::FIELD_INVALID,
 						'message' => __('Member not found.'),
 					))
 				);
