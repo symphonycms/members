@@ -117,8 +117,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('No Authentication field found.'), array(
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 				$result->appendChild($post_values);
@@ -132,8 +131,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('No Identity field found.'), array(
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 				$result->appendChild($post_values);
@@ -145,6 +143,11 @@
 				or empty($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code'])
 			) {
 				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
 				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
 						'label' => $auth->get('label'),
@@ -169,6 +172,11 @@
 			if(empty($row)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
+					new XMLElement('message', __('Member encountered errors.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
+				$result->appendChild(
 					new XMLElement($auth->get('element_name'), null, array(
 						'label' => $auth->get('label'),
 						'type' => 'invalid',
@@ -187,6 +195,11 @@
 
 				if(!$entry instanceof Entry || $member_id != $row['entry_id']) {
 					$result->setAttribute('result', 'error');
+					$result->appendChild(
+						new XMLElement('message', __('Member event encountered errors when processing.'), array(
+							'message-id' => MemberEventMessages::MEMBER_ERRORS
+						))
+					);
 					$result->appendChild(
 						new XMLElement($identity->get('element_name'), null, array(
 							'label' => $identity->get('label'),
@@ -211,6 +224,11 @@
 				)))) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
+						new XMLElement('message', __('Member event encountered errors when processing.'), array(
+							'message-id' => MemberEventMessages::MEMBER_ERRORS
+						))
+					);
+					$result->appendChild(
 						new XMLElement($auth->get('element_name'), null, array(
 							'label' => $auth->get('label'),
 							'type' => 'invalid',
@@ -233,6 +251,11 @@
 				$status = $auth->checkPostFieldData($fields[$auth->get('element_name')], $message, $member_id);
 				if(Field::__OK__ != $status) {
 					$result->setAttribute('result', 'error');
+					$result->appendChild(
+						new XMLElement('message', __('Member event encountered errors when processing.'), array(
+							'message-id' => MemberEventMessages::MEMBER_ERRORS
+						))
+					);
 					$result->appendChild(
 						new XMLElement($auth->get('element_name'), null, array(
 							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid',

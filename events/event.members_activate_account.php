@@ -112,8 +112,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('No Activation field found.'), array(
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 				$result->appendChild($post_values);
@@ -126,8 +125,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('No Identity field found.'), array(
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 				$result->appendChild($post_values);
@@ -137,6 +135,11 @@
 			// Ensure that the Member: Activation field has been provided
 			if(!isset($fields[$activation->get('element_name')]) or empty($fields[$activation->get('element_name')])) {
 				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
 				$result->appendChild(
 					new XMLElement($activation->get('element_name'), null, array(
 						'label' => $activation->get('label'),
@@ -157,6 +160,11 @@
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
+				$result->appendChild(
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
 						'type' => 'invalid',
@@ -173,6 +181,11 @@
 
 			if($entry->getData($activation->get('id'), true)->activated == 'yes') {
 				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
 				$result->appendChild(
 					new XMLElement($activation->get('element_name'), null, array(
 						'label' => $activation->get('label'),
@@ -191,6 +204,11 @@
 			$code = $activation->isCodeActive($member_id);
 			if($code['code'] != $fields[$activation->get('element_name')]) {
 				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
 				$result->appendChild(
 					new XMLElement($activation->get('element_name'), null, array(
 						'label' => $activation->get('label'),

@@ -61,8 +61,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('Invalid Members section ID given.'), array(
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::SECTION_INVALID
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 			}

@@ -89,7 +89,6 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('You cannot generate a recovery code while being logged in.'), array(
-						'type' => 'invalid',
 						'message-id' => MemberEventMessages::MUST_LOGIN,
 					))
 				);
@@ -112,8 +111,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('No Identity field found.'), array(
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 				$result->appendChild($post_values);
@@ -123,6 +121,11 @@
 			// Check that a member exists first before proceeding.
 			if(!isset($fields[$identity->get('element_name')]) or empty($fields[$identity->get('element_name')])) {
 				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
 				$result->appendChild(
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
@@ -138,6 +141,11 @@
 			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
+				$result->appendChild(
+					new XMLElement('message', __('Member event encountered errors when processing.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					))
+				);
 				$result->appendChild(
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
