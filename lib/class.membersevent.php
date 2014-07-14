@@ -174,7 +174,7 @@ class MemberEventMessages extends EventMessages
 
     const ACTIVATION_PRE_COMPLETED = 303;
     const ACTIVATION_CODE_INVALID = 304;
-    const RECOVERY_CODE_INVALID = 305
+    const RECOVERY_CODE_INVALID = 305;
 
     const MUST_LOGIN = 501;
 }
