@@ -60,9 +60,8 @@
 			if(isset($member_section_id) && $this->driver->setMembersSection($member_section_id) === false) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
-					new XMLElement('error', null, array(
-						'type' => 'invalid',
-						'message' => __('Invalid Members section ID given.')
+					new XMLElement('message', __('Invalid Members section ID given.'), array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
 					))
 				);
 			}
@@ -113,6 +112,9 @@
 				if ($can_proceed !== true) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild($post_values);
+	                $result->appendChild(new XMLElement('message', __('Member event encountered errors when processing.'), array(
+	                    'message-id' => MemberEventMessages::FILTER_FAILED
+	                )));
 					return $result;
 				}
 			}
@@ -154,3 +156,24 @@
 		}
 
 	}
+
+/**
+ * Basic lookup class for Event messages, allows for frontend developers
+ * to localise and change event messages without relying on string
+ * comparision.
+ *
+ * @since Symphony 2.4
+ */
+class MemberEventMessages extends EventMessages
+{
+    const MEMBER_ERRORS = 104;
+    const MEMBER_INVALID = 105;
+
+    const SECTION_INVALID = 201;
+
+    const ACTIVATION_PRE_COMPLETED = 303;
+    const ACTIVATION_CODE_INVALID = 304;
+    const RECOVERY_CODE_INVALID = 305;
+
+    const MUST_LOGIN = 501;
+}
