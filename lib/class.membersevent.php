@@ -165,25 +165,16 @@
  *
  * @since Symphony 2.4
  */
-class MemberEventMessages
+class MemberEventMessages extends EventMessages
 {
-    const UNKNOWN_ERROR = 0;
+    const MEMBER_ERRORS = 104;
+    const MEMBER_INVALID = 105;
 
-    const CREATED_SUCCESS = 100;
-    const EDITED_SUCCESS = 101;
-    const MEMBER_ERRORS = 102;
-    const MEMBER_INVALID = 103;
-
-    const SECTION_MISSING = 200;
     const SECTION_INVALID = 201;
 
-    const FIELD_MISSING = 301;
-    const FIELD_INVALID = 302;
     const ACTIVATION_PRE_COMPLETED = 303;
     const ACTIVATION_CODE_INVALID = 304;
     const RECOVERY_CODE_INVALID = 305
-
-    const FILTER_FAILED = 400;
 
     const MUST_LOGIN = 501;
 }
