@@ -86,6 +86,7 @@
 			$result = new XMLElement(self::ROOTELEMENT);
 			$fields = $_REQUEST['fields'];
 			$this->driver = Symphony::ExtensionManager()->create('members');
+			$requested_identity = $fields[extension_Members::getFieldHandle('identity')];
 
 			// Add POST values to the Event XML
 			$post_values = new XMLElement('post-values');
@@ -98,6 +99,8 @@
 			// Set the section ID
 			$result = $this->setMembersSection($result, $_REQUEST['members-section-id']);
 			if($result->getAttribute('result') === 'error') {
+				// We are not calling notifyMembersPasswordResetFailure here,
+				// because this is not an authentication error
 				$result->appendChild($post_values);
 				return $result;
 			}
@@ -105,7 +108,11 @@
 			// Trigger the EventPreSaveFilter delegate. We are using this to make
 			// use of the XSS Filter extension that will ensure our data is ok to use
 			$this->notifyEventPreSaveFilter($result, $fields, $post_values);
-			if($result->getAttribute('result') == 'error') return $result;
+			if($result->getAttribute('result') == 'error') {
+				// We are not calling notifyMembersPasswordResetFailure here,
+				// because this is not an authentication error
+				return $result;
+			}
 
 			// Add any Email Templates for this event
 			$this->addEmailTemplates('reset-password-template');
@@ -121,6 +128,7 @@
 						'message' => __('No Authentication field found.')
 					))
 				);
+				$this->notifyMembersPasswordResetFailure($requested_identity);
 				$result->appendChild($post_values);
 				return $result;
 			}
@@ -136,6 +144,7 @@
 						'message' => __('No Identity field found.')
 					))
 				);
+				$this->notifyMembersPasswordResetFailure($requested_identity);
 				$result->appendChild($post_values);
 				return $result;
 			}
@@ -153,6 +162,7 @@
 					))
 				);
 
+				$this->notifyMembersPasswordResetFailure($requested_identity);
 				$result->appendChild($post_values);
 				return $result;
 			}
@@ -174,6 +184,8 @@
 						'label' => $auth->get('label')
 					))
 				);
+
+				$this->notifyMembersPasswordResetFailure($requested_identity);
 			}
 			else {
 				// Retrieve Member Entry record
@@ -192,6 +204,7 @@
 							'label' => $identity->get('label')
 						))
 					);
+					$this->notifyMembersPasswordResetFailure($requested_identity);
 					$result->appendChild($post_values);
 					return $result;
 				}
@@ -214,6 +227,7 @@
 							'label' => $auth->get('label')
 						))
 					);
+					$this->notifyMembersPasswordResetFailure($requested_identity);
 					$result->appendChild($post_values);
 					return $result;
 				}
@@ -236,6 +250,7 @@
 							'label' => $auth->get('label')
 						))
 					);
+					$this->notifyMembersPasswordResetFailure($requested_identity);
 					$result->appendChild($post_values);
 					return $result;
 				}
