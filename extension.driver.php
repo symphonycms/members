@@ -940,7 +940,7 @@
                      *  The username of the Member who attempted to login.
 					 */
 					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
-						'username' => $_POST['fields'][extension_Members::getFieldHandle('identity')]
+						'username' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('identity')])
 					));
 				}
 			}
