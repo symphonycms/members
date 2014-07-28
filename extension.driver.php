@@ -929,6 +929,19 @@
 				}
 				else {
 					self::$_failed_login_attempt = true;
+
+					/**
+					 * A failed Member login attempt
+					 *
+					 * @delegate MembersLoginFailure
+					 * @param string $context
+					 *  '/frontend/'
+					 * @param array $fields
+                     *  The username of the Member who attempted to login.
+					 */
+					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
+						'username' => $_POST['fields'][extension_Members::getFieldHandle('identity')]
+					));
 				}
 			}
 
