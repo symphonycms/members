@@ -936,7 +936,7 @@
 					 * @delegate MembersLoginFailure
 					 * @param string $context
 					 *  '/frontend/'
-					 * @param array $fields
+					 * @param string $username
                      *  The username of the Member who attempted to login.
 					 */
 					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
