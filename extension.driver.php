@@ -950,7 +950,7 @@
 			// should be able to access every page.
 			if(
 				!$hasRoles
-				|| (Frontend::instance()->Author instanceof Author && Frontend::instance()->Author->isDeveloper())
+				|| (Symphony::Engine()->Author() instanceof Author && Symphony::Engine()->Author()->isDeveloper())
 			) return;
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
