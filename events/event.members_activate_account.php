@@ -56,7 +56,8 @@
 
 			return '
 				<p>This event takes an activation code and an identifier for the Member (either Email or Username) to activate their account.
-				An activation code is available by outputting your Activation field in a Datasource after the registration event has executed.</p>
+				An activation code is available by including the Members: Activation field in a data source on the same page as this event, or by using
+				the event\'s result.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
 				accepts the member\'s activation code and either the member\'s email address or username.</p>

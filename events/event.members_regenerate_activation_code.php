@@ -39,7 +39,7 @@
 			}
 
 			return '
-				<p>This event will regenerate an activation code for a user and is useful if their current
+				<p>This event will regenerate an activation code for a user if their current
 				activation code has expired. The activation code can be sent to a Member\'s email after
 				this event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>

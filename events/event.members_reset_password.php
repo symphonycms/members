@@ -54,10 +54,11 @@
 			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
 
 			return '
-				<p>This event takes a recovery code and a new password for a member. Should the recovery code
-				be correct and the new password validate, the member\'s password is changed to their new password.<br />
-				A recovery code is available by outputting the
-				Member: Password field after the Member: Generate Recovery Code event has executed.</p>
+				<p>This event requires the user to enter their recovery code and then their new password. Should the recovery code
+				be correct and the new password validate, the member\'s password will be changed to their new password.</p><p>
+				A recovery code is available by including the
+				Member: Password field in a data source on the same page as this event, or by using
+				the event\'s result.</p>
 				<h3>Example Front-end Form Markup</h3>
 				<p>This is an example of the form markup you can use on your front end. An input field
 				accepts the member\'s recovery code, either the member\'s email address or username and two password
