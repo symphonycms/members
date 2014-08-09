@@ -1,11 +1,11 @@
 # Members
 
-- Version: 1.4beta1
+- Version: 1.4RC1
 - Author: Symphony Team
-- Release Date: 14 April, 2014
+- Release Date: 9th August, 2014
 - Requirements: Symphony 2.4
 
-Frontend membership extension for Symphony CMS. This version represents `1.4beta1` which is considered unstable.
+Frontend membership extension for Symphony CMS. This version represents `1.4RC1` which is considered stable.
 
 ## Installation and Setup
 
@@ -43,7 +43,14 @@ The `$member-id` and `$member-role` parameters will be added to the Page Paramet
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
-## Updating from 1.2
+
+## Updating to 1.4
+
+When updating to 1.4, there are a couple of changes that you should be aware of. As discussed in [#242](https://github.com/symphonycms/members/issues/242), when using Role's the default for all new events will be `NO_PERMISSIONS`. This is different from previous versions where new events were considered to be 'ok' unless otherwise stated.
+
+It may be prudent to check your Member forms as the extension is now throwing additional errors, such as validating email addresses when using the Member Email field, on all Member Events.
+
+## Updating to 1.3
 
 When updating from 1.2, you should not have to do anything except re-enable the extension from the Extensions page. This will increase the length of the password fields so that they can updated to the stronger algorithm as member's log in. When you start to use multiple sections, read the section in the README about [Multiple Section support](#multiple-section-support).
 

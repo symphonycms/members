@@ -17,8 +17,16 @@
 	</author>
   </authors>
   <releases>
-	 <release version="1.4beta1" date="2014-04-14" min="2.4">
-	  * Compatibilty updates for Symphony 2.4
+	 <release version="1.4RC1" date="2014-08-09" min="2.4" max="2.5">
+		* [#254](https://github.com/symphonycms/members/issues/254) Add new delegates, `MembersLoginFailure` and `MembersPasswordResetFailure`.
+		* [#250](https://github.com/symphonycms/members/issues/250) Make better use of `EventMessages` responses to give more accurate error messages for Member Events.
+		* [#246](https://github.com/symphonycms/members/issues/246) Allow events with more than 50 characters to be saved.
+		* [#244](https://github.com/symphonycms/members/issues/244) Ensure `RoleManager` can always be resolved.
+		* [#242](https://github.com/symphonycms/members/issues/242) New events will default to `NO_PERMISSIONS` until explicitly set in each Role.
+		* [#228](https://github.com/symphonycms/members/issues/228) Ensure valid email address before attempting any login logic.
+		* Removed unnecessary SQL queries when checking activation
+		* Update to ensure `Update Password` filter is available
+		* General updates for Symphony 2.4+
 	 </release>
 	 <release version="1.3" date='2013-12-12' min="2.3.2" max="2.3.6">
 	  * [#224](https://github.com/symphonycms/members/issues/224) As the Member: Role field is always required, don't show the required setting
