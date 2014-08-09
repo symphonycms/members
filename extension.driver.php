@@ -458,6 +458,13 @@
 					));
 				}
 			}
+
+			// Update event lengths. RE: #246
+			if(version_compare($previousVersion, '1.4', '<')) {
+				Symphony::Database()->query(sprintf(
+					'ALTER TABLE `tbl_members_roles_event_permissions` CHANGE `event` `event` VARCHAR(255) NOT NULL', $field
+				));
+			}
 		}
 
 	/*-------------------------------------------------------------------------
