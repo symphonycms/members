@@ -967,15 +967,14 @@
 			}
 
 			// If there is no role field, or a Developer is logged in, return, as Developers
-			// should be able to access every page.
-			if(
-				!$hasRoles
-				|| (Symphony::Engine()->Author() instanceof Author && Symphony::Engine()->Author()->isDeveloper())
-			) return;
+			// should be able to access every page. Handles Symphony 2.4 or Symphony 2.5
+			$isDeveloper = (method_exists(Symphony::Engine(), 'Author'))
+				? Symphony::Engine()->Author() instanceof Author && Symphony::Engine()->Author()->isDeveloper()
+				: Symphony::Engine()->Author instanceof Author && Symphony::Engine()->Author->isDeveloper();
+			if(!$hasRoles || $isDeveloper) return;
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
 			$role = RoleManager::fetch($role_id);
-
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
 				if($row = PageManager::fetchPageByType('403')) {
