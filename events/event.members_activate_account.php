@@ -145,7 +145,7 @@
 					new XMLElement($activation->get('element_name'), null, array(
 						'label' => $activation->get('label'),
 						'type' => 'missing',
-			            'message-id' => MemberEventMessages::FIELD_MISSING,
+						'message-id' => EventMessages::FIELD_MISSING,
 						'message' => __('%s is a required field.', array($activation->get('label'))),
 					))
 				);
@@ -166,12 +166,11 @@
 					))
 				);
 				$result->appendChild(
-					new XMLElement($identity->get('element_name'), null, array(
-						'label' => $identity->get('label'),
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID,
-						'message' => __('Member not found.'),
-					))
+					new XMLElement(
+						$identity->get('element_name'),
+						null,
+						extension_Members::$_errors[$identity->get('element_name')]
+					)
 				);
 				$result->appendChild($post_values);
 				return $result;

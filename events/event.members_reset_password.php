@@ -153,7 +153,7 @@
 					new XMLElement($auth->get('element_name'), null, array(
 						'label' => $auth->get('label'),
 						'type' => 'missing',
-						'message-id' => MemberEventMessages::FIELD_MISSING,
+						'message-id' => EventMessages::FIELD_MISSING,
 						'message' =>  __('Recovery code is a required field.'),
 					))
 				);
@@ -181,7 +181,7 @@
 					new XMLElement($auth->get('element_name'), null, array(
 						'label' => $auth->get('label'),
 						'type' => 'invalid',
-						'message-id' => MemberEventMessages::FIELD_INVALID,
+						'message-id' => EventMessages::FIELD_INVALID,
 						'message' => __('No recovery code found.'),
 					))
 				);
@@ -193,7 +193,6 @@
 				// Check that the given Identity data matches the Member that the
 				// recovery code is for
 				$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
-
 				if(!$entry instanceof Entry || $member_id != $row['entry_id']) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
@@ -202,12 +201,11 @@
 						))
 					);
 					$result->appendChild(
-						new XMLElement($identity->get('element_name'), null, array(
-							'label' => $identity->get('label'),
-							'type' => 'invalid',
-							'message-id' => MemberEventMessages::MEMBER_INVALID,
-							'message' =>  __('Member not found.'),
-						))
+						new XMLElement(
+							$identity->get('element_name'),
+							null, 
+							extension_Members::$_errors[$identity->get('element_name')]
+						)
 					);
 					$result->appendChild($post_values);
 					return $result;
@@ -261,7 +259,7 @@
 						new XMLElement($auth->get('element_name'), null, array(
 							'type' => ($status == Field::__MISSING_FIELDS__) ? 'missing' : 'invalid',
 							'message' => $message,
-							'message-id' => ($status == Field::__MISSING_FIELDS__) ? MemberEventMessages::FIELD_MISSING : MemberEventMessages::FIELD_INVALID,
+							'message-id' => ($status == Field::__MISSING_FIELDS__) ? EventMessages::FIELD_MISSING : EventMessages::FIELD_INVALID,
 							'label' => $auth->get('label')
 						))
 					);

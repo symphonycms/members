@@ -89,7 +89,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('You cannot generate a recovery code while being logged in.'), array(
-						'message-id' => MemberEventMessages::MUST_LOGIN,
+						'message-id' => MemberEventMessages::ALREADY_LOGGED_IN,
 					))
 				);
 				$result->appendChild($post_values);
@@ -130,7 +130,7 @@
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
 						'type' => 'missing',
-						'message-id' => MemberEventMessages::FIELD_MISSING,
+						'message-id' => EventMessages::FIELD_MISSING,
 						'message' => __('%s is a required field.', array($identity->get('label'))),
 					))
 				);
@@ -147,12 +147,11 @@
 					))
 				);
 				$result->appendChild(
-					new XMLElement($identity->get('element_name'), null, array(
-						'label' => $identity->get('label'),
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::MEMBER_INVALID,
-						'message' => __('Member not found.'),
-					))
+					new XMLElement(
+						$identity->get('element_name'),
+						null,
+						extension_Members::$_errors[$identity->get('element_name')]
+					)
 				);
 				$result->appendChild($post_values);
 				return $result;
