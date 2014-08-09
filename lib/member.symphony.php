@@ -214,6 +214,15 @@
 					'message' => __('%s is a required field.', array($this->section->getField('email')->get('label'))),
 				);
 			}
+			else if(!fieldMemberEmail::applyValidationRule($email)) {
+				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
+					'message' => __('\'%s\' contains invalid characters.', array($this->section->getField('email')->get('label'))),
+					'message-id' => EventMessages::FIELD_INVALID,
+					'type' => 'invalid',
+					'label' => $this->section->getField('email')->get('label')
+				);
+				return null;
+			}
 
 			// If there is errors already, no point continuing, return false
 			if(!empty(extension_Members::$_errors)) {

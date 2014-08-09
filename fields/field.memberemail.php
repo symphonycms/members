@@ -72,7 +72,7 @@
 				);
 				return null;
 			}
-			else if(!fieldMemberEmail::__applyValidationRule($email)) {
+			else if(!fieldMemberEmail::applyValidationRule($email)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
 					'message' => __('\'%s\' contains invalid characters.', array($this->get('label'))),
 					'message-id' => EventMessages::FIELD_INVALID,
@@ -132,7 +132,7 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
-		private static function __applyValidationRule($data){
+		public static function applyValidationRule($data){
 			include(TOOLKIT . '/util.validators.php');
 			$rule = (isset($validators['email']) ? $validators['email'] : fieldMemberEmail::$validator);
 
@@ -153,7 +153,7 @@
 
 			//	Check Email Address
 			if(!empty($email)) {
-				if(!fieldMemberEmail::__applyValidationRule($email)) {
+				if(!fieldMemberEmail::applyValidationRule($email)) {
 					$message = __('%s contains invalid characters.', array($this->get('label')));
 					return self::__INVALID_FIELDS__;
 				}
