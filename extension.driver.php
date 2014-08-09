@@ -682,7 +682,7 @@
 				);
 			}
 
-			if(!FieldManager::isFieldUsed(self::getFieldType('activation'))) {
+			if(!FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
 				// Add Member: Login filter
 				$context['options'][] = array(
 					'member-login',
@@ -778,7 +778,7 @@
 			return $options;
 		}
 
-			/*-------------------------------------------------------------------------
+		/*-------------------------------------------------------------------------
 		Preferences:
 		-------------------------------------------------------------------------*/
 
