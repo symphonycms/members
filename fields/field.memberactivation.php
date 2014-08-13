@@ -167,7 +167,7 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function toggleFieldData($data, $newState, $entry_id){
+		public function toggleFieldData(array $data, $newState, $entry_id = NULL){
 			$data['activated'] = $newState;
 
 			if($data['activated'] == 'no') {
@@ -263,7 +263,7 @@
 			$wrapper->appendChild($div);
 		}
 
-		public function checkFields(&$errors, $checkForDuplicates=true) {
+		public function checkFields(array &$errors, $checkForDuplicates = true) {
 			Field::checkFields($errors, $checkForDuplicates);
 
 			if (trim($this->get('code_expiry')) == '') {
@@ -445,7 +445,7 @@
 			), $link, $entry_id);
 		}
 
-		public function getParameterPoolValue($data, $entry_id = null) {
+		public function getParameterPoolValue(array $data, $entry_id = NULL) {
 			return $data['activated'];
 		}
 

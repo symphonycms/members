@@ -163,7 +163,7 @@
 			$wrapper->appendChild($div);
 		}
 
-		public function checkFields(&$errors, $checkForDuplicates=true) {
+		public function checkFields(array &$errors, $checkForDuplicates = true) {
 			Field::checkFields($errors, $checkForDuplicates);
 		}
 
