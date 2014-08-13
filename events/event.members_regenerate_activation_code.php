@@ -39,7 +39,7 @@
 			}
 
 			return '
-				<p>This event will regenerate an activation code for a user and is useful if their current
+				<p>This event will regenerate an activation code for a user if their current
 				activation code has expired. The activation code can be sent to a Member\'s email after
 				this event has executed.</p>
 				<h3>Example Front-end Form Markup</h3>
@@ -127,7 +127,7 @@
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
 						'type' => 'missing',
-						'message-id' => MemberEventMessages::FIELD_MISSING,
+						'message-id' => EventMessages::FIELD_MISSING,
 						'message' => __('%s is a required field.', array($identity->get('label'))),
 					))
 				);
@@ -140,7 +140,6 @@
 
 			// Check that a member exists first before proceeding.
 			$member_id = $identity->fetchMemberIDBy($fields[$identity->get('element_name')]);
-
 			if(is_null($member_id)) {
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
@@ -149,12 +148,11 @@
 					))
 				);
 				$result->appendChild(
-					new XMLElement($identity->get('element_name'), null, array(
-						'label' => $identity->get('label'),
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::MEMBER_INVALID,
-						'message' => __('Member not found.'),
-					))
+					new XMLElement(
+						$identity->get('element_name'),
+						null,
+						extension_Members::$_errors[$identity->get('element_name')]
+					)
 				);
 				$result->appendChild($post_values);
 				return $result;

@@ -458,6 +458,13 @@
 					));
 				}
 			}
+
+			// Update event lengths. RE: #246
+			if(version_compare($previousVersion, '1.4', '<')) {
+				Symphony::Database()->query(sprintf(
+					'ALTER TABLE `tbl_members_roles_event_permissions` CHANGE `event` `event` VARCHAR(255) NOT NULL', $field
+				));
+			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -682,7 +689,7 @@
 				);
 			}
 
-			if(!FieldManager::isFieldUsed(self::getFieldType('activation'))) {
+			if(!FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
 				// Add Member: Login filter
 				$context['options'][] = array(
 					'member-login',
@@ -778,7 +785,7 @@
 			return $options;
 		}
 
-			/*-------------------------------------------------------------------------
+		/*-------------------------------------------------------------------------
 		Preferences:
 		-------------------------------------------------------------------------*/
 
@@ -929,6 +936,19 @@
 				}
 				else {
 					self::$_failed_login_attempt = true;
+
+					/**
+					 * A failed Member login attempt
+					 *
+					 * @delegate MembersLoginFailure
+					 * @param string $context
+					 *  '/frontend/'
+					 * @param string $username
+					 *  The username of the Member who attempted to login.
+					 */
+					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
+						'username' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('identity')])
+					));
 				}
 			}
 
@@ -947,15 +967,14 @@
 			}
 
 			// If there is no role field, or a Developer is logged in, return, as Developers
-			// should be able to access every page.
-			if(
-				!$hasRoles
-				|| (Symphony::Engine()->Author() instanceof Author && Symphony::Engine()->Author()->isDeveloper())
-			) return;
+			// should be able to access every page. Handles Symphony 2.4 or Symphony 2.5
+			$isDeveloper = (method_exists(Symphony::Engine(), 'Author'))
+				? Symphony::Engine()->Author() instanceof Author && Symphony::Engine()->Author()->isDeveloper()
+				: Symphony::Engine()->Author instanceof Author && Symphony::Engine()->Author->isDeveloper();
+			if(!$hasRoles || $isDeveloper) return;
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
 			$role = RoleManager::fetch($role_id);
-
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
 				if($row = PageManager::fetchPageByType('403')) {

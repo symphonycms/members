@@ -192,7 +192,7 @@
 				extension_Members::$_errors[$this->section->getFieldHandle('authentication')] = array(
 					'label' => $this->section->getField('authentication')->get('label'),
 					'type' => 'missing',
-					'message-id' => MemberEventMessages::FIELD_MISSING,
+					'message-id' => EventMessages::FIELD_MISSING,
 					'message' => __('%s is a required field.', array($this->section->getField('authentication')->get('label'))),
 				);
 			}
@@ -201,7 +201,7 @@
 				extension_Members::$_errors[$this->section->getFieldHandle('identity')] = array(
 					'label' => $this->section->getField('identity')->get('label'),
 					'type' => 'missing',
-					'message-id' => MemberEventMessages::FIELD_MISSING,
+					'message-id' => EventMessages::FIELD_MISSING,
 					'message' => __('%s is a required field.', array($this->section->getField('identity')->get('label'))),
 				);
 			}
@@ -210,9 +210,18 @@
 				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
 					'label' => $this->section->getField('email')->get('label'),
 					'type' => 'missing',
-					'message-id' => MemberEventMessages::FIELD_MISSING,
+					'message-id' => EventMessages::FIELD_MISSING,
 					'message' => __('%s is a required field.', array($this->section->getField('email')->get('label'))),
 				);
+			}
+			else if(!fieldMemberEmail::applyValidationRule($email)) {
+				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
+					'message' => __('\'%s\' contains invalid characters.', array($this->section->getField('email')->get('label'))),
+					'message-id' => EventMessages::FIELD_INVALID,
+					'type' => 'invalid',
+					'label' => $this->section->getField('email')->get('label')
+				);
+				return null;
 			}
 
 			// If there is errors already, no point continuing, return false

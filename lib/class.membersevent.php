@@ -155,6 +155,24 @@
 			}
 		}
 
+		protected function notifyMembersPasswordResetFailure($username) {
+			/**
+			 * A failed password reset attempt
+			 *
+			 * @delegate MembersPasswordResetFailure
+			 * @param string $context
+			 *  '/frontend/'
+			 * @param string $username
+			 *  Should be the value of the identity field for which the password reset has been attempted
+			 */
+			Symphony::ExtensionManager()->notifyMembers(
+				'MembersPasswordResetFailure',
+				'/frontend/',
+				array(
+					'username' => Symphony::Database()->cleanValue($username)
+				)
+			);
+		}
 	}
 
 /**
@@ -175,5 +193,5 @@ class MemberEventMessages extends EventMessages
     const ACTIVATION_CODE_INVALID = 304;
     const RECOVERY_CODE_INVALID = 305;
 
-    const MUST_LOGIN = 501;
+    const ALREADY_LOGGED_IN = 501;
 }

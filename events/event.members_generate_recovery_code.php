@@ -39,13 +39,13 @@
 			}
 
 			return '
-				<p>This event takes a member\'s email address or username to validate the existence of the Member before,
-				generating a recovery code for the member. A member\'s password is not reset completely until they enter
-				their recovery code through the Members: Reset Password event.<br /> This recovery code be seen
-				by outputting the Member: Password field in a datasource once this event has completed, or by outputting
-				the event result.</p>
+				<p>This event takes a member\'s email address or username to validate the existence of the Member before
+				generating a recovery code for that member. A member\'s password is not completely reset until their 
+				recovery code is used in the Members: Reset Password event. This recovery code can be seen
+				by including the Member: Password field in a data source on the same page as this event, or by using
+				the event\'s result.</p>
 				<h3>Example Front-end Form Markup</h3>
-				<p>This is an example of the form markup you can use on your front end. An input field
+				<p>This is an example of the markup you can use on your front end to create a form for this event. An input field
 				accepts either the member\'s email address or username.</p>
 				<pre class="XML"><code>
 				&lt;form method="post"&gt;
@@ -89,7 +89,7 @@
 				$result->setAttribute('result', 'error');
 				$result->appendChild(
 					new XMLElement('message', __('You cannot generate a recovery code while being logged in.'), array(
-						'message-id' => MemberEventMessages::MUST_LOGIN,
+						'message-id' => MemberEventMessages::ALREADY_LOGGED_IN,
 					))
 				);
 				$result->appendChild($post_values);
@@ -130,7 +130,7 @@
 					new XMLElement($identity->get('element_name'), null, array(
 						'label' => $identity->get('label'),
 						'type' => 'missing',
-						'message-id' => MemberEventMessages::FIELD_MISSING,
+						'message-id' => EventMessages::FIELD_MISSING,
 						'message' => __('%s is a required field.', array($identity->get('label'))),
 					))
 				);
@@ -147,12 +147,11 @@
 					))
 				);
 				$result->appendChild(
-					new XMLElement($identity->get('element_name'), null, array(
-						'label' => $identity->get('label'),
-						'type' => 'invalid',
-						'message-id' => MemberEventMessages::MEMBER_INVALID,
-						'message' => __('Member not found.'),
-					))
+					new XMLElement(
+						$identity->get('element_name'),
+						null,
+						extension_Members::$_errors[$identity->get('element_name')]
+					)
 				);
 				$result->appendChild($post_values);
 				return $result;
