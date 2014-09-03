@@ -17,7 +17,7 @@
     </author>
   </authors>
   <releases>
-     <release version="1.4RC1" date="2014-08-09" min="2.4" max="2.5">
+     <release version="1.4" date="2014-09-03" min="2.4" max="2.5">
         * [#254](https://github.com/symphonycms/members/issues/254) Add new delegates, `MembersLoginFailure` and `MembersPasswordResetFailure`.
         * [#250](https://github.com/symphonycms/members/issues/250) Make better use of `EventMessages` responses to give more accurate error messages for Member Events.
         * [#246](https://github.com/symphonycms/members/issues/246) Allow events with more than 50 characters to be saved.
