@@ -1,5 +1,6 @@
 <?php
 	require_once EXTENSIONS . '/members/lib/class.membersevent.php';
+	require_once EXTENSIONS . '/members/fields/field.memberemail.php';
 
 	Class SymphonyMember extends Members {
 
