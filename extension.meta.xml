@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <extension id="members" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
   <name>Members</name>
   <description lang="en">Define your own frontend membership system using events and XSLT.</description>
@@ -17,18 +17,22 @@
     </author>
   </authors>
   <releases>
-     <release version="1.4" date="2014-09-03" min="2.4" max="2.5">
-        * [#254](https://github.com/symphonycms/members/issues/254) Add new delegates, `MembersLoginFailure` and `MembersPasswordResetFailure`.
-        * [#250](https://github.com/symphonycms/members/issues/250) Make better use of `EventMessages` responses to give more accurate error messages for Member Events.
-        * [#246](https://github.com/symphonycms/members/issues/246) Allow events with more than 50 characters to be saved.
-        * [#244](https://github.com/symphonycms/members/issues/244) Ensure `RoleManager` can always be resolved.
-        * [#242](https://github.com/symphonycms/members/issues/242) New events will default to `NO_PERMISSIONS` until explicitly set in each Role.
-        * [#228](https://github.com/symphonycms/members/issues/228) Ensure valid email address before attempting any login logic.
-        * Removed unnecessary SQL queries when checking activation
-        * Update to ensure `Update Password` filter is available
-        * General updates for Symphony 2.4+
-     </release>
-     <release version="1.3" date='2013-12-12' min="2.3.2" max="2.3.6">
+    <release version="1.5" date="2015-11-20" min="2.4" max="2.6.x">
+      * [#267](https://github.com/symphonycms/members/issues/267) Symphony 2.6.x compatibilty
+      * Ensure the Member Email class is always around
+    </release>
+    <release version="1.4" date="2014-09-03" min="2.4" max="2.5">
+      * [#254](https://github.com/symphonycms/members/issues/254) Add new delegates, `MembersLoginFailure` and `MembersPasswordResetFailure`.
+      * [#250](https://github.com/symphonycms/members/issues/250) Make better use of `EventMessages` responses to give more accurate error messages for Member Events.
+      * [#246](https://github.com/symphonycms/members/issues/246) Allow events with more than 50 characters to be saved.
+      * [#244](https://github.com/symphonycms/members/issues/244) Ensure `RoleManager` can always be resolved.
+      * [#242](https://github.com/symphonycms/members/issues/242) New events will default to `NO_PERMISSIONS` until explicitly set in each Role.
+      * [#228](https://github.com/symphonycms/members/issues/228) Ensure valid email address before attempting any login logic.
+      * Removed unnecessary SQL queries when checking activation
+      * Update to ensure `Update Password` filter is available
+      * General updates for Symphony 2.4+
+    </release>
+    <release version="1.3" date="2013-12-12" min="2.3.2" max="2.3.6">
       * [#224](https://github.com/symphonycms/members/issues/224) As the Member: Role field is always required, don't show the required setting
       * [#201](https://github.com/symphonycms/members/issues/201) Use `spl_autoload_register` instead of `__autoload`
       * [#200](https://github.com/symphonycms/members/issues/200) Implement Cryptography API for more secure passwords
@@ -41,16 +45,16 @@
       * Support Importable/Exportable field interfaces
       * Various bug fixes for increased stability and robustness
     </release>
-    <release version="1.2" date="2012-12-06" min="2.3" max='2.3.x'>
+    <release version="1.2" date="2012-12-06" min="2.3" max="2.3.x">
       * Update for Symphony 2.3
       * Lazy load Member fields for better performance
       * Added Greek translation
     </release>
-    <release version="1.1.1" date="2011-08-13" min="2.2.1" max='2.2.x'>
+    <release version="1.1.1" date="2011-08-13" min="2.2.1" max="2.2.x">
       * Fix update script in 1.1
       * Explicitly set the CHARSET to be UTF8 when creating new tables.
     </release>
-    <release version="1.1" date="2011-08-06" min="2.2.1" max='2.2.x'>
+    <release version="1.1" date="2011-08-06" min="2.2.1" max="2.2.x">
       * Member: Username uniqueness is now done by `handle`, rather than `value`
       * Member: Activation and Member: Role UI has been updated to better show a Member's role while they are unactivated
       * Fix sorting and output parameter of the Member: Activation field
@@ -58,7 +62,7 @@
       * Addition of the Italian localisation
       * Other minor miscellaneous tweaks and fixes
     </release>
-    <release version="1.0" date="2011-06-01" min="2.2.1" max='2.2.x'>
+    <release version="1.0" date="2011-06-01" min="2.2.1" max="2.2.x">
       * Initial release
     </release>
   </releases>
