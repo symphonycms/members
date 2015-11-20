@@ -1,11 +1,6 @@
 # Members
 
-- Version: 1.4
-- Author: Symphony Team
-- Release Date: 3rd September, 2014
-- Requirements: Symphony 2.4
-
-Frontend membership extension for Symphony CMS. This version represents `1.4` which is considered stable.
+> Frontend membership extension for Symphony CMS.
 
 ## Installation and Setup
 
