@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.5.1" date="2015-12-08" min="2.4" max="2.6.x">
+      * [#272](https://github.com/symphonycms/members/issues/272) Role Permissions error
+    </release>
     <release version="1.5" date="2015-11-20" min="2.4" max="2.6.x">
       * [#267](https://github.com/symphonycms/members/issues/267) Symphony 2.6.x compatibilty
       * Ensure the Member Email class is always around
