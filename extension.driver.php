@@ -1165,7 +1165,10 @@
 
 			$role = RoleManager::fetch($role_id);
 			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
-			$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
+			$success = false;
+			if ($role) {
+  				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
+			}
 
 			$context['messages'][] = array(
 				'permission',
