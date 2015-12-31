@@ -245,8 +245,10 @@
 						$this->cookie->set('email', $data['email']);
 					}
 
-					$this->cookie->set('password', $this->getMember()->getData($this->section->getField('authentication')->get('id'), true)->password);
-
+					if (isset($credentials[$this->section->getFieldHandle('authentication')])){
+						$this->cookie->set('password', $this->getMember()->getData($this->section->getField('authentication')->get('id'), true)->password);
+					}
+					
 					self::$isLoggedIn = true;
 
 				} catch(Exception $ex){
