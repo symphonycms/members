@@ -203,4 +203,6 @@ Roles allow you to prevent access to certain pages and/or prevent what users can
 
 ## Email Templates
 
-The [Email Template Filter](http://getsymphony.com/download/extensions/view/20743/) or [Email Template Manager](http://getsymphony.com/download/extensions/view/64322/) can be used to email information specific to the Members extension such as Member Registration, Password Reset and Activation Codes. These extensions allow Email Templates to be added as Event Filters to your events. Check the documentation for either extension to evaluate them for your situation. All bugs relating to those extensions should be reported to the respective extension, not the Members extension.
+The [Email Template Manager](http://symphonyextensions.com/extensions/email_template_manager/) extension can be used to email information specific to the Members extension such as Member Registration, Password Reset and Activation Codes. This extension allows Email Templates to be added as Event Filters to your events.
+
+When using the email address as the member identifier, be sure to encode email addresses with [a URL encoding template](http://www.getsymphony.com/download/xslt-utilities/view/55460/) when emailing password reset confirmation links to allow for characters such as '+'. All bugs relating to this extension should be reported to it, not the Members extension.
