@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.5.2" date="2016-06-23" min="2.4.0" max="2.x.x">
+      * [#277](https://github.com/symphonycms/members/issues/277) SQL error
+    </release>
     <release version="1.5.1" date="2015-12-08" min="2.4" max="2.6.x">
       * [#272](https://github.com/symphonycms/members/issues/272) Role Permissions error
     </release>
