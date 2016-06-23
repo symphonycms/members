@@ -61,7 +61,7 @@
 
 			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
 
-			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", "`role_id` = " . $role_id);
+			Symphony::Database()->delete("tbl_members_roles_forbidden_pages", "`role_id` = " . $role_id);
 			$page_access = $data['roles_forbidden_pages']['page_access'];
 			if(is_array($page_access) && !empty($page_access)) {
 				foreach($page_access as $page_id){
@@ -74,7 +74,7 @@
 				}
 			}
 
-			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", "`role_id` = " . $role_id);
+			Symphony::Database()->delete("tbl_members_roles_event_permissions", "`role_id` = " . $role_id);
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
 				$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
@@ -105,9 +105,9 @@
 		 * @return boolean
 		 */
 		public static function delete($role_id, $purge_members = false) {
-			Symphony::Database()->delete("`tbl_members_roles_forbidden_pages`", " `role_id` = " . $role_id);
-			Symphony::Database()->delete("`tbl_members_roles_event_permissions`", " `role_id` = " . $role_id);
-			Symphony::Database()->delete("`tbl_members_roles`", " `id` = " . $role_id);
+			Symphony::Database()->delete("tbl_members_roles_forbidden_pages", " `role_id` = " . $role_id);
+			Symphony::Database()->delete("tbl_members_roles_event_permissions", " `role_id` = " . $role_id);
+			Symphony::Database()->delete("tbl_members_roles", " `id` = " . $role_id);
 
 			$role_fields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
 
