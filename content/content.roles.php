@@ -19,16 +19,25 @@
 				);
 			}
 
-			$this->appendSubheading(__('Member Roles'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', __('Create a Role'), 'create button', NULL, array('accesskey' => 'c')
-			));
+			$this->appendSubheading(
+				__('Member Roles'),
+				Widget::Anchor(
+					Widget::SVGIcon('add') . '<span><span>' . __('Create New') . '</span></span>',
+					Administration::instance()->getCurrentPageURL().'new/',
+					__('Create a Role'),
+					'create button',
+					NULL,
+					array('accesskey' => 'c')
+				)
+			);
 
 			$roles = RoleManager::fetch();
 			// Find all possible member sections
 			$config_sections = explode(',',extension_Members::getSetting('section'));
 
 			$aTableHead = array(
-				array(__('Name'), 'col')
+				array(__('Name'), 'col'),
+				array(__('Description'), 'col')
 			);
 
 			$aTableBody = array();
@@ -61,6 +70,7 @@
 					$td1 = Widget::TableData(Widget::Anchor(
 						$role->get('name'), Administration::instance()->getCurrentPageURL().'edit/' . $role->get('id') . '/', null, 'content'
 					));
+					$td1->setAttribute('data-title', __('Name'));
 
 					if($role->get('id') != Role::PUBLIC_ROLE) {
 						$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
@@ -100,9 +110,10 @@
 					else {
 						$td2 = Widget::TableData(__('None'), 'inactive');
 					}
+					$td2->setAttribute('data-title', __('Description'));
 
 					// Add cells to a row
-					if($i === 0) $aTableBody[] = Widget::TableRow(array($td1, $td2));
+					$aTableBody[] = Widget::TableRow(array($td1, $td2));
 
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$with_selected_roles[] = array(
@@ -120,6 +131,7 @@
 				Widget::TableBody($aTableBody),
 				'selectable'
 			);
+			$table->setAttribute('data-interactive', 'data-interactive');
 
 			$this->Form->appendChild($table);
 
@@ -160,8 +172,7 @@
 			}
 
 			// Add in custom assets
-			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/members.roles.css', 'screen', 101);
-			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.roles.js', 104);
+ 			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.roles.js', 104);
 
 			// Append any Page Alerts from the form's
 			if(isset($this->_context[2])){
@@ -225,7 +236,10 @@
 				}
 			}
 			$this->insertBreadcrumbs(array(
-				Widget::Anchor(__('Member Roles'), extension_members::baseURL() . 'roles/'),
+				Widget::Anchor(
+					Widget::SVGIcon('arrow') . __('Member Roles'),
+					extension_members::baseURL() . 'roles/'
+				),
 			));
 
 			$fieldset = new XMLElement('fieldset');
@@ -367,15 +381,35 @@
 			$fieldset->appendChild($label);
 			$this->Form->appendChild($fieldset);
 
+			$this->Header->setAttribute('class', 'spaced-bottom');
+	        $this->Context->setAttribute('class', 'spaced-right');
+	        $this->Contents->setAttribute('class', 'centered-content');
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(
+				Widget::SVGIconContainer(
+					'save',
+					Widget::Input(
+						'action[save]',
+						__('Save Changes'),
+						'submit',
+						array('accesskey' => 's')
+					)
+				)
+			);
 
 			if(!$isNew && $existing->get('id') != Role::PUBLIC_ROLE) {
 				$button = new XMLElement('button', __('Delete'));
 				$button->setAttributeArray(array('name' => 'action[delete]', 'class' => 'button confirm delete', 'title' => __('Delete this Role'), 'type' => 'submit', 'accesskey' => 'd'));
-				$div->appendChild($button);
+				$div->appendChild(
+					Widget::SVGIconContainer(
+						'delete',
+						$button
+					)
+				);
 			}
+
+			$div->appendChild(Widget::SVGIcon('chevron'));
 
 			$this->Form->appendChild($div);
 		}
