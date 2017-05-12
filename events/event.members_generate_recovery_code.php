@@ -35,12 +35,30 @@
 				$div->appendChild($label);
 
 				$div->appendChild(Widget::Input('members[event]', 'generate-recovery-code', 'hidden'));
-				$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+
+				Administration::instance()->Page->Header->setAttribute('class', 'spaced-bottom');
+		        Administration::instance()->Page->Context->setAttribute('class', 'spaced-right');
+		        Administration::instance()->Page->Contents->setAttribute('class', 'centered-content');
+		        $actions = new XMLElement('div');
+		        $actions->setAttribute('class', 'actions');
+				$actions->appendChild(
+					Widget::SVGIconContainer(
+						'save',
+						Widget::Input(
+							'action[save]',
+							__('Save Changes'),
+							'submit',
+							array('accesskey' => 's')
+						)
+					)
+				);
+				$actions->appendChild(Widget::SVGIcon('chevron'));
+				$div->appendChild($actions);
 			}
 
 			return '
 				<p>This event takes a member\'s email address or username to validate the existence of the Member before
-				generating a recovery code for that member. A member\'s password is not completely reset until their 
+				generating a recovery code for that member. A member\'s password is not completely reset until their
 				recovery code is used in the Members: Reset Password event. This recovery code can be seen
 				by including the Member: Password field in a data source on the same page as this event, or by using
 				the event\'s result.</p>

@@ -51,7 +51,27 @@
 			$div->appendChild($label);
 
 			$div->appendChild(Widget::Input('members[event]', 'reset-password', 'hidden'));
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+
+			Administration::instance()->Page->Header->setAttribute('class', 'spaced-bottom');
+	        Administration::instance()->Page->Context->setAttribute('class', 'spaced-right');
+	        Administration::instance()->Page->Contents->setAttribute('class', 'centered-content');
+	        $actions = new XMLElement('div');
+	        $actions->setAttribute('class', 'actions');
+			$actions->appendChild(
+				Widget::SVGIconContainer(
+					'save',
+					Widget::Input(
+						'action[save]',
+						__('Save Changes'),
+						'submit',
+						array('accesskey' => 's')
+					)
+				)
+			);
+
+			$actions->appendChild(Widget::SVGIcon('chevron'));
+
+			$div->appendChild($actions);
 
 			return '
 				<p>This event requires the user to enter their recovery code and then their new password. Should the recovery code
@@ -215,7 +235,7 @@
 					$result->appendChild(
 						new XMLElement(
 							$identity->get('element_name'),
-							null, 
+							null,
 							extension_Members::$_errors[$identity->get('element_name')]
 						)
 					);
