@@ -392,7 +392,7 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC') {
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC', &$select = NULL) {
 			if(in_array(strtolower($order), array('random', 'rand'))) {
 				$sort = 'ORDER BY RAND()';
 			}
