@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.6.0" date="2017-05-24" min="2.4.0" max="2.x.x">
+      * [#284](https://github.com/symphonycms/members/issues/277) Bypassing cachelite's cache
+    </release>
     <release version="1.5.2" date="2016-06-23" min="2.4.0" max="2.x.x">
       * [#277](https://github.com/symphonycms/members/issues/277) SQL error
     </release>

@@ -185,6 +185,11 @@
 					'delegate' => 'EventPostSaveFilter',
 					'callback' => 'processPostSaveFilter'
 				),
+				array(
+					'page' => '/frontend/',
+					'delegate' => 'CacheliteBypass',
+					'callback' => 'processCacheliteBypass'
+				),
 				/*
 					BACKEND
 				*/
@@ -1220,6 +1225,17 @@
 			if (in_array('member-login', $context['event']->eParamFILTERS)) {
 				$this->getMemberDriver()->filter_UpdatePasswordLogin($context);
 			}
+		}
+
+		/**
+		 * Tells the cachelite extension to bypass cache for logged in users
+		 *
+		 * @uses CacheliteBypass
+		 *
+		 * @param array $context
+		 */
+		public function processCacheliteBypass(array &$context) {
+			$context['bypass'] = $context['bypass'] || $this->getMemberDriver()->isLoggedIn();
 		}
 
 	/*-------------------------------------------------------------------------
