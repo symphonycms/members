@@ -139,6 +139,9 @@
 					else if(isset($members_section_id) && in_array((int)$members_section_id, $config_sections)) {
 						$this->setMembersSection($members_section_id);
 					}
+					else {
+						$this->setMembersSection($config_sections[0]);
+					}
 				}
 
 				extension_Members::$initialised = true;
@@ -952,7 +955,8 @@
 					 *  The username of the Member who attempted to login.
 					 */
 					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
-						'username' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('identity')])
+						'username' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('identity')]),
+						'email' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('email')])
 					));
 				}
 			}
