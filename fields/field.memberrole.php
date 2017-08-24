@@ -38,9 +38,9 @@
 		public static function createSettingsTable() {
 			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberrole` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `default_role` int(11) unsigned NOT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `field_id` INT(11) UNSIGNED NOT NULL,
+				  `default_role` INT(11) UNSIGNED NOT NULL,
 				  PRIMARY KEY (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -50,9 +50,9 @@
 		public function createTable(){
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
- 				  `role_id` int(11) unsigned NOT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `entry_id` INT(11) UNSIGNED NOT NULL,
+ 				  `role_id` INT(11) UNSIGNED NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `entry_id` (`entry_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -89,7 +89,7 @@
 			parent::setFromPOST($settings);
 		}
 
-		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = null){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
@@ -234,7 +234,7 @@
 			}
 		}
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null){
 			$status = self::__OK__;
 
 			if(is_null($data)) {
@@ -392,7 +392,7 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC') {
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order = 'ASC') {
 			if(in_array(strtolower($order), array('random', 'rand'))) {
 				$sort = 'ORDER BY RAND()';
 			}

@@ -25,8 +25,8 @@
 		public static function createSettingsTable() {
 			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_membertimezone` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `field_id` INT(11) UNSIGNED NOT NULL,
 				  `available_zones` VARCHAR(255) DEFAULT NULL,
 				  PRIMARY KEY (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
@@ -101,7 +101,7 @@
 
 			$groups = array();
 
-			if ($this->get('required') != 'yes') $groups[] = array(NULL, false, NULL);
+			if ($this->get('required') != 'yes') $groups[] = array(null, false, null);
 
 			$zones = explode(",", $this->get('available_zones'));
 
@@ -133,7 +133,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = null){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div', null, array('class' => 'two columns'));

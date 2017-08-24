@@ -26,7 +26,7 @@
 					Administration::instance()->getCurrentPageURL().'new/',
 					__('Create a Role'),
 					'create button',
-					NULL,
+					null,
 					array('accesskey' => 'c')
 				)
 			);
@@ -44,7 +44,7 @@
 
 			if(!is_array($roles) || empty($roles)){
 				$aTableBody = array(Widget::TableRow(
-					array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead)))
+					array(Widget::TableData(__('None found.'), 'inactive', null, count($aTableHead)))
 				));
 			}
 
@@ -54,7 +54,7 @@
 					array(
 						SYMPHONY_URL . '/blueprints/sections/'
 					))
-					, 'inactive', NULL, count($aTableHead)))
+					, 'inactive', null, count($aTableHead)))
 				));
 			}
 
@@ -127,7 +127,7 @@
 
 			$table = Widget::Table(
 				Widget::TableHead($aTableHead),
-				NULL,
+				null,
 				Widget::TableBody($aTableBody),
 				'selectable'
 			);
@@ -275,7 +275,7 @@
 							"fields[permissions][{$event_handle}][create]",
 							(string)EventPermissions::CREATE,
 							'checkbox',
-							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : NULL)
+							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : null)
 						)->generate(),
 						'Create'
 					),
@@ -289,7 +289,7 @@
 							"fields[permissions][{$event_handle}][edit]",
 							(string)EventPermissions::NO_PERMISSIONS,
 							'radio',
-							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : NULL)
+							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : null)
 						)->generate(),
 						'None'
 					)
@@ -302,7 +302,7 @@
 							"fields[permissions][{$event_handle}][edit]",
 							(string)EventPermissions::OWN_ENTRIES,
 							'radio',
-							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : NULL)
+							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : null)
 						)->generate(),
 						'Own'
 					)
@@ -315,7 +315,7 @@
 							"fields[permissions][{$event_handle}][edit]",
 							(string)EventPermissions::ALL_ENTRIES,
 							'radio',
-							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : NULL)
+							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : null)
 						)->generate(),
 						'All'
 					)
@@ -350,7 +350,7 @@
 
 			$table = Widget::Table(
 				$thead,
-				NULL,
+				null,
 				Widget::TableBody($aTableBody),
 				'role-permissions'
 			);

@@ -38,7 +38,7 @@
 
 				foreach($permissions as $event_handle => $p){
 					foreach($p as $action => $level) {
-						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+						$sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
 					}
 				}
 
@@ -81,11 +81,11 @@
 
 				foreach($permissions as $event_handle => $p){
 					if(!array_key_exists('create', $p)) {
-						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
+						$sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
 					}
 
 					foreach($p as $action => $level) {
-						$sql .= sprintf("(NULL,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+						$sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
 					}
 				}
 

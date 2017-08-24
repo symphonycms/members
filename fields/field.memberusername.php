@@ -27,9 +27,9 @@
 		public static function createSettingsTable() {
 			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberusername` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `validator` varchar(255) DEFAULT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `field_id` INT(11) UNSIGNED NOT NULL,
+				  `validator` VARCHAR(255) DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -39,10 +39,10 @@
 		public function createTable(){
 			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `value` varchar(255) default NULL,
-				  `handle` varchar(255) default NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `entry_id` INT(11) UNSIGNED NOT NULL,
+				  `value` VARCHAR(255) DEFAULT NULL,
+				  `handle` VARCHAR(255) DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  KEY `value` (`value`),
@@ -102,7 +102,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = null){
 			parent::displaySettingsPanel($wrapper, $errors);
 
 			$this->buildValidationSelect($wrapper, $this->get('validator'), 'fields['.$this->get('sortorder').'][validator]');

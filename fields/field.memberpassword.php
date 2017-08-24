@@ -48,11 +48,11 @@
 		public static function createSettingsTable() {
 			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberpassword` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `length` tinyint(2) NOT NULL,
-				  `strength` enum('weak', 'good', 'strong') NOT NULL,
-				  `code_expiry` varchar(50) NOT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `field_id` INT(11) UNSIGNED NOT NULL,
+				  `length` TINYINT(2) NOT NULL,
+				  `strength` ENUM('weak', 'good', 'strong') NOT NULL,
+				  `code_expiry` VARCHAR(50) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -62,14 +62,14 @@
 		public function createTable(){
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `password` varchar(150) default NULL,
-				  `recovery-code` varchar(40) default NULL,
-				  `length` tinyint(2) NOT NULL,
-				  `strength` enum('weak', 'good', 'strong') NOT NULL,
-				  `reset` enum('yes','no') default 'no',
-				  `expires` DATETIME default NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `entry_id` INT(11) UNSIGNED NOT NULL,
+				  `password` VARCHAR(150) DEFAULT NULL,
+				  `recovery-code` VARCHAR(40) DEFAULT NULL,
+				  `length` TINYINT(2) NOT NULL,
+				  `strength` ENUM('weak', 'good', 'strong') NOT NULL,
+				  `reset` ENUM('yes','no') default 'no',
+				  `expires` DATETIME DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  KEY `length` (`length`),
@@ -307,7 +307,7 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = null){
 			parent::displaySettingsPanel($wrapper, $errors);
 			$order = $this->get('sortorder');
 
@@ -530,7 +530,7 @@
 			return self::__OK__;
 		}
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id = null){
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null){
 			$status = self::__OK__;
 			$required = ($this->get('required') == "yes");
 
@@ -579,7 +579,7 @@
 			$wrapper->appendChild($pw);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null){
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null){
 			if(empty($data)) return __('None');
 
 			return parent::prepareTableValue(array(
@@ -626,7 +626,7 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false){
 			$field_id = $this->get('id');
 
 			if($andOperation) {

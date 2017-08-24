@@ -247,9 +247,9 @@
 			return Symphony::Database()->import("
 				DROP TABLE IF EXISTS `tbl_members_roles`;
 				CREATE TABLE `tbl_members_roles` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `name` varchar(255) NOT NULL,
-				  `handle` varchar(255) NOT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `name` VARCHAR(255) NOT NULL,
+				  `handle` VARCHAR(255) NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `handle` (`handle`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -258,20 +258,20 @@
 
 				DROP TABLE IF EXISTS `tbl_members_roles_event_permissions`;
 				CREATE TABLE `tbl_members_roles_event_permissions` (
-				  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-				  `role_id` int(11) unsigned NOT NULL,
-				  `event` varchar(255) NOT NULL,
-				  `action` varchar(60) NOT NULL,
-				  `level` smallint(1) unsigned NOT NULL DEFAULT '0',
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `role_id` INT(11) UNSIGNED NOT NULL,
+				  `event` VARCHAR(255) NOT NULL,
+				  `action` VARCHAR(60) NOT NULL,
+				  `level` SMALLINT(1) UNSIGNED NOT NULL DEFAULT '0',
 				  PRIMARY KEY (`id`),
 				  KEY `role_id` (`role_id`,`event`,`action`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 				DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
 				CREATE TABLE `tbl_members_roles_forbidden_pages` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `role_id` int(11) unsigned NOT NULL,
-				  `page_id` int(11) unsigned NOT NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `role_id` INT(11) UNSIGNED NOT NULL,
+				  `page_id` INT(11) UNSIGNED NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `role_id` (`role_id`,`page_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -1228,7 +1228,7 @@
 			}
 
 			$role = RoleManager::fetch($role_id);
-			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
+			$event_handle = strtolower(preg_replace('/^event/i', null, get_class($context['event'])));
 			$success = false;
 			if ($role) {
 				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;

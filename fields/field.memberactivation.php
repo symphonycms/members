@@ -44,11 +44,11 @@
 		public static function createSettingsTable() {
 			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_memberactivation` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `code_expiry` varchar(50) NOT NULL,
-				  `activation_role_id` int(11) unsigned NOT NULL,
-				  `deny_login` enum('yes','no') NOT NULL default 'yes',
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `field_id` INT(11) UNSIGNED NOT NULL,
+				  `code_expiry` VARCHAR(50) NOT NULL,
+				  `activation_role_id` INT(11) UNSIGNED NOT NULL,
+				  `deny_login` ENUM('yes','no') NOT NULL default 'yes',
 				  PRIMARY KEY  (`id`),
 				  UNIQUE KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -58,11 +58,11 @@
 		public function createTable(){
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `activated` enum('yes','no') NOT NULL default 'no',
-				  `timestamp` DATETIME default NULL,
-				  `code` varchar(40) default NULL,
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `entry_id` INT(11) UNSIGNED NOT NULL,
+				  `activated` ENUM('yes','no') NOT NULL default 'no',
+				  `timestamp` DATETIME DEFAULT NULL,
+				  `code` VARCHAR(40) DEFAULT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  UNIQUE KEY `code` (`code`)
@@ -167,7 +167,7 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function toggleFieldData(array $data, $newState, $entry_id = NULL){
+		public function toggleFieldData(array $data, $newState, $entry_id = null){
 			$data['activated'] = $newState;
 
 			if($data['activated'] == 'no') {
@@ -190,7 +190,7 @@
 			parent::setFromPOST($settings);
 		}
 
-		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = null){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
@@ -362,7 +362,7 @@
 			}
 		}
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null){
 			$status = self::__OK__;
 
 			return $this->prepareImportValue($data, ImportableField::ARRAY_VALUE, $entry_id);
@@ -439,13 +439,13 @@
 			$wrapper->appendChild($el);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null) {
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null) {
 			return parent::prepareTableValue(array(
 				'value' => ($data['activated'] == 'yes') ? __('Activated') : __('Not Activated')
 			), $link, $entry_id);
 		}
 
-		public function getParameterPoolValue(array $data, $entry_id = NULL) {
+		public function getParameterPoolValue(array $data, $entry_id = null) {
 			return $data['activated'];
 		}
 
@@ -453,7 +453,7 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC') {
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order = 'ASC') {
 			if(in_array(strtolower($order), array('random', 'rand'))) {
 				$sort = 'ORDER BY RAND()';
 			}
@@ -475,7 +475,7 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false){
 
 			$field_id = $this->get('id');
 

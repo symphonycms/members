@@ -123,9 +123,9 @@
 				return null;
 			}
 
-			// Check that if there's activation, that this Member is activated.
-			if (!is_null($this->section->getFieldHandle('activation'))) {
-				$entry = EntryManager::fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true, array($this->section->getFieldHandle('activation')));
+			// Check that if there's activiation, that this Member is activated.
+			if(!is_null($this->section->getFieldHandle('activation'))) {
+				$entry = EntryManager::fetch($member_id, null, null, null, null, null, false, true, array($this->section->getFieldHandle('activation')));
 
 				$isActivated = $entry[0]->getData($this->section->getField('activation')->get('id'), true)->activated == "yes";
 
