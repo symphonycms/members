@@ -134,6 +134,7 @@
 			// Filter has + in it.
 			else if($andOperation) {
 				foreach($data as $key => $bit){
+					$bit = Symphony::Database()->cleanValue($bit);
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
 					$where .= " AND (
 									`t$field_id$key`.value = '$bit'
@@ -148,7 +149,7 @@
 				if(!is_array($data)) {
 					$data = array($data);
 				}
-
+				$data = array_map(array(Symphony::Database(), 'cleanValue'), $data);
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
 				$where .= " AND (
 								`t$field_id`.value IN ('".implode("', '", $data)."')
