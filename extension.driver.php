@@ -842,7 +842,11 @@
 				array(null, false, null)
 			);
 			foreach($sections as $section_id => $section) {
-				$options[] = array($section->get('id'), (in_array($section->get('id'), $config_sections)), $section->get('name'));
+				$options[] = array(
+					$section->get('id'),
+					in_array($section->get('id'), $config_sections),
+					General::sanitize($section->get('name'))
+				);
 			}
 
 			$label->appendChild(Widget::Select('settings[members][section][]', $options, array('multiple' => 'multiple')));
