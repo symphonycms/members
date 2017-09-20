@@ -201,6 +201,9 @@ The Members extension comes with a single default Role, Public. This role cannot
 
 Roles allow you to prevent access to certain pages and/or prevent what users can do with your Events. Read more about [Event Permissions](https://github.com/symphonycms/members/wiki/Event-Permissions) on the wiki.
 
+If a member is not allowed to see a particular page, the Members extension will display the page with the `403` type.
+If you want to have a special page for this case, the type `403-members` can also be used.
+
 ## Email Templates
 
 The [Email Template Manager](http://symphonyextensions.com/extensions/email_template_manager/) extension can be used to email information specific to the Members extension such as Member Registration, Password Reset and Activation Codes. This extension allows Email Templates to be added as Event Filters to your events.
