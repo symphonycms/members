@@ -631,6 +631,7 @@
 				foreach($data as $key => $value) {
 					$this->_key++;
 					$value = $this->encodePassword($value);
+					$value = Symphony::Database()->cleanValue($value);
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
 					$where .= " AND `t$field_id$key`.password = '$value' ";
 				}
@@ -648,6 +649,7 @@
 					$value = $this->encodePassword($value);
 				}
 
+				$data = array_map(array(Symphony::Database(), 'cleanValue'), $data);
 				$data = implode("', '", $data);
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
 				$where .= " AND `t$field_id`.password IN ('{$data}') ";

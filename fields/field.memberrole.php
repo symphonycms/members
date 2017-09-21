@@ -362,6 +362,7 @@
 
 			if($andOperation) {
 				foreach($data as $key => $bit){
+					$bit = Symphony::Database()->cleanValue($bit);
 					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
 					$joins .= " LEFT JOIN `tbl_members_roles` AS `tg$field_id$key` ON (`t$field_id$key`.`role_id` = `tg$field_id$key`.id) ";
 					$where .= " AND (`t$field_id$key`.role_id = '$bit' OR (`tg$field_id$key`.name = '$bit' OR `tg$field_id$key`.handle = '$bit')) ";
@@ -369,6 +370,7 @@
 			}
 			else {
 				$data = !is_array($data) ? array($data) : $data;
+				$data = array_map(array(Symphony::Database(), 'cleanValue'), $data);
 				$value = implode("', '", $data);
 
 				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
