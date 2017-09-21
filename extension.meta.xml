@@ -3,20 +3,27 @@
   <name>Members</name>
   <description lang="en">Define your own frontend membership system using events and XSLT.</description>
   <repo type="github">https://github.com/symphonycms/members</repo>
-  <url type="discuss">http://getsymphony.com/discuss/thread/70378/</url>
+  <url type="discuss">https://www.getsymphony.com/discuss/thread/70378/</url>
   <types>
     <type>Membership</type>
   </types>
   <authors>
     <author>
       <name github="symphonycms" symphony="team" twitter="symphonycms">Symphony Team</name>
-      <website>http://getsymphony.com</website>
+      <website>https://www.getsymphony.com</website>
     </author>
     <author>
       <name github="brendo" symphony="brendo" twitter="brend0">Brendan Abbott</name>
     </author>
   </authors>
   <releases>
+    <release version="1.7.0" date="2017-09-21" min="2.4.0" max="2.x.x">
+      * [#289](https://github.com/symphonycms/members/pull/289) Escape data before usign them in SQL
+      * [#292](https://github.com/symphonycms/members/pull/292) Remove bottom margin for the password note
+      * [#291](https://github.com/symphonycms/members/pull/291) Restore tags selection
+      * [#293](https://github.com/symphonycms/members/pull/293) Allow the extension to have is own 403 page
+      * [#290](https://github.com/symphonycms/members/pull/290) Prevent XSS vector from section names
+    </release>
     <release version="1.6.1" date="2017-09-14" min="2.4.0" max="2.x.x">
       * [#285](https://github.com/symphonycms/members/pull/285) Minor fixes
       * Pass email field to delegate on login failure
