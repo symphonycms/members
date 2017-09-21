@@ -208,7 +208,7 @@
 				"fields[{$this->get('sortorder')}][code_expiry]", $this->get('code_expiry')
 			));
 
-			$ul = new XMLElement('ul', NULL, array('class' => 'tags singular'));
+			$ul = new XMLElement('ul', null, array('class' => 'tags singular', 'data-interactive' => 'data-interactive'));
 			$tags = fieldMemberActivation::findCodeExpiry();
 			foreach($tags as $name => $time) {
 				$ul->appendChild(new XMLElement('li', $name, array('class' => $time)));
