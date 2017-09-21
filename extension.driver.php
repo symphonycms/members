@@ -990,7 +990,7 @@
 			$role = RoleManager::fetch($role_id);
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
-				if($row = PageManager::fetchPageByType('403')) {
+				if(($row = PageManager::fetchPageByType('403-members')) || ($row = PageManager::fetchPageByType('403'))) {
 					$row['type'] = PageManager::fetchPageTypes($row['id']);
 					$row['filelocation'] = PageManager::resolvePageFileLocation($row['path'], $row['handle']);
 
