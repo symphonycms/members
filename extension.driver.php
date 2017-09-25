@@ -139,8 +139,11 @@
 					else if(isset($members_section_id) && in_array((int)$members_section_id, $config_sections)) {
 						$this->setMembersSection($members_section_id);
 					}
-					else {
+					else if (isset($config_sections[0]) && !empty($config_sections[0])) {
 						$this->setMembersSection($config_sections[0]);
+					}
+					else {
+						throw new Exception(__('No member section found! Please check your configuration.'));
 					}
 				}
 
