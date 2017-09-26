@@ -143,7 +143,7 @@
 						$this->setMembersSection($config_sections[0]);
 					}
 					else {
-						throw new Exception(__('No member section found! Please check your configuration.'));
+						throw new Exception(__('No Members section found! Please check your configuration.'));
 					}
 				}
 
