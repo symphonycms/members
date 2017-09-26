@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.7.1" date="2017-09-26" min="2.4.0" max="2.x.x">
+      * [#294](https://github.com/symphonycms/members/pull/294) Show a friendlier message on init error
+    </release>
     <release version="1.7.0" date="2017-09-21" min="2.4.0" max="2.x.x">
       * [#289](https://github.com/symphonycms/members/pull/289) Escape data before usign them in SQL
       * [#292](https://github.com/symphonycms/members/pull/292) Remove bottom margin for the password note
