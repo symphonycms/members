@@ -139,7 +139,7 @@
 					else if(isset($members_section_id) && in_array((int)$members_section_id, $config_sections)) {
 						$this->setMembersSection($members_section_id);
 					}
-					else if (isset($config_sections[0]) && !empty($config_sections[0])) {
+					else if (!empty($config_sections[0])) {
 						$this->setMembersSection($config_sections[0]);
 					}
 					else {
