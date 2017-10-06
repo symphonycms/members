@@ -933,7 +933,28 @@
 				if($isLoggedIn) {
 					$this->getMemberDriver()->logout();
 				}
-				if($this->getMemberDriver()->login($_POST['fields'])) {
+				$canLogIn = true;
+				/**
+				 * Fired just before a Member tries to log in.
+				 * This delegate is fired just before the login call.
+				 *
+				 * @delegate MembersPreLogin
+				 * @param string $context
+				 *  '/frontend/'
+				 * @param boolean can-logged-in
+				 *  If the current login is valid or not
+				 * @param extensionMember $driver
+				 *  The Member Extension driver
+				 * @param array $errors
+				 *  The error array
+				 */
+				Symphony::ExtensionManager()->notifyMembers('MembersPreLogin', '/frontend/', array(
+					'can-logged-in' => &$canLogIn,
+					'driver' => $this,
+					'errors' => &$this->_errors,
+				));
+				
+				if($canLogIn && $isLoggedIn = $this->getMemberDriver()->login($_POST['fields'])) {
 					/**
 					 * Fired just after a Member has successfully logged in, this delegate
 					 * provides the current Member ID. This delegate is fired just before
@@ -961,9 +982,13 @@
 						'errors' => &$this->_errors,
 					));
 
-					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
+					self::$_failed_login_attempt = !$isLoggedIn;
+
+					if ($isLoggedIn && isset($_POST['redirect'])) {
+						redirect($_POST['redirect']);
+					}
 				}
-				else {
+				if (!$isLoggedIn) {
 					self::$_failed_login_attempt = true;
 
 					/**
