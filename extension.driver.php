@@ -883,7 +883,6 @@
 
 		public function checkFrontendPagePermissions($context) {
 			$isLoggedIn = false;
-			$errors = array();
 			$action = null;
 
 			// Checks $_REQUEST to see if a Member Action has been requested,
@@ -897,7 +896,7 @@
 			}
 
 			// Check to see a Member is already logged in.
-			$isLoggedIn = $this->getMemberDriver()->isLoggedIn($errors);
+			$isLoggedIn = $this->getMemberDriver()->isLoggedIn($this->_errors);
 
 			// Logout
 			if(trim($action) == 'logout') {
