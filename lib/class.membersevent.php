@@ -100,7 +100,7 @@
 				$can_proceed = true;
 
 				foreach ($this->filter_results as $fr) {
-					list($name, $status, $message, $attributes) = $fr;
+					list($name, $status, $message, $attributes) = array_pad($fr, 4, null);
 
 					$result->appendChild(
 						MembersEvent::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
@@ -146,7 +146,7 @@
 			// Take the logic from `event.section.php` to append `$this->filter_errors`
 			if(is_array($this->filter_errors) && !empty($this->filter_errors)){
 				foreach($this->filter_errors as $fr){
-					list($name, $status, $message, $attributes) = $fr;
+					list($name, $status, $message, $attributes) = array_pad($fr, 4, null);
 
 					$result->appendChild(
 						MembersEvent::buildFilterElement($name, ($status ? 'passed' : 'failed'), $message, $attributes)
