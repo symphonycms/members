@@ -17,6 +17,10 @@
     </author>
   </authors>
   <releases>
+    <release version="1.8.0" date="2017-10-03" min="2.4.0" max="2.x.x">
+      * Add driver parameter to some delegates: This allow to get the extension driver easily
+      * Add a new delegate, MembersPreLogin, which can prevent login from external source
+    </release>
     <release version="1.7.1" date="2017-09-26" min="2.4.0" max="2.x.x">
       * [#294](https://github.com/symphonycms/members/pull/294) Show a friendlier message on init error
     </release>
