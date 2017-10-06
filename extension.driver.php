@@ -112,9 +112,12 @@
 					 * @param object $member
 					 *  Excepted to be a instance of a class that implements the `Member`
 					 *  interface. Defaults to null.
+					 * @param extensionMember $driver
+					 *  The Member Extension driver
 					 */
 					Symphony::ExtensionManager()->notifyMembers('InitialiseMember', '/frontend/', array(
-						'member' => &$this->Member
+						'member' => &$this->Member,
+						'driver' => $this,
 					));
 
 					// Set $this->Member to be an instance of SymphonyMember if an
@@ -907,9 +910,12 @@
 				 *  '/frontend/'
 				 * @param integer $member_id
 				 *  The Member ID of the member who is about to logged out
+				 * @param extensionMember $driver
+				 *  The Member Extension driver
 				 */
 				Symphony::ExtensionManager()->notifyMembers('MembersPreLogout', '/frontend/', array(
-					'member_id' => $this->getMemberDriver()->getMemberID()
+					'member_id' => $this->getMemberDriver()->getMemberID(),
+					'driver' => $this,
 				));
 
 				$this->getMemberDriver()->logout();
@@ -941,10 +947,19 @@
 					 *  The Member ID of the member who just logged in.
 					 * @param Entry $member
 					 *  The Entry object of the logged in Member.
+					 * @param boolean is-logged-in
+					 *  If the current login is valid or not
+					 * @param extensionMember $driver
+					 *  The Member Extension driver
+					 * @param array $errors
+					 *  The error array
 					 */
 					Symphony::ExtensionManager()->notifyMembers('MembersPostLogin', '/frontend/', array(
 						'member_id' => $this->getMemberDriver()->getMemberID(),
-						'member' => $this->getMemberDriver()->getMember()
+						'member' => $this->getMemberDriver()->getMember(),
+						'is-logged-in' => &$isLoggedIn,
+						'driver' => $this,
+						'errors' => &$this->_errors,
 					));
 
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
@@ -960,10 +975,13 @@
 					 *  '/frontend/'
 					 * @param string $username
 					 *  The username of the Member who attempted to login.
+					 * @param extensionMember $driver
+					 *  The Member Extension driver
 					 */
 					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
 						'username' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('identity')]),
-						'email' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('email')])
+						'email' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('email')]),
+						'driver' => $this,
 					));
 				}
 			}
@@ -1183,7 +1201,7 @@
 			$event_handle = strtolower(preg_replace('/^event/i', NULL, get_class($context['event'])));
 			$success = false;
 			if ($role) {
-  				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
+				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 			}
 
 			$context['messages'][] = array(

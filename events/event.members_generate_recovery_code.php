@@ -206,10 +206,13 @@
 			 *  code.
 			 * @param string $recovery_code
 			 *  The recovery code that was generated for this Member
+			 * @param extensionMember $driver
+			 *  The Member Extension driver
 			 */
 			Symphony::ExtensionManager()->notifyMembers('MembersPostForgotPassword', '/frontend/', array(
 				'member_id' => $member_id,
-				'recovery_code' => $data['recovery-code']
+				'recovery_code' => $data['recovery-code'],
+				'driver' => $this->driver,
 			));
 
 			// Trigger the EventFinalSaveFilter delegate. The Email Template Filter
