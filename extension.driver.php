@@ -941,7 +941,7 @@
 				 * @delegate MembersPreLogin
 				 * @param string $context
 				 *  '/frontend/'
-				 * @param boolean can-logged-in
+				 * @param boolean can-log-in
 				 *  If the current login is valid or not
 				 * @param extensionMember $driver
 				 *  The Member Extension driver
@@ -949,7 +949,7 @@
 				 *  The error array
 				 */
 				Symphony::ExtensionManager()->notifyMembers('MembersPreLogin', '/frontend/', array(
-					'can-logged-in' => &$canLogIn,
+					'can-log-in' => &$canLogIn,
 					'driver' => $this,
 					'errors' => &$this->_errors,
 				));
