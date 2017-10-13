@@ -939,6 +939,7 @@
 				 * This delegate is fired just before the login call.
 				 *
 				 * @delegate MembersPreLogin
+				 * @since members 1.8.0
 				 * @param string $context
 				 *  '/frontend/'
 				 * @param boolean can-log-in
