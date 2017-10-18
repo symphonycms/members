@@ -896,7 +896,7 @@
 			}
 
 			// Check to see a Member is already logged in.
-			$isLoggedIn = $this->getMemberDriver()->isLoggedIn($this->_errors);
+			$isLoggedIn = $this->getMemberDriver()->isLoggedIn(self::$_errors);
 
 			// Logout
 			if(trim($action) == 'logout') {
@@ -952,7 +952,7 @@
 				Symphony::ExtensionManager()->notifyMembers('MembersPreLogin', '/frontend/', array(
 					'can-log-in' => &$canLogIn,
 					'driver' => $this,
-					'errors' => &$this->_errors,
+					'errors' => &self::$_errors,
 				));
 				
 				if($canLogIn && $isLoggedIn = $this->getMemberDriver()->login($_POST['fields'])) {
@@ -980,7 +980,7 @@
 						'member' => $this->getMemberDriver()->getMember(),
 						'is-logged-in' => &$isLoggedIn,
 						'driver' => $this,
-						'errors' => &$this->_errors,
+						'errors' => &self::$_errors,
 					));
 
 					self::$_failed_login_attempt = !$isLoggedIn;
