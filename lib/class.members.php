@@ -194,6 +194,14 @@
 				// Append error messages
 				if(is_array(extension_Members::$_errors) && !empty(extension_Members::$_errors)) {
 					foreach(extension_Members::$_errors as $type => $error) {
+						if (!is_array($error)) {
+							$error = array(
+								'label' => $type,
+								'type' => 'error',
+								'message' => General::sanitize((string)$error),
+								'message-id' => MemberEventMessages::MEMBER_ERRORS,
+							);
+						}
 						$result->appendChild(
 							new XMLElement($type, null, array(
 								'label' => General::sanitize($error['label']),
