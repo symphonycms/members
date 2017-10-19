@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.8.1" date="2017-10-18" min="2.4.0" max="2.x.x">
+      * [#296](https://github.com/symphonycms/members/pull/296) Fix externally defined errors that were not shown.
+    </release>
     <release version="1.8.0" date="2017-10-03" min="2.4.0" max="2.x.x">
       * Add driver parameter to some delegates: This allow to get the extension driver easily
       * Add a new delegate, MembersPreLogin, which can prevent login from external source
