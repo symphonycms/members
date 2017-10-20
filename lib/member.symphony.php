@@ -372,6 +372,10 @@
 			// Handle which is the Identity field, either the Member: Username or Member: Email field
 			$identity = is_null($this->section->getFieldHandle('identity')) ? 'email' : 'identity';
 
+			// Re: #299. Refresh the Member Entry object, so the login function can use
+			// the new password hash for the member's cookie.
+			$this->Member = $this->fetchMemberFromID($this->getMemberID());
+
 			$this->login(array(
 				$this->section->getFieldHandle($identity) => $context['entry']->getData($this->section->getField($identity)->get('id'), true)->value,
 				$this->section->getFieldHandle('authentication') => $context['fields'][$this->section->getFieldHandle('authentication')]['password']
