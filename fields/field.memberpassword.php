@@ -158,7 +158,7 @@
 			}
 
 			// Check that if the password has been reset that it is still valid
-			if($valid && $data['reset'] == 'yes') {
+			if($valid && !empty($data['reset']) && $data['reset'] == 'yes') {
 				$valid_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
 						SELECT `entry_id`
 						FROM `tbl_entries_data_%d`
