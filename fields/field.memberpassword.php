@@ -166,7 +166,9 @@
 						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
+					$this->get('id'),
+					$data['entry_id'],
+					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
 				));
 
 				// If we didn't get an entry_id back, then it's because it was expired
