@@ -96,8 +96,11 @@
 		 */
 		public function fetchMemberIDBy($needle, $member_id = null, $isHashed = false) {
 			$valid = true;
+			$password = null;
 			if(is_array($needle)) {
-				extract($needle);
+				if (!empty($needle['password'])) {
+					$password = $needle['password'];
+				}
 			}
 			else {
 				$password = $needle;
