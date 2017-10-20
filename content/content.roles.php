@@ -86,7 +86,7 @@
 
 							$columns[] = Widget::TableData(Widget::Anchor(
 								"$member_count",
-								SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter=' . $roleField->get('element_name') . ':' . $role->get('id')
+								SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter[' . $roleField->get('element_name') . ']=' . $role->get('id')
 							));
 						}
 
