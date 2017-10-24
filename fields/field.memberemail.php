@@ -58,7 +58,7 @@
 		public function fetchMemberIDBy($needle, $member_id = null) {
 			$email = null;
 			if (is_array($needle) && !empty($needle['email'])) {
-				$emaill = $needle['email'];
+				$email = $needle['email'];
 			} else {
 				$email = $needle;
 			}
