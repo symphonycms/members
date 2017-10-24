@@ -64,12 +64,12 @@
 		 * @return integer
 		 */
 		public function findMemberIDFromCredentials(array $credentials, $isHashed = false) {
-			if(empty($credentials['username']) && empty($credentials['email'])) {
+			if (empty($credentials['username']) && empty($credentials['email'])) {
 				return null;
 			}
 
 			$identity = $this->setIdentityField($credentials);
-			if(!($identity instanceof Field)) {
+			if (!($identity instanceof Field)) {
 				return null;
 			}
 
@@ -78,7 +78,7 @@
 
 			// Validate against Password
 			$auth = $this->section->getField('authentication');
-			if($auth instanceof Field) {
+			if ($auth instanceof Field) {
 				$member_id = $auth->fetchMemberIDBy($credentials, $member_id, $isHashed);
 			} else {
 				// No authentication field defined, let extensions try
@@ -119,18 +119,18 @@
 
 			// No Member found, can't even begin to check Activation
 			// Return null
-			if(!$member_id) {
+			if (!$member_id) {
 				return null;
 			}
 
 			// Check that if there's activation, that this Member is activated.
-			if(!is_null($this->section->getFieldHandle('activation'))) {
+			if (!is_null($this->section->getFieldHandle('activation'))) {
 				$entry = EntryManager::fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true, array($this->section->getFieldHandle('activation')));
 
 				$isActivated = $entry[0]->getData($this->section->getField('activation')->get('id'), true)->activated == "yes";
 
 				// If we are denying login for non activated members, lets do so now
-				if($this->section->getField('activation')->get('deny_login') == 'yes' && !$isActivated) {
+				if ($this->section->getField('activation')->get('deny_login') == 'yes' && !$isActivated) {
 					extension_Members::$_errors[$this->section->getFieldHandle('activation')] = array(
 						'message' => __('Member is not activated.'),
 						'type' => 'invalid',
@@ -142,7 +142,7 @@
 
 				// If the member isn't activated and a Role field doesn't exist
 				// just return false.
-				if(!$isActivated && !FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
+				if (!$isActivated && !FieldManager::isFieldUsed(extension_Members::getFieldType('role'))) {
 					extension_Members::$_errors[$this->section->getFieldHandle('activation')] = array(
 						'message' => __('Member is not activated.'),
 						'type' => 'invalid',
@@ -200,11 +200,11 @@
 			$data = extension_Members::$_errors = array();
 
 			// Map POST data to simple terms
-			if(isset($credentials[$this->section->getFieldHandle('identity')])) {
+			if (isset($credentials[$this->section->getFieldHandle('identity')])) {
 				$username = $credentials[$this->section->getFieldHandle('identity')];
 			}
 
-			if(isset($credentials[$this->section->getFieldHandle('email')])) {
+			if (isset($credentials[$this->section->getFieldHandle('email')])) {
 				$email = $credentials[$this->section->getFieldHandle('email')];
 			}
 
@@ -212,19 +212,18 @@
 			// field names to simple names for ease of use.
 			if (!empty($username)) {
 				$data['username'] = Symphony::Database()->cleanValue($username);
-			}
-			else if(isset($email) && !is_null($this->section->getFieldHandle('email'))) {
+			} elseif (isset($email) && !is_null($this->section->getFieldHandle('email'))) {
 				$data['email'] = Symphony::Database()->cleanValue($email);
 			}
 
 			// Map POST data for password to `$password`
-			if(isset($credentials[$this->section->getFieldHandle('authentication')])) {
+			if (isset($credentials[$this->section->getFieldHandle('authentication')])) {
 				$password = $credentials[$this->section->getFieldHandle('authentication')];
 				$data['password'] = (!empty($password)) ? $password : '';
 			}
 
 			// Check to ensure that we actually have some data to try and log a user in with.
-			if(empty($data['password']) && isset($credentials[$this->section->getFieldHandle('authentication')])) {
+			if (empty($data['password']) && isset($credentials[$this->section->getFieldHandle('authentication')])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('authentication')] = array(
 					'label' => $this->section->getField('authentication')->get('label'),
 					'type' => 'missing',
@@ -233,7 +232,7 @@
 				);
 			}
 
-			if(isset($data['username']) && empty($data['username'])) {
+			if (isset($data['username']) && empty($data['username'])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('identity')] = array(
 					'label' => $this->section->getField('identity')->get('label'),
 					'type' => 'missing',
@@ -242,15 +241,14 @@
 				);
 			}
 
-			if(isset($data['email']) && empty($data['email'])) {
+			if (isset($data['email']) && empty($data['email'])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
 					'label' => $this->section->getField('email')->get('label'),
 					'type' => 'missing',
 					'message-id' => EventMessages::FIELD_MISSING,
 					'message' => __('%s is a required field.', array($this->section->getField('email')->get('label'))),
 				);
-			}
-			else if(!fieldMemberEmail::applyValidationRule($email)) {
+			} elseif (!fieldMemberEmail::applyValidationRule($data['email'])) {
 				extension_Members::$_errors[$this->section->getFieldHandle('email')] = array(
 					'message' => __('\'%s\' contains invalid characters.', array($this->section->getField('email')->get('label'))),
 					'message-id' => EventMessages::FIELD_INVALID,
@@ -260,12 +258,12 @@
 			}
 
 			// If there is errors already, no point continuing, return false
-			if(!empty(extension_Members::$_errors)) {
+			if (!empty(extension_Members::$_errors)) {
 				return false;
 			}
 
-			if($id = $this->findMemberIDFromCredentials($data, $isHashed)) {
-				try{
+			if ($id = $this->findMemberIDFromCredentials($data, $isHashed)) {
+				try {
 					self::$member_id = $id;
 					$this->initialiseCookie();
 					$this->initialiseMemberObject();
@@ -275,8 +273,7 @@
 
 					if (!empty($username)) {
 						$this->cookie->set('username', $data['username']);
-					}
-					else {
+					} else {
 						$this->cookie->set('email', $data['email']);
 					}
 
@@ -286,7 +283,7 @@
 					
 					self::$isLoggedIn = true;
 
-				} catch(Exception $ex){
+				} catch (Exception $ex){
 					// Or do something else?
 					throw new Exception($ex);
 				}
