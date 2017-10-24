@@ -64,31 +64,66 @@
 		 * @return integer
 		 */
 		public function findMemberIDFromCredentials(array $credentials, $isHashed = false) {
-			if((
-				(!isset($credentials['username']) || is_null($credentials['username']))
-				&& (!isset($credentials['email']) || is_null($credentials['email']))
-			)) {
+			if(empty($credentials['username']) && empty($credentials['email'])) {
 				return null;
 			}
 
 			$identity = $this->setIdentityField($credentials);
-
-			if(!$identity instanceof Field) return null;
+			if(!($identity instanceof Field)) {
+				return null;
+			}
 
 			// Member from Identity
 			$member_id = $identity->fetchMemberIDBy($credentials);
 
 			// Validate against Password
 			$auth = $this->section->getField('authentication');
-			if(!is_null($auth)) {
+			if($auth instanceof Field) {
 				$member_id = $auth->fetchMemberIDBy($credentials, $member_id, $isHashed);
+			} else {
+				// No authentication field defined, let extensions try
+				$isLoggedIn = false;
+				/**
+				 * Fired when no authentication field is present.
+				 * Never fired if the Members section contains an authentication field.
+				 * Allow extensions to define their own auth mechanism for password less login.
+				 *
+				 * @delegate MembersLogin
+				 * @since members 1.9.0
+				 * @param string $context
+				 *  '/frontend/'
+				 * @param boolean is-logged-in
+				 *  If the current login is valid or not.
+				 *  Extensions are expected to update this value.
+				 * @param SymphonyMember $driver
+				 *  The SymphonyMember driver
+				 * @param array $credentials
+				 *  The credentials value
+				 * @param int $member_id
+				 *  The member_id found for this credentials
+				 *  Extensions are expected to update this value.
+				 * @param array $errors
+				 *  The error array
+				 */
+				Symphony::ExtensionManager()->notifyMembers('MembersLogin', '/frontend/', array(
+					'is-logged-in' => &$isLoggedIn,
+					'driver' => $this,
+					'credentials' => $credentials,
+					'member_id' => &$member_id,
+					'errors' => &extension_Members::$_errors,
+				));
+				if (!$isLoggedIn) {
+					$member_id = null;
+				}
 			}
 
 			// No Member found, can't even begin to check Activation
 			// Return null
-			if(is_null($member_id)) return null;
+			if(!$member_id) {
+				return null;
+			}
 
-			// Check that if there's activiation, that this Member is activated.
+			// Check that if there's activation, that this Member is activated.
 			if(!is_null($this->section->getFieldHandle('activation'))) {
 				$entry = EntryManager::fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true, array($this->section->getFieldHandle('activation')));
 
@@ -222,7 +257,6 @@
 					'type' => 'invalid',
 					'label' => $this->section->getField('email')->get('label')
 				);
-				return null;
 			}
 
 			// If there is errors already, no point continuing, return false
