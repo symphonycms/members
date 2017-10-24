@@ -96,10 +96,10 @@
 		 */
 		public function fetchMemberIDBy($needle, $member_id = null, $isHashed = false) {
 			$valid = true;
-			if(is_array($needle)) {
-				extract($needle);
-			}
-			else {
+			$password = null;
+			if (is_array($needle) && !empty($needle['password'])) {
+				$password = $needle['password'];
+			} else {
 				$password = $needle;
 			}
 
@@ -155,7 +155,7 @@
 			}
 
 			// Check that if the password has been reset that it is still valid
-			if($valid && $data['reset'] == 'yes') {
+			if($valid && !empty($data['reset']) && $data['reset'] == 'yes') {
 				$valid_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf("
 						SELECT `entry_id`
 						FROM `tbl_entries_data_%d`
@@ -163,7 +163,9 @@
 						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
 						LIMIT 1
 					",
-					$this->get('id'), $data['entry_id'], DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
+					$this->get('id'),
+					$data['entry_id'],
+					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $this->get('code_expiry')))
 				));
 
 				// If we didn't get an entry_id back, then it's because it was expired

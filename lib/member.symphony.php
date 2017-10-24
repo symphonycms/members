@@ -20,10 +20,10 @@
 		 * @return Field
 		 */
 		public function setIdentityField(array $credentials, $simplified = true) {
-			if($simplified) {
-				extract($credentials);
-			}
-			else {
+			if ($simplified) {
+				$username = empty($credentials['username']) ? null : $credentials['username'];
+				$email = empty($credentials['email']) ? null : $credentials['email'];
+			} else {
 				// Map POST data to simple terms
 				if(isset($credentials[$this->section->getFieldHandle('identity')])) {
 					$username = $credentials[$this->section->getFieldHandle('identity')];
