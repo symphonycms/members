@@ -162,6 +162,10 @@
 			$context['params']['member-id'] = $this->getMemberID();
 			$context['params']['member-section-id'] = $this->getMemberSectionID();
 
+			if (!$this->getMember()) {
+				return;
+			}
+
 			if(!is_null($this->section->getFieldHandle('role'))) {
 				$role_data = $this->getMember()->getData($this->section->getField('role')->get('id'));
 				$role = RoleManager::fetch($role_data['role_id']);
