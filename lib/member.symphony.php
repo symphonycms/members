@@ -210,7 +210,7 @@
 
 			// Allow login via username OR email. This normalises the $data array from the custom
 			// field names to simple names for ease of use.
-			if(isset($username)) {
+			if (!empty($username)) {
 				$data['username'] = Symphony::Database()->cleanValue($username);
 			}
 			else if(isset($email) && !is_null($this->section->getFieldHandle('email'))) {
@@ -273,7 +273,7 @@
 					$this->cookie->set('id', $id);
 					$this->cookie->set('members-section-id', $this->getMember()->get('section_id'));
 
-					if(isset($username)) {
+					if (!empty($username)) {
 						$this->cookie->set('username', $data['username']);
 					}
 					else {
