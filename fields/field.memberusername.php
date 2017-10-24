@@ -64,10 +64,10 @@
 		 * @return Entry
 		 */
 		public function fetchMemberIDBy($needle, $member_id = null) {
-			if(is_array($needle)) {
-				extract($needle);
-			}
-			else {
+			$username = null;
+			if (is_array($needle) && !empty($needle['username'])) {
+				$username = $needle['username'];
+			} else {
 				$username = $needle;
 			}
 
