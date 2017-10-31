@@ -17,6 +17,14 @@
     </author>
   </authors>
   <releases>
+    <release version="1.9.0" date="2017-10-31" min="2.4.0" max="2.x.x">
+      * [#301](https://github.com/symphonycms/members/pull/301) Add MembersLogin delegate, for external log in
+      * [#298](https://github.com/symphonycms/members/pull/298) Fix filter url
+      * [#297](https://github.com/symphonycms/members/pull/297) Replace extract() with proper check
+      * [#299](https://github.com/symphonycms/members/pull/299) Prevent error for still loggued in deleted account
+      * [#300](https://github.com/symphonycms/members/pull/300) Refresh Member object before attempting new login
+      * [#274](https://github.com/symphonycms/members/pull/274) Fix crash if trying to login and no password field exists
+    </release>
     <release version="1.8.1" date="2017-10-18" min="2.4.0" max="2.x.x">
       * [#296](https://github.com/symphonycms/members/pull/296) Fix externally defined errors that were not shown.
     </release>
