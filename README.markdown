@@ -88,6 +88,7 @@ Passwords must be set with two fields, one to capture the password and one to co
 
 - Members: Update Password
 
+- Members: Login
 
 ### Member: Role
 
@@ -177,11 +178,12 @@ This field will need to be added to your Login form at the very least as it tell
 
 ## Filters
 
-This extension provides three event filters that you can add to your events to make them useful to Members:
+This extension provides four event filters that you can add to your events to make them useful to Members:
 
 - Members: Lock Activation
 - Members: Lock Role
 - Members: Update Password
+- Members: Login
 
 ### Members: Lock Activation
 
@@ -193,7 +195,11 @@ The Members: Lock Role filter should be used as an additional security measure t
 
 ### Members: Update Password
 
-The Members: Update Password filter is useful on Events where the member may update some of their profile information, and updating their password is optional. It essentially tells the extension that if the member hasn't provided their password, yet it's set to required, it's ok, just remember their current password details.
+The Members: Update Password filter is useful on Events where the member may update some of their profile information, and updating their password is optional. It essentially tells the extension that if the member hasn't provided their password, yet it's set to required, it's ok, just remember their current password details. Additionally, if a password has been posted, this filter will log the Member in with this new password.
+
+### Members: Login
+
+The Members: Login filter is useful if a Member's password has been changed by an event. It will log the Member in with the new (posted) password. If you need the password to be optional, use the Members: Update Password filter instead.
 
 ## Roles and Permissions
 
