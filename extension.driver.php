@@ -1238,11 +1238,21 @@
 				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 			}
 
-			$context['messages'][] = array(
-				'permission',
-				$success,
-				($success === false) ? __('You are not authorised to perform this action.') : null
-			);
+			if ($success === true) {
+				$context['messages'][] = array(
+					'permission',
+					true
+				);
+			} else {
+				$context['messages'][] = array(
+					'permission',
+					false,
+					__('You are not authorised to perform this action.'),
+					array(
+						'message-id' => MemberEventMessages::UNAUTHORIZED
+					)
+				);
+			}
 
 			// Process the Filters for this event.
 			$this->__processEventFilters($context);

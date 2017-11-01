@@ -386,7 +386,10 @@
 				$context['messages'][] = array(
 					'member-validate-password',
 					false,
-					__('Member not found.')
+					__('Member not found.'),
+					array(
+						'message-id' => MemberEventMessages::MEMBER_INVALID
+					)
 				);
 
 				return;
@@ -396,7 +399,10 @@
 				$context['messages'][] = array(
 					'member-validate-password',
 					false,
-					__('No Authentication field found.')
+					__('No Authentication field found.'),
+					array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					)
 				);
 
 				return;
@@ -431,7 +437,10 @@
 				$context['messages'][] = array(
 					'member-validate-password',
 					false,
-					__('No valid password has been provided.')
+					__('No valid password has been provided.'),
+					array(
+						'message-id' => MemberEventMessages::AUTHENTICATION_INVALID
+					)
 				);
 			}
 		}
