@@ -695,6 +695,15 @@
 			}
 
 			if(FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
+				// Add Member: Validate Password filter
+				$context['options'][] = array(
+					'member-validate-password',
+					in_array('member-validate-password', $selected),
+					__('Members: Validate Password')
+				);
+			}
+
+			if(FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
 				// Add Member: Update Password filter
 				$context['options'][] = array(
 					'member-update-password',
@@ -1254,6 +1263,11 @@
 			// Process the Member Lock Activation
 			if (in_array('member-lock-activation', $context['event']->eParamFILTERS)) {
 				$this->getMemberDriver()->filter_LockActivation($context);
+			}
+
+			// Process validating a Member's Password
+			if (in_array('member-validate-password', $context['event']->eParamFILTERS)) {
+				$this->getMemberDriver()->filter_ValidatePassword($context);
 			}
 
 			// Process updating a Member's Password
