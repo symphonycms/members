@@ -703,7 +703,7 @@
 				);
 			}
 
-			if(!FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
+			if(FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
 				// Add Member: Login filter
 				$context['options'][] = array(
 					'member-login',
