@@ -30,9 +30,9 @@
 
 Event information will be returned in the XML similar to the following example:
 
-		<events>
-			<member-login-info logged-in="yes" id="72" />
-		</events>
+	<events>
+		<member-login-info logged-in="yes" id="72" />
+	</events>
 
 The `$member-id` and `$member-role` parameters will be added to the Page Parameters for you to use in your datasources to get information about the logged in member.
 
