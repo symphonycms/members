@@ -77,7 +77,14 @@ The Member: Password field has a couple of additional settings to help improve t
 - Good: The password must be a mixture of two of the following: lowercase, uppercase, numbers or punctuation
 - Strong: The password must be a mixture of three or more of the following: lowercase, uppercase, numbers or punctuation
 
-Passwords must be set with two fields, one to capture the password and one to confirm the password.
+Passwords must be set with two fields, one to capture the password and one to confirm the password. The corresponding field names are:
+
+- `fields[{Member: Password element_name}][password]`
+- `fields[{Member: Password element_name}][confirm]`
+
+The `Members: Validate Password` filter requires a field with the following name:
+
+- `fields[{Member: Password element_name}][validate]`
 
 #### Events
 
@@ -86,8 +93,8 @@ Passwords must be set with two fields, one to capture the password and one to co
 
 #### Filters
 
+- Members: Validate Password
 - Members: Update Password
-
 - Members: Login
 
 ### Member: Role
@@ -178,10 +185,11 @@ This field will need to be added to your Login form at the very least as it tell
 
 ## Filters
 
-This extension provides four event filters that you can add to your events to make them useful to Members:
+This extension provides five event filters that you can add to your events to make them useful to Members:
 
 - Members: Lock Activation
 - Members: Lock Role
+- Members: Validate Password
 - Members: Update Password
 - Members: Login
 
@@ -192,6 +200,10 @@ The Members: Lock Activation filter is to be attached to your own Registration e
 ### Members: Lock Role
 
 The Members: Lock Role filter should be used as an additional security measure to ensure that the member cannot DOM hack their own Role. This filter ensures a newly registered member will always be of the Default Role or if updating a Member record, the filter ensures the Role doesn't change from the Member's current role. If you do not use the Member: Role field, you don't need this filter on your Registration event. If you want to elevate a Member between Roles, this can be done in the backend, or don't use this filter. Care will need to be taken that a Member is not able to change their Role to whatever they please.
+
+### Members: Validate Password
+
+The Members: Validate Password is a pre-save filter that will check if a posted password is correct for the logged-in Member. If the password is valid the filter will return true and the section event will be executed. Otherwise it will return false, which will terminate the section event before anything is saved.
 
 ### Members: Update Password
 
