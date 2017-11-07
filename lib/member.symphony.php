@@ -410,9 +410,7 @@
 
 			$member_id = null;
 			if (isset($_POST['fields'][$this->section->getFieldHandle('authentication')]['validate'])) {
-				$password = Symphony::Database()->cleanValue(
-					$_POST['fields'][$this->section->getFieldHandle('authentication')]['validate']
-				);
+				$password = $_POST['fields'][$this->section->getFieldHandle('authentication')]['validate'];
 
 				if ($password) {
 					// Handle which is the Identity field, either the Member: Username or Member: Email field
