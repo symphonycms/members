@@ -933,6 +933,8 @@
 					));
 
 					if(isset($_POST['redirect'])) redirect($_POST['redirect']);
+
+					$isLoggedIn = true;
 				}
 				else {
 					self::$_failed_login_attempt = true;
