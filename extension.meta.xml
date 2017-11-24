@@ -17,6 +17,17 @@
     </author>
   </authors>
   <releases>
+    <release version="1.10.0" date="2017-11-24" min="2.4.0" max="2.x.x">
+      * [#304](https://github.com/symphonycms/members/pull/301) Improve event filters (#304)
+        * Fix formatting of code block 0ce3c83
+        * Always show the Members: Login filter 5251968
+        * Add documentation for Members: Login filter 68ef6ff
+        * Add Members: Validate Password (pre-save) filter 972263d
+        * Add documentation for Members: Validate Password 0e376e1
+        * Add MemberEventMessages error codes to all filters 02aac90
+        * Remove needless cleaning of password 3216572
+        * Improve README ec3e30b
+    </release>
     <release version="1.9.0" date="2017-10-31" min="2.4.0" max="2.x.x">
       * [#301](https://github.com/symphonycms/members/pull/301) Add MembersLogin delegate, for external log in
       * [#298](https://github.com/symphonycms/members/pull/298) Fix filter url
