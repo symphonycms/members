@@ -186,12 +186,14 @@ class MemberEventMessages extends EventMessages
 {
     const MEMBER_ERRORS = 104;
     const MEMBER_INVALID = 105;
+    const UNAUTHORIZED = 106;
 
     const SECTION_INVALID = 201;
 
     const ACTIVATION_PRE_COMPLETED = 303;
     const ACTIVATION_CODE_INVALID = 304;
     const RECOVERY_CODE_INVALID = 305;
+    const AUTHENTICATION_INVALID = 306;
 
     const ALREADY_LOGGED_IN = 501;
 }

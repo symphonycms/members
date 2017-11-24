@@ -30,11 +30,13 @@
 
 Event information will be returned in the XML similar to the following example:
 
-		<events>
-			<member-login-info logged-in="yes" id="72" />
-		</events>
+	<events>
+		<member-login-info logged-in="yes" id="72" />
+	</events>
 
 The `$member-id` and `$member-role` parameters will be added to the Page Parameters for you to use in your datasources to get information about the logged in member.
+
+Note: All Member information (`$member-id` and `$member-role` parameters, `member-login-info` pseudo event XML) will be added to the page before any real events are executed. So if you change the Member's status via events resp. filters, the new status will not be reflected in these XML nodes. You may work around this rare issue by performing a redirect in your event, e.g. by specifying a redirect location in the corresponding frontend form — all subsequent pages will show the correct Member information, of course.
 
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
@@ -77,7 +79,14 @@ The Member: Password field has a couple of additional settings to help improve t
 - Good: The password must be a mixture of two of the following: lowercase, uppercase, numbers or punctuation
 - Strong: The password must be a mixture of three or more of the following: lowercase, uppercase, numbers or punctuation
 
-Passwords must be set with two fields, one to capture the password and one to confirm the password.
+Passwords must be set with two fields, one to capture the password and one to confirm the password. The corresponding field names are:
+
+- `fields[{Member: Password element_name}][password]`
+- `fields[{Member: Password element_name}][confirm]`
+
+The `Members: Validate Password` filter requires a field with the following name:
+
+- `fields[{Member: Password element_name}][validate]`
 
 #### Events
 
@@ -86,8 +95,9 @@ Passwords must be set with two fields, one to capture the password and one to co
 
 #### Filters
 
+- Members: Validate Password
 - Members: Update Password
-
+- Members: Login
 
 ### Member: Role
 
@@ -177,11 +187,13 @@ This field will need to be added to your Login form at the very least as it tell
 
 ## Filters
 
-This extension provides three event filters that you can add to your events to make them useful to Members:
+This extension provides five event filters that you can add to your events to make them useful to Members:
 
 - Members: Lock Activation
 - Members: Lock Role
+- Members: Validate Password
 - Members: Update Password
+- Members: Login
 
 ### Members: Lock Activation
 
@@ -191,9 +203,19 @@ The Members: Lock Activation filter is to be attached to your own Registration e
 
 The Members: Lock Role filter should be used as an additional security measure to ensure that the member cannot DOM hack their own Role. This filter ensures a newly registered member will always be of the Default Role or if updating a Member record, the filter ensures the Role doesn't change from the Member's current role. If you do not use the Member: Role field, you don't need this filter on your Registration event. If you want to elevate a Member between Roles, this can be done in the backend, or don't use this filter. Care will need to be taken that a Member is not able to change their Role to whatever they please.
 
+### Members: Validate Password
+
+The Members: Validate Password is a pre-save filter that will check if a posted password is correct for the logged-in Member. If the password is valid the filter will return true and the section event will be executed. Otherwise it will return false, which will terminate the section event before anything is saved.
+
 ### Members: Update Password
 
-The Members: Update Password filter is useful on Events where the member may update some of their profile information, and updating their password is optional. It essentially tells the extension that if the member hasn't provided their password, yet it's set to required, it's ok, just remember their current password details.
+The Members: Update Password filter is useful on Events where the member may update some of their profile information, and updating their password is optional. It essentially tells the extension that if the member hasn't provided their password, yet it's set to required, it's ok, just remember their current password details. Additionally, if a password has been posted, this filter will log the Member in with this new password.
+
+### Members: Login
+
+The Members: Login filter is useful if a Member's password has been changed by an event. It will log the Member in with the new (posted) password. If you need the password to be optional, use the Members: Update Password filter instead.
+
+This filter can, for example, be used to directly log a Member in after registration. But since any "magically added" Member information in your page XML is actually added before events are executed, it will not reflect the login (i.e. still tell you that the Member is not logged in). In this case you should enforce a new page request by adding a redirect to your event.
 
 ## Roles and Permissions
 

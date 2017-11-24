@@ -372,6 +372,78 @@
 		}
 
 		/**
+		 * Validate Password
+		 * If there is an authentication field, we can check if a posted password is
+		 * valid for the currently logged-in Member. This filter is supposed to be
+		 * called as a pre-save filter, so it can terminate a section event (thus
+		 * prevent saving) if no valid password is provided.
+		 *
+		 * @param array $context
+		 */
+		public function filter_ValidatePassword(array &$context) {
+			$member = $this->Member;
+			if (!$member instanceof Entry) {
+				$context['messages'][] = array(
+					'member-validate-password',
+					false,
+					__('Member not found.'),
+					array(
+						'message-id' => MemberEventMessages::MEMBER_INVALID
+					)
+				);
+
+				return;
+			}
+
+			if (is_null($this->section->getFieldHandle('authentication'))) {
+				$context['messages'][] = array(
+					'member-validate-password',
+					false,
+					__('No Authentication field found.'),
+					array(
+						'message-id' => MemberEventMessages::MEMBER_ERRORS
+					)
+				);
+
+				return;
+			}
+
+			$member_id = null;
+			if (isset($_POST['fields'][$this->section->getFieldHandle('authentication')]['validate'])) {
+				$password = $_POST['fields'][$this->section->getFieldHandle('authentication')]['validate'];
+
+				if ($password) {
+					// Handle which is the Identity field, either the Member: Username or Member: Email field
+					$identity = is_null($this->section->getFieldHandle('identity')) ? 'email' : 'identity';
+
+					$member_id = $this->findMemberIDFromCredentials(
+						array(
+							$this->section->getFieldHandle($identity) => $member->getData($this->section->getField($identity)->get('id'), true)->value,
+							$this->section->getFieldHandle('authentication') => $password
+						),
+						false
+					);
+				}
+			}
+
+			if ($member_id) {
+				$context['messages'][] = array(
+					'member-validate-password',
+					true
+				);
+			} else {
+				$context['messages'][] = array(
+					'member-validate-password',
+					false,
+					__('No valid password has been provided.'),
+					array(
+						'message-id' => MemberEventMessages::AUTHENTICATION_INVALID
+					)
+				);
+			}
+		}
+
+		/**
 		 * Part 1 - Update Password
 		 * If there is an Authentication field, we need to inject the 'optional'
 		 * key so that it won't flag a user's password as invalid if they fail to

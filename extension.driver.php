@@ -695,6 +695,15 @@
 			}
 
 			if(FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
+				// Add Member: Validate Password filter
+				$context['options'][] = array(
+					'member-validate-password',
+					in_array('member-validate-password', $selected),
+					__('Members: Validate Password')
+				);
+			}
+
+			if(FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
 				// Add Member: Update Password filter
 				$context['options'][] = array(
 					'member-update-password',
@@ -703,7 +712,7 @@
 				);
 			}
 
-			if(!FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
+			if(FieldManager::isFieldUsed(self::getFieldType('authentication'))) {
 				// Add Member: Login filter
 				$context['options'][] = array(
 					'member-login',
@@ -1229,11 +1238,21 @@
 				$success = $role->canProcessEvent($event_handle, $action, $required_level) ? true : false;
 			}
 
-			$context['messages'][] = array(
-				'permission',
-				$success,
-				($success === false) ? __('You are not authorised to perform this action.') : null
-			);
+			if ($success === true) {
+				$context['messages'][] = array(
+					'permission',
+					true
+				);
+			} else {
+				$context['messages'][] = array(
+					'permission',
+					false,
+					__('You are not authorised to perform this action.'),
+					array(
+						'message-id' => MemberEventMessages::UNAUTHORIZED
+					)
+				);
+			}
 
 			// Process the Filters for this event.
 			$this->__processEventFilters($context);
@@ -1254,6 +1273,11 @@
 			// Process the Member Lock Activation
 			if (in_array('member-lock-activation', $context['event']->eParamFILTERS)) {
 				$this->getMemberDriver()->filter_LockActivation($context);
+			}
+
+			// Process validating a Member's Password
+			if (in_array('member-validate-password', $context['event']->eParamFILTERS)) {
+				$this->getMemberDriver()->filter_ValidatePassword($context);
 			}
 
 			// Process updating a Member's Password

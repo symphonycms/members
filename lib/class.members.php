@@ -247,6 +247,10 @@
 			return true;
 		}
 
+		public function filter_ValidatePassword(array &$context) {
+			return true;
+		}
+
 		public function filter_UpdatePassword(array &$context) {
 			return true;
 		}
