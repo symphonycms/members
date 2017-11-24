@@ -36,6 +36,8 @@ Event information will be returned in the XML similar to the following example:
 
 The `$member-id` and `$member-role` parameters will be added to the Page Parameters for you to use in your datasources to get information about the logged in member.
 
+Note: All Member information (`$member-id` and `$member-role` parameters, `member-login-info` pseudo event XML) will be added to the page before any real events are executed. So if you change the Member's status via events resp. filters, the new status will not be reflected in these XML nodes. You may work around this rare issue by performing a redirect in your event, e.g. by specifying a redirect location in the corresponding frontend form — all subsequent pages will show the correct Member information, of course.
+
 7.	You can log a Member out using `<a href='?member-action=logout'>Logout</a>`
 
 
@@ -212,6 +214,8 @@ The Members: Update Password filter is useful on Events where the member may upd
 ### Members: Login
 
 The Members: Login filter is useful if a Member's password has been changed by an event. It will log the Member in with the new (posted) password. If you need the password to be optional, use the Members: Update Password filter instead.
+
+This filter can, for example, be used to directly log a Member in after registration. But since any "magically added" Member information in your page XML is actually added before events are executed, it will not reflect the login (i.e. still tell you that the Member is not logged in). In this case you should enforce a new page request by adding a redirect to your event.
 
 ## Roles and Permissions
 
