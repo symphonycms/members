@@ -10,7 +10,7 @@ jQuery(document).ready(function() {
 		memberEventSave: function() {
 			jQuery.ajax({
 				type: 'post',
-				url: Symphony.Context.get('root') + '/symphony/extension/members/events/',
+				url: Symphony.Context.get('symphony') + '/extension/members/events/',
 				async: false,
 				data: jQuery('form').serialize(),
 				beforeSend: function() {
