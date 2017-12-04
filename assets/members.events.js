@@ -10,7 +10,7 @@ jQuery(document).ready(function() {
 		memberEventSave: function() {
 			jQuery.ajax({
 				type: 'post',
-				url: Symphony.Context.get('root') + '/symphony/extension/members/events/',
+				url: Symphony.Context.get('symphony') + '/extension/members/events/',
 				async: false,
 				data: jQuery('form').serialize(),
 				beforeSend: function() {
@@ -21,8 +21,8 @@ jQuery(document).ready(function() {
 						notifier.trigger('attach.notify', [
 							Symphony.Language.get('Event updated at {$time}. <a href="{$new_url}" accesskey="c">Create another?</a> <a href="{$url}" accesskey="a">View all Events</a>', {
 								time: jQuery(data).find('timestamp').text(),
-								new_url: Symphony.Context.get('root') + '/symphony/blueprints/events/new/',
-								url: Symphony.Context.get('root') + '/symphony/blueprints/events/'
+								new_url: Symphony.Context.get('symphony') + '/blueprints/events/new/',
+								url: Symphony.Context.get('symphony') + '/blueprints/events/'
 							}),
 							'success members'
 						]);
