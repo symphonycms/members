@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.10.1" date="2017-12-04" min="2.4.0" max="2.x.x">
+      * [#307](https://github.com/symphonycms/members/pull/307) Ensure event save works with different admin paths
+    </release>
     <release version="1.10.0" date="2017-11-24" min="2.4.0" max="2.x.x">
       * [#304](https://github.com/symphonycms/members/pull/301) Improve event filters (#304)
         * Fix formatting of code block 0ce3c83
