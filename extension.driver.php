@@ -98,7 +98,7 @@
 				// Find all possible member sections
 				$config_sections = preg_split('~,~',extension_Members::getSetting('section'), -1, PREG_SPLIT_NO_EMPTY);
 				extension_Members::initialiseMemberSections($config_sections);
-				if(class_exists('Symphony') && Symphony::Engine() instanceof Frontend) {
+				if(class_exists('Symphony', true) && Symphony::Engine() instanceof Frontend) {
 					/**
 					 * This delegate fires as soon as possible to allow other extensions
 					 * the chance to overwrite the default Member class. This allows
