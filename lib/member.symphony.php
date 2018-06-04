@@ -280,7 +280,7 @@
 					if (isset($credentials[$this->section->getFieldHandle('authentication')])){
 						$this->cookie->set('password', $this->getMember()->getData($this->section->getField('authentication')->get('id'), true)->password);
 					}
-					
+
 					self::$isLoggedIn = true;
 
 				} catch (Exception $ex){
@@ -413,13 +413,15 @@
 				$password = $_POST['fields'][$this->section->getFieldHandle('authentication')]['validate'];
 
 				if ($password) {
-					// Handle which is the Identity field, either the Member: Username or Member: Email field
-					$identity = is_null($this->section->getFieldHandle('identity')) ? 'email' : 'identity';
+					// Handle which is the Identity field, either the Member: Username or Member: Email field;
+					// the data array passed to findMemberIDFromCredentials() needs either 'username' or
+					// 'email' as key, so we must not use the string 'identity' in this case.
+					$identity = is_null($this->section->getFieldHandle('identity')) ? 'email' : 'username';
 
 					$member_id = $this->findMemberIDFromCredentials(
 						array(
-							$this->section->getFieldHandle($identity) => $member->getData($this->section->getField($identity)->get('id'), true)->value,
-							$this->section->getFieldHandle('authentication') => $password
+							$identity => $member->getData($this->section->getField($identity)->get('id'), true)->value,
+							'password' => $password
 						),
 						false
 					);
