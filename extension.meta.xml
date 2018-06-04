@@ -17,6 +17,9 @@
     </author>
   </authors>
   <releases>
+    <release version="1.10.2" date="2018-06-04" min="2.4.0" max="2.x.x">
+      * [#309](https://github.com/symphonycms/members/pull/309) Fix Validate Password filter
+    </release>
     <release version="1.10.1" date="2017-12-04" min="2.4.0" max="2.x.x">
       * [#307](https://github.com/symphonycms/members/pull/307) Ensure event save works with different admin paths
     </release>
