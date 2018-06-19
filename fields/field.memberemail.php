@@ -28,27 +28,68 @@
 	-------------------------------------------------------------------------*/
 
 		public static function createSettingsTable() {
-			return Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberemail` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `field_id` INT(11) UNSIGNED NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+			// return Symphony::Database()->query("
+			// 	CREATE TABLE IF NOT EXISTS `tbl_fields_memberemail` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `field_id` INT(11) UNSIGNED NOT NULL,
+			// 	  PRIMARY KEY  (`id`),
+			// 	  UNIQUE KEY `field_id` (`field_id`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
+			return Symphony::Database()
+				->create('tbl_fields_memberemail')
+				->ifNotExists()
+				->charset('utf8')
+				->collate('utf8_unicode_ci')
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'field_id' => 'int(11)',
+				])
+				->keys([
+					'id' => 'primary',
+					'field_id' => 'unique',
+				])
+				->execute()
+				->success();
 		}
 
 		public function createTable(){
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `entry_id` INT(11) UNSIGNED NOT NULL,
-				  `value` VARCHAR(255) DEFAULT NULL,
-				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`),
-				  UNIQUE KEY `value` (`value`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+			// return Symphony::Database()->query(
+			// 	"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `entry_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `value` VARCHAR(255) DEFAULT NULL,
+			// 	  PRIMARY KEY  (`id`),
+			// 	  KEY `entry_id` (`entry_id`),
+			// 	  UNIQUE KEY `value` (`value`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
+			return Symphony::Database()
+				->create('tbl_entries_data_' . $this->get('id'))
+				->ifNotExists()
+				->charset('utf8')
+				->collate('utf8_unicode_ci')
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'entry_id' => 'int(11)',
+					'value' => [
+						'type' => 'varchar(255)',
+						'null' => true,
+					],
+				])
+				->keys([
+					'id' => 'primary',
+					'entry_id' => 'key',
+					'value' => 'unique',
+				])
+				->execute()
+				->success();
 		}
 
 	/*-------------------------------------------------------------------------
@@ -82,10 +123,17 @@
 				return null;
 			}
 
-			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
-				$this->get('id'), Symphony::Database()->cleanValue($email)
-			));
+			// $member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
+			// 	"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `value` = '%s' LIMIT 1",
+			// 	$this->get('id'), Symphony::Database()->cleanValue($email)
+			// ));
+			$member_id = Symphony::Database()
+				->select(['entry_id'])
+				->from('tbl_entries_data_' . $this->get('id'))
+				->where(['value' => $email])
+				->limit(1)
+				->execute()
+				->variable('entry_id');
 
 			if(is_null($member_id)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(
