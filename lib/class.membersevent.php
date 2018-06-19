@@ -169,7 +169,7 @@
 				'MembersPasswordResetFailure',
 				'/frontend/',
 				array(
-					'username' => Symphony::Database()->cleanValue($username)
+					'username' => $username
 				)
 			);
 		}

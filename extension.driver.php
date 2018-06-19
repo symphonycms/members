@@ -244,38 +244,111 @@
 			Symphony::Configuration()->set('cookie-prefix', 'sym-members', 'members');
 			Symphony::Configuration()->write();
 
-			return Symphony::Database()->import("
-				DROP TABLE IF EXISTS `tbl_members_roles`;
-				CREATE TABLE `tbl_members_roles` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `name` VARCHAR(255) NOT NULL,
-				  `handle` VARCHAR(255) NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `handle` (`handle`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// return Symphony::Database()->import("
+			// 	DROP TABLE IF EXISTS `tbl_members_roles`;
+			// 	CREATE TABLE `tbl_members_roles` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `name` VARCHAR(255) NOT NULL,
+			// 	  `handle` VARCHAR(255) NOT NULL,
+			// 	  PRIMARY KEY  (`id`),
+			// 	  UNIQUE KEY `handle` (`handle`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-				INSERT INTO `tbl_members_roles` VALUES(1, 'Public', 'public');
+			// 	INSERT INTO `tbl_members_roles` VALUES(1, 'Public', 'public');
 
-				DROP TABLE IF EXISTS `tbl_members_roles_event_permissions`;
-				CREATE TABLE `tbl_members_roles_event_permissions` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `role_id` INT(11) UNSIGNED NOT NULL,
-				  `event` VARCHAR(255) NOT NULL,
-				  `action` VARCHAR(60) NOT NULL,
-				  `level` SMALLINT(1) UNSIGNED NOT NULL DEFAULT '0',
-				  PRIMARY KEY (`id`),
-				  KEY `role_id` (`role_id`,`event`,`action`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// 	DROP TABLE IF EXISTS `tbl_members_roles_event_permissions`;
+			// 	CREATE TABLE `tbl_members_roles_event_permissions` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `role_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `event` VARCHAR(255) NOT NULL,
+			// 	  `action` VARCHAR(60) NOT NULL,
+			// 	  `level` SMALLINT(1) UNSIGNED NOT NULL DEFAULT '0',
+			// 	  PRIMARY KEY (`id`),
+			// 	  KEY `role_id` (`role_id`,`event`,`action`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-				DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
-				CREATE TABLE `tbl_members_roles_forbidden_pages` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `role_id` INT(11) UNSIGNED NOT NULL,
-				  `page_id` INT(11) UNSIGNED NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  KEY `role_id` (`role_id`,`page_id`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+			// 	DROP TABLE IF EXISTS `tbl_members_roles_forbidden_pages`;
+			// 	CREATE TABLE `tbl_members_roles_forbidden_pages` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `role_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `page_id` INT(11) UNSIGNED NOT NULL,
+			// 	  PRIMARY KEY  (`id`),
+			// 	  KEY `role_id` (`role_id`,`page_id`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
+			return Symphony::Database()
+				->transaction(function (\Database $db){
+					$db->create('tbl_members_roles')
+						->ifNotExists()
+						->charset('utf8')
+						->collate('utf8_unicode_ci')
+						->fields([
+							'id' => [
+								'type' => 'int(11)',
+								'auto' => true,
+							],
+							'name' => 'varchar(255)',
+							'handle' => 'varchar(255)',
+						])
+						->keys([
+							'id' => 'primary',
+							'handle' => 'unique',
+						]);
+
+					$db->insert('tbl_members_roles')
+						->values([
+							'id' => 1,
+							'name' => 'Public',
+							'handle' => 'public',
+						]);
+
+					$db->create('tbl_members_roles_event_permissions')
+						->ifNotExists()
+						->charset('utf8')
+						->collate('utf8_unicode_ci')
+						->fields([
+							'id' => [
+								'type' => 'int(11)',
+								'auto' => true,
+							],
+							'role_id' => 'int(11)',
+							'event' => 'varchar(255)',
+							'action' => 'varchar(60)',
+							'level' => [
+								'type' => 'smallint(1)',
+								'default' => 0,
+							],
+						])
+						->keys([
+							'id' => 'primary',
+							'role_id' => [
+								'type' => 'key',
+								'cols' => ['role_id', 'event', 'action'],
+							],
+						]);
+
+					$db->create('tbl_members_roles_forbidden_pages')
+						->ifNotExists()
+						->charset('utf8')
+						->collate('utf8_unicode_ci')
+						->fields([
+							'id' => [
+								'type' => 'int(11)',
+								'auto' => true,
+							],
+							'role_id' => 'int(11)',
+							'page_id' => 'int(11)',
+						])
+						->keys([
+							'id' => 'primary',
+							'role_id' => [
+								'type' => 'key',
+								'cols' => ['role_id', 'page_id'],
+							],
+						]);
+				})
+				->execute()
+				->success();
 		}
 
 		/**
@@ -288,35 +361,84 @@
 			Symphony::Configuration()->remove('members');
 			Symphony::Configuration()->write();
 
-			return Symphony::Database()->query("
-				DROP TABLE IF EXISTS
-					`tbl_fields_memberusername`,
-					`tbl_fields_memberpassword`,
-					`tbl_fields_memberemail`,
-					`tbl_fields_memberactivation`,
-					`tbl_fields_memberrole`,
-					`tbl_fields_membertimezone`,
-					`tbl_members_roles`,
-					`tbl_members_roles_event_permissions`,
-					`tbl_members_roles_forbidden_pages`
-			");
+			// return Symphony::Database()->query("
+			// 	DROP TABLE IF EXISTS
+			// 		`tbl_fields_memberusername`,
+			// 		`tbl_fields_memberpassword`,
+			// 		`tbl_fields_memberemail`,
+			// 		`tbl_fields_memberactivation`,
+			// 		`tbl_fields_memberrole`,
+			// 		`tbl_fields_membertimezone`,
+			// 		`tbl_members_roles`,
+			// 		`tbl_members_roles_event_permissions`,
+			// 		`tbl_members_roles_forbidden_pages`
+			// ");
+			return Symphony::Database()
+				->drop('tbl_fields_memberusername')
+				->table('tbl_fields_memberusername')
+				->table('tbl_fields_memberpassword')
+				->table('tbl_fields_memberemail')
+				->table('tbl_fields_memberactivation')
+				->table('tbl_fields_memberrole')
+				->table('tbl_fields_membertimezone')
+				->table('tbl_members_roles')
+				->table('tbl_members_roles_event_permissions')
+				->table('tbl_members_roles_forbidden_pages')
+				->ifExists()
+				->execute()
+				->success();
 		}
 
 		public function update($previousVersion = null) {
 			if(version_compare($previousVersion, '1.0 Beta 3', '<')) {
-				$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+				// $activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+				$activation_table = Symphony::Database()
+					->show()
+					->like('tbl_fields_memberactivation')
+					->execute()
+					->next();
+
 				if(!empty($activation_table)) {
-					Symphony::Database()->import("
-						ALTER TABLE `tbl_fields_memberactivation` ADD `auto_login` ENUM('yes','no') NULL DEFAULT 'yes';
-						ALTER TABLE `tbl_fields_memberactivation` ADD `deny_login` ENUM('yes','no') NULL DEFAULT 'yes';
-					");
+					// Symphony::Database()->import("
+					// 	ALTER TABLE `tbl_fields_memberactivation` ADD `auto_login` ENUM('yes','no') NULL DEFAULT 'yes';
+					// 	ALTER TABLE `tbl_fields_memberactivation` ADD `deny_login` ENUM('yes','no') NULL DEFAULT 'yes';
+					// ");
+					Symphony::Database()
+						->alter('tbl_fields_memberactivation')
+						->add([
+							'auto_login' => [
+								'type' => 'enum',
+								'values' => ['yes','no'],
+								'default' => 'yes',
+							],
+							'deny_login' => [
+								'type' => 'enum',
+								'values' => ['yes','no'],
+								'default' => 'yes',
+							],
+						])
+						->execute()
+						->success();
 				}
 
-				$password_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberpassword';");
+				// $password_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberpassword';");
+				$password_table = Symphony::Database()
+					->show()
+					->like('tbl_fields_memberpassword')
+					->execute()
+					->next();
+
 				if(!empty($password_table)) {
-					Symphony::Database()->query("
-						ALTER TABLE `tbl_fields_memberpassword` ADD `code_expiry` VARCHAR(50) NOT NULL;
-					");
+					// Symphony::Database()->query("
+					// 	ALTER TABLE `tbl_fields_memberpassword` ADD `code_expiry` VARCHAR(50) NOT NULL;
+					// ");
+					Symphony::Database()
+						->alter('tbl_fields_memberpassword')
+						->add([
+							'code_expiry' => 'varchar(50)',
+						])
+						->execute()
+						->success();
 				}
 			}
 
@@ -326,11 +448,22 @@
 				if($field instanceof Field) {
 					Symphony::Configuration()->set('activate-account-auto-login', $field->get('auto_login'));
 
-					$activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+					// $activation_table = Symphony::Database()->fetchRow(0, "SHOW TABLES LIKE 'tbl_fields_memberactivation';");
+					$activation_table = Symphony::Database()
+						->show()
+						->like('tbl_fields_memberactivation')
+						->execute()
+						->next();
+
 					if(!empty($activation_table)) {
-						Symphony::Database()->query("
-							ALTER TABLE `tbl_fields_memberpassword` DROP `auto_login`;
-						");
+						// Symphony::Database()->query("
+						// 	ALTER TABLE `tbl_fields_memberpassword` DROP `auto_login`;
+						// ");
+						Symphony::Database()
+							->alter('tbl_fields_memberpassword')
+							->drop('auto_login')
+							->execute()
+							->success();
 					}
 				}
 
@@ -352,7 +485,12 @@
 				// not the value.
 				$field = extension_Members::getField('identity');
 				if($field instanceof fieldMemberUsername) {
-					$identity_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberusername`");
+					// $identity_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberusername`");
+					$identity_tables = Symphony::Database()
+						->select(['field_id'])
+						->from('tbl_fields_memberusername')
+						->execute()
+						->column('field_id');
 
 					if(is_array($identity_tables) && !empty($identity_tables)) {
 						$tables = array_merge($tables, $identity_tables);
@@ -362,48 +500,90 @@
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
 					if(!Symphony::Database()->tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						// Add handle field
-						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` ADD `handle` VARCHAR(255) DEFAULT NULL",
-							$field
-						));
+						// Symphony::Database()->query(sprintf(
+						// 	"ALTER TABLE `tbl_entries_data_%d` ADD `handle` VARCHAR(255) DEFAULT NULL",
+						// 	$field
+						// ));
+						Symphony::Database()
+							->alter('tbl_entries_data_' . $field)
+							->add([
+								'handle' => [
+									'type' => 'varchar(255)',
+									'null' => true,
+								],
+							])
+							->execute()
+							->success();
 
 						// Populate handle field
-						$rows = Symphony::Database()->fetch(sprintf(
-							"SELECT `id`, `value` FROM `tbl_entries_data_%d`",
-							$field
-						));
+						// $rows = Symphony::Database()->fetch(sprintf(
+						// 	"SELECT `id`, `value` FROM `tbl_entries_data_%d`",
+						// 	$field
+						// ));
+						$rows = Symphony::Database()
+							->select(['id', 'value'])
+							->from('tbl_entries_data_' . $field)
+							->execute()
+							->rows();
 
 						foreach($rows as $row) {
-							Symphony::Database()->query(sprintf("
-									UPDATE `tbl_entries_data_%d`
-									SET handle = '%s'
-									WHERE id = %d
-								", $field, Lang::createHandle($row['value']), $row['id']
-							));
+							// Symphony::Database()->query(sprintf("
+							// 		UPDATE `tbl_entries_data_%d`
+							// 		SET handle = '%s'
+							// 		WHERE id = %d
+							// 	", $field, Lang::createHandle($row['value']), $row['id']
+							// ));
+							Symphony::Database()
+								->update('tbl_entries_data_' . $field)
+								->set([
+									'handle' => Lang::createHandle($row['value']),
+								])
+								->where(['id' => $row['id']])
+								->execute()
+								->success();
 						}
 					}
 
 					// Try to drop the old `username` INDEX
 					try {
-						Symphony::Database()->query(sprintf(
-							'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`, DROP INDEX `value`', $field
-						));
+						// Symphony::Database()->query(sprintf(
+						// 	'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `username`, DROP INDEX `value`', $field
+						// ));
+						Symphony::Database()
+							->alter('tbl_entries_data_' . $field)
+							->dropIndex(['username', 'value'])
+							->execute()
+							->success();
 					}
 					catch(Exception $ex) {}
 
 					// Create the new UNIQUE INDEX `username` on `handle`
 					try {
-						Symphony::Database()->query(sprintf(
-							'CREATE UNIQUE INDEX `username` ON `tbl_entries_data_%d` (`handle`)', $field
-						));
+						// Symphony::Database()->query(sprintf(
+						// 	'CREATE UNIQUE INDEX `username` ON `tbl_entries_data_%d` (`handle`)', $field
+						// ));
+						Symphony::Database()
+							->alter('tbl_entries_data_' . $field)
+							->addIndex([
+								'username' => 'unique',
+							])
+							->execute()
+							->success();
 					}
 					catch(Exception $ex) {}
 
 					// Create an index on the `value` column
 					try {
-						Symphony::Database()->query(sprintf(
-							'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
-						));
+						// Symphony::Database()->query(sprintf(
+						// 	'CREATE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+						// ));
+						Symphony::Database()
+							->alter('tbl_entries_data_' . $field)
+							->addIndex([
+								'value' => 'index',
+							])
+							->execute()
+							->success();
 					}
 					catch(Exception $ex) {}
 				}
@@ -418,7 +598,12 @@
 
 				$field = extension_Members::getField('email');
 				if($field instanceof fieldMemberEmail) {
-					$email_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberemail`");
+					// $email_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberemail`");
+					$email_tables = Symphony::Database()
+						->select(['field_id'])
+						->from('tbl_fields_memberemail')
+						->execute()
+						->column('field_id');
 
 					if(is_array($email_tables) && !empty($email_tables)) {
 						$tables = array_merge($tables, $email_tables);
@@ -429,20 +614,37 @@
 					if(Symphony::Database()->tableContainsField('tbl_entries_data_' . $field, 'handle')) {
 						try {
 							// Drop handle field
-							Symphony::Database()->query(sprintf(
-								"ALTER TABLE `tbl_entries_data_%d` DROP `handle`",
-								$field
-							));
+							// Symphony::Database()->query(sprintf(
+							// 	"ALTER TABLE `tbl_entries_data_%d` DROP `handle`",
+							// 	$field
+							// ));
+							Symphony::Database()
+								->alter('tbl_entries_data_' .  $field)
+								->drop('handle')
+								->execute()
+								->success();
 
 							// Drop `value` index
-							Symphony::Database()->query(sprintf(
-								'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `value`', $field
-							));
+							// Symphony::Database()->query(sprintf(
+							// 	'ALTER TABLE `tbl_entries_data_%d` DROP INDEX `value`', $field
+							// ));
+							Symphony::Database()
+								->alter('tbl_entries_data_' .  $field)
+								->dropIndex('value')
+								->execute()
+								->success();
 
 							// Readd UNIQUE `value` index
-							Symphony::Database()->query(sprintf(
-								'CREATE UNIQUE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
-							));
+							// Symphony::Database()->query(sprintf(
+							// 	'CREATE UNIQUE INDEX `value` ON `tbl_entries_data_%d` (`value`)', $field
+							// ));
+							Symphony::Database()
+								->alter('tbl_entries_data_' .  $field)
+								->addIndex([
+									'value' => 'unique',
+								])
+								->execute()
+								->success();
 						}
 						catch(Exception $ex) {
 							// Ignore, this may be because a user is updating directly from 1.0 and
@@ -456,9 +658,19 @@
 			if(version_compare($previousVersion, '1.3', '<')) {
 				$tables = array();
 
-				$table = Symphony::Database()->fetch("SHOW TABLES LIKE 'tbl_fields_memberpassword'");
+				// $table = Symphony::Database()->fetch("SHOW TABLES LIKE 'tbl_fields_memberpassword'");
+				$table = Symphony::Database()
+					->show()
+					->like('tbl_fields_memberpassword')
+					->execute()
+					->rows();
 				if(!empty($table)) {
-					$password_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberpassword`");
+					// $password_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_memberpassword`");
+					$password_tables = Symphony::Database()
+						->select(['field_id'])
+						->from('tbl_fields_memberpassword')
+						->execute()
+						->column('field_id');
 
 					if(is_array($password_tables) && !empty($password_tables)) {
 						$tables = array_merge($tables, $password_tables);
@@ -467,17 +679,34 @@
 
 				if(is_array($tables) && !empty($tables)) foreach($tables as $field) {
 					// Change Password field length
-					Symphony::Database()->query(sprintf(
-						'ALTER TABLE `tbl_entries_data_%d` CHANGE `password` `password` VARCHAR(150) DEFAULT NULL', $field
-					));
+					// Symphony::Database()->query(sprintf(
+					// 	'ALTER TABLE `tbl_entries_data_%d` CHANGE `password` `password` VARCHAR(150) DEFAULT NULL', $field
+					// ));
+					Symphony::Database()
+						->alter('tbl_entries_data_' .  $field)
+						->modify([
+							'password' => [
+								'type' => 'varchar(150)',
+								'null' => true,
+							],
+						])
+						->execute()
+						->success();
 				}
 			}
 
 			// Update event lengths. RE: #246
 			if(version_compare($previousVersion, '1.4', '<')) {
-				Symphony::Database()->query(sprintf(
-					'ALTER TABLE `tbl_members_roles_event_permissions` CHANGE `event` `event` VARCHAR(255) NOT NULL', $field
-				));
+				// Symphony::Database()->query(sprintf(
+				// 	'ALTER TABLE `tbl_members_roles_event_permissions` CHANGE `event` `event` VARCHAR(255) NOT NULL', $field
+				// ));
+				Symphony::Database()
+						->alter('tbl_members_roles_event_permissions')
+						->modify([
+							'event' => 'varchar(255)',
+						])
+						->execute()
+						->success();
 			}
 		}
 
@@ -632,7 +861,11 @@
 		 * @return array
 		 */
 		public static function initialiseMemberSections(array $sections = array()) {
-			$sections = SectionManager::fetch($sections);
+			$sections = (new SectionManager)
+				->select()
+				->sections($sections)
+				->execute()
+				->rows();
 			foreach($sections as $section) {
 				extension_Members::$member_sections[$section->get('id')] = new MemberSection($section->get('id'), $section->get());
 			}
@@ -735,9 +968,15 @@
 			$default = array('1 hour' => '1 hour', '24 hours' => '24 hours');
 
 			try {
-				$used = Symphony::Database()->fetchCol('code_expiry', sprintf("
-					SELECT DISTINCT(code_expiry) FROM `%s`
-				", $table));
+				// $used = Symphony::Database()->fetchCol('code_expiry', sprintf("
+				// 	SELECT DISTINCT(code_expiry) FROM `%s`
+				// ", $table));
+				$used = Symphony::Database()
+					->select(['code_expiry'])
+					->distinct()
+					->from($table)
+					->execute()
+					->column('code_expiry');
 
 				if(is_array($used) && !empty($used)) {
 					$default = array_merge($default, array_combine($used, $used));
@@ -834,7 +1073,10 @@
 			$label = new XMLElement('label', __('Active Members Section'));
 
 			// Get the Sections that contain a Member field.
-			$sections = SectionManager::fetch();
+			$sections = (new SectionManager)
+				->select()
+				->execute()
+				->rows();
 			$config_sections = explode(',', extension_Members::getSetting('section'));
 
 			$member_sections = array();
@@ -963,7 +1205,7 @@
 					'driver' => $this,
 					'errors' => &self::$_errors,
 				));
-				
+
 				if($canLogIn && $isLoggedIn = $this->getMemberDriver()->login($_POST['fields'])) {
 					/**
 					 * Fired just after a Member has successfully logged in, this delegate
@@ -1013,8 +1255,8 @@
 					 *  The Member Extension driver
 					 */
 					Symphony::ExtensionManager()->notifyMembers('MembersLoginFailure', '/frontend/', array(
-						'username' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('identity')]),
-						'email' => Symphony::Database()->cleanValue($_POST['fields'][extension_Members::getFieldHandle('email')]),
+						'username' => $_POST['fields'][extension_Members::getFieldHandle('identity')],
+						'email' => $_POST['fields'][extension_Members::getFieldHandle('email')],
 						'driver' => $this,
 					));
 				}
@@ -1043,6 +1285,7 @@
 
 			$role_id = ($isLoggedIn) ? $role_data['role_id'] : Role::PUBLIC_ROLE;
 			$role = RoleManager::fetch($role_id);
+
 			if($role instanceof Role && !$role->canAccessPage((int)$context['page_data']['id'])) {
 				// User has no access to this page, so look for a custom 403 page
 				if(($row = PageManager::fetchPageByType('403-members')) || ($row = PageManager::fetchPageByType('403'))) {
@@ -1189,24 +1432,36 @@
 
 							// Query for the `field_id` of any linking fields that link to the members
 							// section AND to one of the linking fields (Username/Email)
-							$fields = Symphony::Database()->fetchCol('child_section_field_id', sprintf("
-									SELECT `child_section_field_id`
-									FROM `tbl_sections_association`
-									WHERE `parent_section_id` = %d
-									AND `child_section_id` = %d
-									AND `parent_section_field_id` IN ('%s')
-								",
-								$this->getMemberDriver()->getMember()->get('section_id'),
-								$section_id,
-								implode("','", $field_ids)
-							));
+							// $fields = Symphony::Database()->fetchCol('child_section_field_id', sprintf("
+							// 		SELECT `child_section_field_id`
+							// 		FROM `tbl_sections_association`
+							// 		WHERE `parent_section_id` = %d
+							// 		AND `child_section_id` = %d
+							// 		AND `parent_section_field_id` IN ('%s')
+							// 	",
+							// 	$this->getMemberDriver()->getMember()->get('section_id'),
+							// 	$section_id,
+							// 	implode("','", $field_ids)
+							// ));
+							$fields = Symphony::Database()
+								->select(['child_section_field_id'])
+								->from('tbl_sections_association')
+								->where(['parent_section_id' => $this->getMemberDriver()->getMember()->get('section_id')])
+								->where(['child_section_id' => $section_id])
+								->where(['parent_section_field_id' => ['in' => [$field_ids]]])
+								->execute()
+								->column('child_section_field_id');
 
 							// If there was a link found, get the `relation_id`, which is the `member_id` of
 							// an entry in the active Members section.
 							if(!empty($fields)) {
 								foreach($fields as $field_id) {
 									if($isOwner === true) break;
-									$field = FieldManager::fetch($field_id);
+									$field = (new FieldManager)
+										->select()
+										->field($field_id)
+										->execute()
+										->next();
 									if($field instanceof Field) {
 										// So we are trying to find all entries that have selected the Member entry
 										// to determine ownership. This check will use the `fetchAssociatedEntryIDs`

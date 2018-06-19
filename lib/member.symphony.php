@@ -211,9 +211,9 @@
 			// Allow login via username OR email. This normalises the $data array from the custom
 			// field names to simple names for ease of use.
 			if (!empty($username)) {
-				$data['username'] = Symphony::Database()->cleanValue($username);
+				$data['username'] = $username;
 			} elseif (isset($email) && !is_null($this->section->getFieldHandle('email'))) {
-				$data['email'] = Symphony::Database()->cleanValue($email);
+				$data['email'] = $email;
 			}
 
 			// Map POST data for password to `$password`
@@ -332,9 +332,7 @@
 			if(!is_null($this->section->getFieldHandle('role'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
-					$member = parent::fetchMemberFromID(
-						Symphony::Database()->cleanValue($_POST['id'])
-					);
+					$member = parent::fetchMemberFromID($_POST['id']);
 
 					if(!$member instanceof Entry) return;
 
@@ -354,9 +352,7 @@
 			if(!is_null($this->section->getFieldHandle('activation'))) {
 				// Can't use `$context` as `$fields` only contains $_POST['fields']
 				if(isset($_POST['id'])) {
-					$member = parent::fetchMemberFromID(
-						Symphony::Database()->cleanValue($_POST['id'])
-					);
+					$member = parent::fetchMemberFromID($_POST['id']);
 
 					if(!$member instanceof Entry) return;
 

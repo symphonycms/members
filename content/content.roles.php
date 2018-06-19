@@ -60,7 +60,12 @@
 
 			else {
 				$hasRoles = FieldManager::isFieldUsed(extension_Members::getFieldType('role'));
-				$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+				$roleFields = (new FieldManager)
+					->select()
+					->sort('sortorder', 'asc')
+					->type(extension_Members::getFieldType('role'))
+					->execute()
+					->rows();
 
 				$with_selected_roles = array();
 				$i = 0;
@@ -81,11 +86,21 @@
 						$columns = array($td1);
 
 						foreach($roleFields as $roleField) {
-							$section = SectionManager::fetch($roleField->get('parent_section'));
-							$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
-								"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-								$roleField->get('id'), $role->get('id')
-							));
+							$section = (new SectionManager)
+								->select()
+								->section($roleField->get('parent_section'))
+								->execute()
+								->next();
+							// $member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
+							// 	"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+							// 	$roleField->get('id'), $role->get('id')
+							// ));
+							$member_count = Symphony::Database()
+								->select(['count(*)' => 'count'])
+								->from('tbl_entries_data_' . $roleField->get('id'))
+								->where(['role_id' => $role->get('id')])
+								->execute()
+								->variable('count');
 
 							// If it's the first time we're looping over the available sections
 							// then change the table header, otherwise just ignore it as it's
@@ -368,7 +383,10 @@
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
 
 			$options = array();
-			$pages = PageManager::fetch(false, array('id'));
+			$pages = (new PageManager)
+				->select(['id'])
+				->execute()
+				->rows();
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],
@@ -419,7 +437,12 @@
 
 			if(is_array($checked) && !empty($checked)) {
 				if(preg_match('/move::(\d+)/i', $_POST['with-selected'], $match)) {
-					$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+					$roleFields = (new FieldManager)
+						->select()
+						->sort('sortorder', 'asc')
+						->type(extension_Members::getFieldType('role'))
+						->execute()
+						->rows();
 					$target_role = $match[1];
 
 					if(!$replacement = RoleManager::fetch($target_role)) return false;
@@ -428,11 +451,19 @@
 						if($role_id == $target_role) continue;
 
 						foreach($roleFields as $roleField) {
-							Symphony::Database()->query(sprintf("
-									UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d
-								",
-								$roleField->get('id'), $target_role, $role_id
-							));
+							// Symphony::Database()->query(sprintf("
+							// 		UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d
+							// 	",
+							// 	$roleField->get('id'), $target_role, $role_id
+							// ));
+							Symphony::Database()
+								->update('tbl_entries_data_' . $roleField->get('id'))
+								->set([
+									'role_id' => $target_role,
+								])
+								->where(['role_id' => $role_id])
+								->execute()
+								->success();
 						}
 					}
 

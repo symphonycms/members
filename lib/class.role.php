@@ -17,32 +17,57 @@
 		 *  The newly created Role's ID
 		 */
 		public static function add(array $data) {
-			Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
+			// Symphony::Database()->insert($data['roles'], 'tbl_members_roles');
+			Symphony::Database()
+				->insert('tbl_members_roles')
+				->values($data['roles'])
+				->execute()
+				->success();
 			$role_id = Symphony::Database()->getInsertID();
 
 			$page_access = $data['roles_forbidden_pages']['page_access'];
 			if(is_array($page_access) && !empty($page_access)) {
 				foreach($page_access as $page_id){
-					Symphony::Database()->insert(array(
+					// Symphony::Database()->insert(array(
+					// 		'page_id' => $page_id,
+					// 		'role_id' => $role_id
+					// 	),
+					// 	'tbl_members_roles_forbidden_pages'
+					// );
+					Symphony::Database()
+						->insert('tbl_members_roles_forbidden_pages')
+						->values([
 							'page_id' => $page_id,
-							'role_id' => $role_id
-						),
-						'tbl_members_roles_forbidden_pages'
-					);
+							'role_id' => $role_id,
+						])
+						->execute()
+						->success();
 				}
 			}
 
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
-				$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
+				// $sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
+				$q = Symphony::Database()
+					->insert('tbl_members_roles_event_permissions');
 
 				foreach($permissions as $event_handle => $p){
 					foreach($p as $action => $level) {
-						$sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+						// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+						$q
+							->values([
+								'role_id' => $role_id,
+								'event' => $event_handle,
+								'action' => $action,
+								'level' => $level,
+							]);
 					}
 				}
 
-				Symphony::Database()->query(trim($sql, ','));
+				// Symphony::Database()->query(trim($sql, ','));
+				$q
+					->execute()
+					->success();
 			}
 
 			return $role_id;
@@ -59,37 +84,82 @@
 		public static function edit($role_id, array $data) {
 			if(is_null($role_id)) return false;
 
-			Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
+			// Symphony::Database()->update($data['roles'], 'tbl_members_roles', "`id` = " . $role_id);
+			Symphony::Database()
+				->update('tbl_members_roles')
+				->set($data['roles'])
+				->where(['id' => $role_id])
+				->execute()
+				->success();
 
-			Symphony::Database()->delete("tbl_members_roles_forbidden_pages", "`role_id` = " . $role_id);
+			// Symphony::Database()->delete("tbl_members_roles_forbidden_pages", "`role_id` = " . $role_id);
+			Symphony::Database()
+				->delete('tbl_members_roles_forbidden_pages')
+				->where(['role_id' => $role_id])
+				->execute()
+				->success();
+
 			$page_access = $data['roles_forbidden_pages']['page_access'];
 			if(is_array($page_access) && !empty($page_access)) {
 				foreach($page_access as $page_id){
-					Symphony::Database()->insert(array(
+					// Symphony::Database()->insert(array(
+					// 		'page_id' => $page_id,
+					// 		'role_id' => $role_id
+					// 	),
+					// 	'tbl_members_roles_forbidden_pages'
+					// );
+					Symphony::Database()
+						->insert('tbl_members_roles_forbidden_pages')
+						->values([
 							'page_id' => $page_id,
-							'role_id' => $role_id
-						),
-						'tbl_members_roles_forbidden_pages'
-					);
+							'role_id' => $role_id,
+						])
+						->execute()
+						->success();
 				}
 			}
 
-			Symphony::Database()->delete("tbl_members_roles_event_permissions", "`role_id` = " . $role_id);
+			// Symphony::Database()->delete("tbl_members_roles_event_permissions", "`role_id` = " . $role_id);
+			Symphony::Database()
+				->delete('tbl_members_roles_event_permissions')
+				->where(['role_id' => $role_id])
+				->execute()
+				->success();
+
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
-				$sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
+				// $sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
+				$q = Symphony::Database()
+					->insert('tbl_members_roles_event_permissions');
 
 				foreach($permissions as $event_handle => $p){
 					if(!array_key_exists('create', $p)) {
-						$sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
+						// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
+						$q
+							->values([
+								'role_id' => $role_id,
+								'event' => $event_handle,
+								'action' => 'create',
+								'level' => EventPermissions::NO_PERMISSIONS,
+							]);
 					}
 
 					foreach($p as $action => $level) {
-						$sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+						// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+						$q
+							->values([
+								'role_id' => $role_id,
+								'event' => $event_handle,
+								'action' => $action,
+								'level' => $level,
+							]);
 					}
 				}
 
-				$p = Symphony::Database()->query(trim($sql, ','));
+				// $p = Symphony::Database()->query(trim($sql, ','));
+				$p = $q
+					->execute()
+					->success();
 			}
 
 			return true;
@@ -105,19 +175,46 @@
 		 * @return boolean
 		 */
 		public static function delete($role_id, $purge_members = false) {
-			Symphony::Database()->delete("tbl_members_roles_forbidden_pages", " `role_id` = " . $role_id);
-			Symphony::Database()->delete("tbl_members_roles_event_permissions", " `role_id` = " . $role_id);
-			Symphony::Database()->delete("tbl_members_roles", " `id` = " . $role_id);
+			// Symphony::Database()->delete("tbl_members_roles_forbidden_pages", " `role_id` = " . $role_id);
+			Symphony::Database()
+				->delete('tbl_members_roles_forbidden_pages')
+				->where(['role_id' => $role_id])
+				->execute()
+				->success();
+			// Symphony::Database()->delete("tbl_members_roles_event_permissions", " `role_id` = " . $role_id);
+			Symphony::Database()
+				->delete('tbl_members_roles_event_permissions')
+				->where(['role_id' => $role_id])
+				->execute()
+				->success();
+			// Symphony::Database()->delete("tbl_members_roles", " `id` = " . $role_id);
+			Symphony::Database()
+				->delete('tbl_members_roles')
+				->where(['role_id' => $role_id])
+				->execute()
+				->success();
 
-			$role_fields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+			// $role_fields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+			$role_fields = (new FieldManager)
+				->select()
+				->sort('sortorder', 'asc')
+				->type(extension_Members::getFieldType('role'))
+				->execute()
+				->rows();
 
 			if($purge_members) {
 				$members = array();
 				foreach($role_fields as $role_field) {
-					$members_of_role = Symphony::Database()->fetchCol('entry_id', sprintf(
-						"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-						$role_field->get('id'), $role_id
-					));
+					// $members_of_role = Symphony::Database()->fetchCol('entry_id', sprintf(
+					// 	"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+					// 	$role_field->get('id'), $role_id
+					// ));
+					$members_of_role = Symphony::Database()
+						->select(['entry_id'])
+						->from('tbl_entries_data_' . $role_field->get('id'))
+						->where(['role_id' => $role_id])
+						->execute()
+						->column('entry_id');
 
 					$members = array_merge($members, $members_of_role);
 				}
@@ -173,14 +270,31 @@
 				}
 
 				// No cache object found
-				if(!$roles = Symphony::Database()->fetch(sprintf("
-						SELECT * FROM `tbl_members_roles` WHERE `id` = %d ORDER BY `id` ASC LIMIT 1",
-						$role_id
-					))
-				) return array();
+				// if(!$roles = Symphony::Database()->fetch(sprintf("
+				// 		SELECT * FROM `tbl_members_roles` WHERE `id` = %d ORDER BY `id` ASC LIMIT 1",
+				// 		$role_id
+				// 	))
+				// ) return array();
+				if (!$roles = Symphony::Database()
+					->select(['*'])
+					->from('tbl_members_roles')
+					->where(['id' => $role_id])
+					->orderBy('id', 'asc')
+					->limit(1)
+					->execute()
+					->rows()
+				) {
+					return array();
+				}
 			}
 			else {
-				$roles = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles` ORDER BY `id` ASC");
+				// $roles = Symphony::Database()->fetch("SELECT * FROM `tbl_members_roles` ORDER BY `id` ASC");
+				$roles = Symphony::Database()
+					->select(['*'])
+					->from('tbl_members_roles')
+					->orderBy('id', 'asc')
+					->execute()
+					->rows();
 			}
 
 			foreach($roles as $role) {
@@ -205,10 +319,17 @@
 		 * @return integer|Role|null
 		 */
 		public static function fetchRoleIDByHandle($handle, $asObject = false){
-			$role_id = Symphony::Database()->fetchVar('id', 0, sprintf("
-				SELECT `id` FROM `tbl_members_roles` WHERE `handle` = '%s' LIMIT 1",
-				Symphony::Database()->cleanValue($handle)
-			));
+			// $role_id = Symphony::Database()->fetchVar('id', 0, sprintf("
+			// 	SELECT `id` FROM `tbl_members_roles` WHERE `handle` = '%s' LIMIT 1",
+			// 	Symphony::Database()->cleanValue($handle)
+			// ));
+			$role_id = Symphony::Database()
+				->select(['id'])
+				->from('tbl_members_roles')
+				->where(['handle' => $handle])
+				->limit(1)
+				->execute()
+				->variable('id');
 
 			if(!$role_id) return null;
 
@@ -266,17 +387,30 @@
 		 */
 		public function setPermissions() {
 			// Get all pages that this Role can't access
-			$this->set('forbidden_pages', Symphony::Database()->fetchCol('page_id', sprintf(
-				"SELECT `page_id` FROM `tbl_members_roles_forbidden_pages` WHERE `role_id` = %d",
-				$this->get('id')
-			)));
+			// $this->set('forbidden_pages', Symphony::Database()->fetchCol('page_id', sprintf(
+			// 	"SELECT `page_id` FROM `tbl_members_roles_forbidden_pages` WHERE `role_id` = %d",
+			// 	$this->get('id')
+			// )));
+			$this->set('forbidden_pages', Symphony::Database()
+				->select(['page_id'])
+				->from('tbl_members_roles_forbidden_pages')
+				->where(['role_id' => $this->get('id')])
+				->execute()
+				->column('page_id')
+			);
 
 			// Get the events permssions for this Role
 			$event_permissions = array();
-			$tmp = Symphony::Database()->fetch(sprintf(
-				"SELECT * FROM `tbl_members_roles_event_permissions` WHERE `role_id` = %d",
-				$this->get('id')
-			));
+			// $tmp = Symphony::Database()->fetch(sprintf(
+			// 	"SELECT * FROM `tbl_members_roles_event_permissions` WHERE `role_id` = %d",
+			// 	$this->get('id')
+			// ));
+			$tmp = Symphony::Database()
+				->select(['*'])
+				->from('tbl_members_roles_event_permissions')
+				->where(['role_id' => $this->get('id')])
+				->execute()
+				->rows();
 
 			if(is_array($tmp) && !empty($tmp)) foreach($tmp as $e) {
 				$event_permissions[$e['event']][$e['action']] = $e['level'];

@@ -204,12 +204,23 @@
 				$data['length'] = $entry_data[$auth->get('id')]['length'];
 				$data['strength'] = $entry_data[$auth->get('id')]['strength'];
 
-				Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
+				// Symphony::Database()->update($data, 'tbl_entries_data_' . $auth->get('id'), ' `entry_id` = ' . $member_id);
+				Symphony::Database()
+					->update('tbl_entries_data_' . $auth->get('id'))
+					->set($data)
+					->where(['entry_id' => $member_id])
+					->execute()
+					->success();
 			}
 			// No entry data exists, create it!
 			else {
 				$data['entry_id'] = $member_id;
-				Symphony::Database()->insert($data, 'tbl_entries_data_' . $auth->get('id'));
+				// Symphony::Database()->insert($data, 'tbl_entries_data_' . $auth->get('id'));
+				Symphony::Database()
+					->insert('tbl_entries_data_' . $auth->get('id'))
+					->values($data)
+					->execute()
+					->success();
 			}
 
 			/**
