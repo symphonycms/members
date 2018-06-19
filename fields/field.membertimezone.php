@@ -23,15 +23,37 @@
 	-------------------------------------------------------------------------*/
 
 		public static function createSettingsTable() {
-			return Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_membertimezone` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `field_id` INT(11) UNSIGNED NOT NULL,
-				  `available_zones` VARCHAR(255) DEFAULT NULL,
-				  PRIMARY KEY (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+			// return Symphony::Database()->query("
+			// 	CREATE TABLE IF NOT EXISTS `tbl_fields_membertimezone` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `field_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `available_zones` VARCHAR(255) DEFAULT NULL,
+			// 	  PRIMARY KEY (`id`),
+			// 	  UNIQUE KEY `field_id` (`field_id`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
+			return Symphony::Database()
+				->create('tbl_fields_membertimezone')
+				->ifNotExists()
+				->charset('utf8')
+				->collate('utf8_unicode_ci')
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'field_id' => 'int(11)',
+					'available_zones' => [
+						'type' => 'varchar(255)',
+						'null' => true,
+					],
+				])
+				->keys([
+					'id' => 'primary',
+					'field_id' => 'unique',
+				])
+				->execute()
+				->success();
 		}
 
 	/*-------------------------------------------------------------------------
@@ -47,13 +69,20 @@
 		 *  ie. Africa/Asmara
 		 */
 		public function getMemberTimezone($member_id) {
-			return Symphony::Database()->fetchVar('value', 0, sprintf("
-					SELECT `value`
-					FROM `tbl_entries_data_%d`
-					WHERE `entry_id` = '%s'
-					LIMIT 1
-				", $this->get('id'), $member_id
-			));
+			// return Symphony::Database()->fetchVar('value', 0, sprintf("
+			// 		SELECT `value`
+			// 		FROM `tbl_entries_data_%d`
+			// 		WHERE `entry_id` = '%s'
+			// 		LIMIT 1
+			// 	", $this->get('id'), $member_id
+			// ));
+			return Symphony::Database()
+				->select(['value'])
+				->from('tbl_entries_data_' . $this->get('id'))
+				->where(['entry_id' => $member_id])
+				->limit(1)
+				->execute()
+				->variable('value');
 		}
 
 		/**
