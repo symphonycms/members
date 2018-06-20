@@ -134,10 +134,17 @@
 				return null;
 			}
 
-			$member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
-				"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `handle` = '%s' LIMIT 1",
-				$this->get('id'), Lang::createHandle($username)
-			));
+			// $member_id = Symphony::Database()->fetchVar('entry_id', 0, sprintf(
+			// 	"SELECT `entry_id` FROM `tbl_entries_data_%d` WHERE `handle` = '%s' LIMIT 1",
+			// 	$this->get('id'), Lang::createHandle($username)
+			// ));
+			$member_id = Symphony::Database()
+				->select(['entry_id'])
+				->from('tbl_entries_data_' . $this->get('id'))
+				->where(['handle' => Lang::createHandle($username)])
+				->limit(1)
+				->execute()
+				->variable('entry_id');
 
 			if(is_null($member_id)) {
 				extension_Members::$_errors[$this->get('element_name')] = array(

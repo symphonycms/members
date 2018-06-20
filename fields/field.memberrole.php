@@ -93,7 +93,7 @@
 					'id' => 'primary',
 					'entry_id' => 'unique',
 				])
-				->execte()
+				->execute()
 				->success();
 		}
 

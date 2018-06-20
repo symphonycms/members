@@ -97,7 +97,7 @@
 			if(!extension_Members::$initialised) {
 				// Find all possible member sections
 				$config_sections = preg_split('~,~',extension_Members::getSetting('section'), -1, PREG_SPLIT_NO_EMPTY);
-				extension_Members::initialiseMemberSections($config_sections);
+				if (!empty($config_sections)) extension_Members::initialiseMemberSections($config_sections);
 				if(class_exists('Symphony', true) && Symphony::Engine() instanceof Frontend) {
 					/**
 					 * This delegate fires as soon as possible to allow other extensions
@@ -277,7 +277,7 @@
 			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			// ");
 			return Symphony::Database()
-				->transaction(function (\Database $db){
+				->transaction(function (Database $db) {
 					$db->create('tbl_members_roles')
 						->ifNotExists()
 						->charset('utf8')
@@ -293,14 +293,18 @@
 						->keys([
 							'id' => 'primary',
 							'handle' => 'unique',
-						]);
+						])
+						->execute()
+						->success();
 
 					$db->insert('tbl_members_roles')
 						->values([
 							'id' => 1,
 							'name' => 'Public',
 							'handle' => 'public',
-						]);
+						])
+						->execute()
+						->success();
 
 					$db->create('tbl_members_roles_event_permissions')
 						->ifNotExists()
@@ -325,7 +329,9 @@
 								'type' => 'key',
 								'cols' => ['role_id', 'event', 'action'],
 							],
-						]);
+						])
+						->execute()
+						->success();
 
 					$db->create('tbl_members_roles_forbidden_pages')
 						->ifNotExists()
@@ -345,7 +351,9 @@
 								'type' => 'key',
 								'cols' => ['role_id', 'page_id'],
 							],
-						]);
+						])
+						->execute()
+						->success();
 				})
 				->execute()
 				->success();
@@ -375,7 +383,6 @@
 			// ");
 			return Symphony::Database()
 				->drop('tbl_fields_memberusername')
-				->table('tbl_fields_memberusername')
 				->table('tbl_fields_memberpassword')
 				->table('tbl_fields_memberemail')
 				->table('tbl_fields_memberactivation')
