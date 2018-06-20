@@ -94,7 +94,7 @@
 				->keys([
 					'id' => 'primary',
 					'entry_id' => 'key',
-					'value' => 'value',
+					'value' => 'key',
 					'username' => [
 						'type' => 'unique',
 						'cols' => ['handle'],

@@ -131,7 +131,7 @@
 						'values' => ['yes','no'],
 						'default' => 'no',
 					],
-					'expires-code' => [
+					'expires' => [
 						'type' => 'datetime',
 						'null' => true,
 					],
