@@ -51,7 +51,27 @@
 			$div->appendChild($label);
 
 			$div->appendChild(Widget::Input('members[event]', 'reset-password', 'hidden'));
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+
+			Administration::instance()->Page->Header->setAttribute('class', 'spaced-bottom');
+	        Administration::instance()->Page->Context->setAttribute('class', 'spaced-right');
+	        Administration::instance()->Page->Contents->setAttribute('class', 'centered-content');
+	        $actions = new XMLElement('div');
+	        $actions->setAttribute('class', 'actions');
+			$actions->appendChild(
+				Widget::SVGIconContainer(
+					'save',
+					Widget::Input(
+						'action[save]',
+						__('Save Changes'),
+						'submit',
+						array('accesskey' => 's')
+					)
+				)
+			);
+
+			$actions->appendChild(Widget::SVGIcon('chevron'));
+
+			$div->appendChild($actions);
 
 			return '
 				<p>This event requires the user to enter their recovery code and then their new password. Should the recovery code
@@ -172,13 +192,20 @@
 				return $result;
 			}
 
-			$row = Symphony::Database()->fetchRow(0, sprintf("
-					SELECT `entry_id`, `recovery-code`
-					FROM tbl_entries_data_%d
-					WHERE reset = 'yes'
-					AND `recovery-code` = '%s'
-				", $auth->get('id'), Symphony::Database()->cleanValue($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code'])
-			));
+			// $row = Symphony::Database()->fetchRow(0, sprintf("
+			// 		SELECT `entry_id`, `recovery-code`
+			// 		FROM tbl_entries_data_%d
+			// 		WHERE reset = 'yes'
+			// 		AND `recovery-code` = '%s'
+			// 	", $auth->get('id'), Symphony::Database()->cleanValue($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code'])
+			// ));
+			$row = Symphony::Database()
+				->select(['entry_id', 'recovery-code'])
+				->from('tbl_entries_data_' . $auth->get('id'))
+				->where(['reset' => 'yes'])
+				->where(['recovery-code' => $fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code']])
+				->execute()
+				->next();
 
 			if(empty($row)) {
 				$result->setAttribute('result', 'error');
@@ -215,7 +242,7 @@
 					$result->appendChild(
 						new XMLElement(
 							$identity->get('element_name'),
-							null, 
+							null,
 							extension_Members::$_errors[$identity->get('element_name')]
 						)
 					);
@@ -225,15 +252,26 @@
 				}
 
 				// Check that the recovery code is still valid and has not expired
-				if(is_null(Symphony::Database()->fetchVar('entry_id', 0, sprintf("
-						SELECT `entry_id`
-						FROM `tbl_entries_data_%d`
-						WHERE `entry_id` = %d
-						AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
-						LIMIT 1
-					",
-					$auth->get('id'), $member_id, DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $auth->get('code_expiry')))
-				)))) {
+				// if(is_null(Symphony::Database()->fetchVar('entry_id', 0, sprintf("
+				// 		SELECT `entry_id`
+				// 		FROM `tbl_entries_data_%d`
+				// 		WHERE `entry_id` = %d
+				// 		AND DATE_FORMAT(expires, '%%Y-%%m-%%d %%H:%%i:%%s') > '%s'
+				// 		LIMIT 1
+				// 	",
+				// 	$auth->get('id'), $member_id, DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $auth->get('code_expiry')))
+				// )))) {
+				if (is_null(
+					Symphony::Database()
+						->select(['entry_id'])
+						->from('tbl_entries_data_' . $auth->get('id'))
+						->where(['entry_id' => $member_id])
+						->where(['DATE_FORMAT(expires, :date_format)' => ['>' => $auth->get('id'), $member_id, DateTimeObj::get('Y-m-d H:i:s', strtotime('now - '. $auth->get('code_expiry')))]])
+						->setValue('date_format', '%%Y-%%m-%%d %%H:%%i:%%s')
+						->limit(1)
+						->execute()
+						->variable('entry_id')
+				)) {
 					$result->setAttribute('result', 'error');
 					$result->appendChild(
 						new XMLElement('message', __('Member event encountered errors when processing.'), array(

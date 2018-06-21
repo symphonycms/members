@@ -35,7 +35,25 @@
 				$div->appendChild($label);
 
 				$div->appendChild(Widget::Input('members[event]', 'reset-password', 'hidden'));
-				$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+
+				Administration::instance()->Page->Header->setAttribute('class', 'spaced-bottom');
+		        Administration::instance()->Page->Context->setAttribute('class', 'spaced-right');
+		        Administration::instance()->Page->Contents->setAttribute('class', 'centered-content');
+		        $actions = new XMLElement('div');
+		        $actions->setAttribute('class', 'actions');
+				$actions->appendChild(
+					Widget::SVGIconContainer(
+						'save',
+						Widget::Input(
+							'action[save]',
+							__('Save Changes'),
+							'submit',
+							array('accesskey' => 's')
+						)
+					)
+				);
+				$actions->appendChild(Widget::SVGIcon('chevron'));
+				$div->appendChild($actions);
 			}
 
 			return '
@@ -189,11 +207,22 @@
 
 			// If the Member has entry data for the Activation field, update it to yes
 			if(array_key_exists((int)$activation->get('id'), $entry->getData())) {
-				Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
+				// Symphony::Database()->update($data, 'tbl_entries_data_' . $activation->get('id'), ' `entry_id` = ' . $member_id);
+				Symphony::Database()
+					->update('tbl_entries_data_' . $activation->get('id'))
+					->set($data)
+					->where(['entry_id' => $member_id])
+					->execute()
+					->success();
 			}
 			else {
 				$data['entry_id'] = $member_id;
-				Symphony::Database()->insert($data, 'tbl_entries_data_' . $activation->get('id'));
+				// Symphony::Database()->insert($data, 'tbl_entries_data_' . $activation->get('id'));
+				Symphony::Database()
+					->insert('tbl_entries_data_' . $activation->get('id'))
+					->values($data)
+					->execute()
+					->success();
 			}
 
 			/**

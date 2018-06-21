@@ -42,32 +42,89 @@
 	-------------------------------------------------------------------------*/
 
 		public static function createSettingsTable() {
-			return Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_memberactivation` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `field_id` int(11) unsigned NOT NULL,
-				  `code_expiry` varchar(50) NOT NULL,
-				  `activation_role_id` int(11) unsigned NOT NULL,
-				  `deny_login` enum('yes','no') NOT NULL default 'yes',
-				  PRIMARY KEY  (`id`),
-				  UNIQUE KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+			// return Symphony::Database()->query("
+			// 	CREATE TABLE IF NOT EXISTS `tbl_fields_memberactivation` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `field_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `code_expiry` VARCHAR(50) NOT NULL,
+			// 	  `activation_role_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `deny_login` ENUM('yes','no') NOT NULL default 'yes',
+			// 	  PRIMARY KEY  (`id`),
+			// 	  UNIQUE KEY `field_id` (`field_id`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
+			return Symphony::Database()
+				->create('tbl_fields_memberactivation')
+				->ifNotExists()
+				->charset('utf8')
+				->collate('utf8_unicode_ci')
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'field_id' => 'int(11)',
+					'code_expiry' => 'varchar(50)',
+					'activation_role_id' => 'int(11)',
+					'deny_login' => [
+						'type' => 'enum',
+						'values' => ['yes','no'],
+						'default' => 'yes',
+					],
+				])
+				->keys([
+					'id' => 'primary',
+					'field_id' => 'unique',
+				])
+				->execute()
+				->success();
 		}
 
 		public function createTable(){
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `activated` enum('yes','no') NOT NULL default 'no',
-				  `timestamp` DATETIME default NULL,
-				  `code` varchar(40) default NULL,
-				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`),
-				  UNIQUE KEY `code` (`code`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+			// return Symphony::Database()->query(
+			// 	"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
+			// 	  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 	  `entry_id` INT(11) UNSIGNED NOT NULL,
+			// 	  `activated` ENUM('yes','no') NOT NULL default 'no',
+			// 	  `timestamp` DATETIME DEFAULT NULL,
+			// 	  `code` VARCHAR(40) DEFAULT NULL,
+			// 	  PRIMARY KEY  (`id`),
+			// 	  KEY `entry_id` (`entry_id`),
+			// 	  UNIQUE KEY `code` (`code`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
+			return Symphony::Database()
+				->create('tbl_entries_data_' . $this->get('id'))
+				->ifNotExists()
+				->charset('utf8')
+				->collate('utf8_unicode_ci')
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'entry_id' => 'int(11)',
+					'activated' => [
+						'type' => 'enum',
+						'values' => ['yes','no'],
+						'default' => 'no',
+					],
+					'timestamp' => [
+						'type' => 'datetime',
+						'null' => true,
+					],
+					'code' => [
+						'type' => 'varchar(40)',
+						'null' => true,
+					],
+				])
+				->keys([
+					'id' => 'primary',
+					'entry_id' => 'key',
+					'code' => 'unique',
+				])
+				->execute()
+				->success();
 		}
 
 	/*-------------------------------------------------------------------------
@@ -93,9 +150,15 @@
 			// Generate a code
 			do {
 				$code = General::hash(uniqid(), 'sha1');
-				$row = Symphony::Database()->fetchRow(0, "
-					SELECT 1 FROM `tbl_entries_data_{$this->get('id')}` WHERE `code` = '{$code}'
-				");
+				// $row = Symphony::Database()->fetchRow(0, "
+				// 	SELECT 1 FROM `tbl_entries_data_{$this->get('id')}` WHERE `code` = '{$code}'
+				// ");
+				$row = Symphony::Database()
+					->select(['*'])
+					->from('tbl_entries_data_' . $this->get('id'))
+					->where(['code' => $code])
+					->execute()
+					->next();
 			} while(is_array($row) && !empty($row));
 
 			$data = array(
@@ -117,15 +180,24 @@
 		public function isCodeActive($entry_id) {
 
 			// First check if a code already exists
-			$code = Symphony::Database()->fetchRow(0, sprintf("
-				SELECT `code`, `timestamp` FROM `tbl_entries_data_%d`
-				WHERE `entry_id` = %d
-				AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
-				LIMIT 1",
- 				$this->get('id'),
-				$entry_id,
-				DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
-			));
+			// $code = Symphony::Database()->fetchRow(0, sprintf("
+			// 	SELECT `code`, `timestamp` FROM `tbl_entries_data_%d`
+			// 	WHERE `entry_id` = %d
+			// 	AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s'
+			// 	LIMIT 1",
+ 		// 		$this->get('id'),
+			// 	$entry_id,
+			// 	DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))
+			// ));
+			$code = Symphony::Database()
+				->select(['code'])
+				->from('tbl_entries_data_' . $this->get('id'))
+				->where(['entry_id' => $entry_id])
+				->where(['DATE_FORMAT(timestamp, :date_format)' => ['<' => DateTimeObj::get('Y-m-d H:i:s', strtotime('now + ' . $this->get('code_expiry')))]])
+				->setValue('date_format', '%%Y-%%m-%%d %%H:%%i:%%s')
+				->limit(1)
+				->execute()
+				->next();
 
 			if(is_array($code) && !empty($code) && !is_null($code['code'])) {
 				return $code;
@@ -145,18 +217,36 @@
 		 * @return boolean
 		 */
 		public function purgeCodes($entry_id = null){
-			$entry_id = Symphony::Database()->cleanValue($entry_id);
+			// $entry_id = $entry_id;
 
-			return Symphony::Database()->update(
-				array(
-					'code' => null
-				),
-				"`tbl_entries_data_{$this->get('id')}`",
-				sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
-					DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))),
-					($entry_id ? " OR `entry_id` = $entry_id" : '')
-				)
-			);
+			// return Symphony::Database()->update(
+			// 	array(
+			// 		'code' => null
+			// 	),
+			// 	"`tbl_entries_data_{$this->get('id')}`",
+			// 	sprintf("`activated` = 'no' AND DATE_FORMAT(timestamp, '%%Y-%%m-%%d %%H:%%i:%%s') < '%s' %s",
+			// 		DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry'))),
+			// 		($entry_id ? " OR `entry_id` = $entry_id" : '')
+			// 	)
+			// );
+			$q = Symphony::Database()
+				->update('tbl_entries_data_' . $this->get('id'))
+				->set([
+					'code' => null,
+				])
+				->where(['activated' => 'no'])
+				->where(['DATE_FORMAT(timestamp, :date_format)' => ['<' => DateTimeObj::get('Y-m-d H:i:s', strtotime('now - ' . $this->get('code_expiry')))]])
+				->setValue('date_format', '%%Y-%%m-%%d %%H:%%i:%%s');
+
+			if ($entry_id) {
+				$q->where(['or' => [
+					['entry_id' => $entry_id],
+				]]);
+			}
+
+			return $q
+				->execute()
+				->success();
 		}
 
 		public static function findCodeExpiry() {
@@ -167,7 +257,7 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function toggleFieldData(array $data, $newState, $entry_id = NULL){
+		public function toggleFieldData(array $data, $newState, $entry_id = null){
 			$data['activated'] = $newState;
 
 			if($data['activated'] == 'no') {
@@ -190,7 +280,7 @@
 			parent::setFromPOST($settings);
 		}
 
-		public function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL){
+		public function displaySettingsPanel(XMLElement &$wrapper, $errors = null){
 			Field::displaySettingsPanel($wrapper, $errors);
 
 			$group = new XMLElement('div');
@@ -362,7 +452,7 @@
 			}
 		}
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=NULL){
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null){
 			$status = self::__OK__;
 
 			return $this->prepareImportValue($data, ImportableField::ARRAY_VALUE, $entry_id);
@@ -439,13 +529,13 @@
 			$wrapper->appendChild($el);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL, $entry_id = null) {
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null) {
 			return parent::prepareTableValue(array(
 				'value' => ($data['activated'] == 'yes') ? __('Activated') : __('Not Activated')
 			), $link, $entry_id);
 		}
 
-		public function getParameterPoolValue(array $data, $entry_id = NULL) {
+		public function getParameterPoolValue(array $data, $entry_id = null) {
 			return $data['activated'];
 		}
 
@@ -453,7 +543,7 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC') {
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order = 'ASC') {
 			if(in_array(strtolower($order), array('random', 'rand'))) {
 				$sort = 'ORDER BY RAND()';
 			}
@@ -475,7 +565,7 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false){
 
 			$field_id = $this->get('id');
 

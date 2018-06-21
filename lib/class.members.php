@@ -112,12 +112,12 @@
 
 		public function fetchMemberFromID($member_id = null) {
 			if(!is_null($member_id)) {
-				$Member = EntryManager::fetch($member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = EntryManager::fetch($member_id, null, null, null, null, null, false, true);
 				return $Member[0];
 			}
 
 			else if(self::$member_id !== 0) {
-				$Member = EntryManager::fetch(self::$member_id, NULL, NULL, NULL, NULL, NULL, false, true);
+				$Member = EntryManager::fetch(self::$member_id, null, null, null, null, null, false, true);
 				return $Member[0];
 			}
 

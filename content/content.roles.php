@@ -5,6 +5,17 @@
 
 	Class contentExtensionMembersRoles extends AdministrationPage {
 
+		public static function baseURL(){
+			return SYMPHONY_URL . '/extension/members/roles/';
+		}
+
+		public function build(array $context = array()) {
+			$current_url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+			$test = explode('/', substr(str_replace($this->baseURL(), '', $current_url), 0, -1));
+
+			parent::build($context = ['action' => $test[0], 'id' => $test[1], 'flag' => $test[2]]);
+		}
+
 		public function __viewIndex() {
 			$this->setPageType('table');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Member Roles'))));
@@ -19,23 +30,32 @@
 				);
 			}
 
-			$this->appendSubheading(__('Member Roles'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', __('Create a Role'), 'create button', NULL, array('accesskey' => 'c')
-			));
+			$this->appendSubheading(
+				__('Member Roles'),
+				Widget::Anchor(
+					Widget::SVGIcon('add') . '<span><span>' . __('Create New') . '</span></span>',
+					Administration::instance()->getCurrentPageURL().'new/',
+					__('Create a Role'),
+					'create button',
+					null,
+					array('accesskey' => 'c')
+				)
+			);
 
 			$roles = RoleManager::fetch();
 			// Find all possible member sections
 			$config_sections = explode(',',extension_Members::getSetting('section'));
 
 			$aTableHead = array(
-				array(__('Name'), 'col')
+				array(__('Name'), 'col'),
+				array(__('Description'), 'col')
 			);
 
 			$aTableBody = array();
 
 			if(!is_array($roles) || empty($roles)){
 				$aTableBody = array(Widget::TableRow(
-					array(Widget::TableData(__('None found.'), 'inactive', NULL, count($aTableHead)))
+					array(Widget::TableData(__('None found.'), 'inactive', null, count($aTableHead)))
 				));
 			}
 
@@ -45,19 +65,25 @@
 					array(
 						SYMPHONY_URL . '/blueprints/sections/'
 					))
-					, 'inactive', NULL, count($aTableHead)))
+					, 'inactive', null, count($aTableHead)))
 				));
 			}
 
 			else {
 				$hasRoles = FieldManager::isFieldUsed(extension_Members::getFieldType('role'));
-				$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+				$roleFields = (new FieldManager)
+					->select()
+					->sort('sortorder', 'asc')
+					->type(extension_Members::getFieldType('role'))
+					->execute()
+					->rows();
 
 				$with_selected_roles = array();
 				$i = 0;
 
 				foreach($roles as $role){
-					// Setup each cell
+					// NAME
+
 					$td1 = Widget::TableData(Widget::Anchor(
 						$role->get('name'), Administration::instance()->getCurrentPageURL().'edit/' . $role->get('id') . '/', null, 'content'
 					));
@@ -66,16 +92,38 @@
 						$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
 					}
 
+					$td1->setAttribute('data-title', __('Name'));
+
+					// DESCRIPTION
+
+					if($role->get('id') == Role::PUBLIC_ROLE) {
+						$td2 = Widget::TableData(__('This is the role assumed by the general public.'));
+					} else {
+						$td2 = Widget::TableData(__('None'), 'inactive');
+					}
+
+					$td2->setAttribute('data-title', __('Description'));
+
 					// Get the number of members for this role, as long as it's not the Public Role.
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
-						$columns = array($td1);
+						$columns = array($td1, $td2);
 
 						foreach($roleFields as $roleField) {
-							$section = SectionManager::fetch($roleField->get('parent_section'));
-							$member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
-								"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
-								$roleField->get('id'), $role->get('id')
-							));
+							$section = (new SectionManager)
+								->select()
+								->section($roleField->get('parent_section'))
+								->execute()
+								->next();
+							// $member_count = Symphony::Database()->fetchVar('count', 0, sprintf(
+							// 	"SELECT COUNT(*) AS `count` FROM `tbl_entries_data_%d` WHERE `role_id` = %d",
+							// 	$roleField->get('id'), $role->get('id')
+							// ));
+							$member_count = Symphony::Database()
+								->select(['count(*)' => 'count'])
+								->from('tbl_entries_data_' . $roleField->get('id'))
+								->where(['role_id' => $role->get('id')])
+								->execute()
+								->variable('count');
 
 							// If it's the first time we're looping over the available sections
 							// then change the table header, otherwise just ignore it as it's
@@ -87,22 +135,23 @@
 							$columns[] = Widget::TableData(Widget::Anchor(
 								"$member_count",
 								SYMPHONY_URL . '/publish/' . $section->get('handle') . '/?filter[' . $roleField->get('element_name') . ']=' . $role->get('id')
-							));
+							))->setAttribute('data-title', $section->get('name'));
 						}
 
 						$aTableBody[] = Widget::TableRow($columns);
-					}
+					} else {
+						$emptyCells = array();
 
-					else if($role->get('id') == Role::PUBLIC_ROLE) {
-						$td2 = Widget::TableData(__('This is the role assumed by the general public.'));
-					}
+						if (!is_array(extension_Members::getSetting('section'))) {
+							$emptyCells[] = Widget::TableData(' ');
+						} else {
+							foreach (extension_Members::getSetting('section') as $section) {
+								$emptyCells[] = Widget::TableData(' ');
+							}
+						}
 
-					else {
-						$td2 = Widget::TableData(__('None'), 'inactive');
+						$aTableBody[] = Widget::TableRow(array_merge(array($td1, $td2), $emptyCells));
 					}
-
-					// Add cells to a row
-					if($i === 0) $aTableBody[] = Widget::TableRow(array($td1, $td2));
 
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$with_selected_roles[] = array(
@@ -116,10 +165,11 @@
 
 			$table = Widget::Table(
 				Widget::TableHead($aTableHead),
-				NULL,
+				null,
 				Widget::TableBody($aTableBody),
 				'selectable'
 			);
+			$table->setAttribute('data-interactive', 'data-interactive');
 
 			$this->Form->appendChild($table);
 
@@ -149,10 +199,10 @@
 			$time = Widget::Time();
 
 			// Verify role exists
-			if($this->_context[0] == 'edit') {
+			if($this->_context['action'] == 'edit') {
 				$isNew = false;
 
-				if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
+				if(!$role_id = $this->_context['id']) redirect(extension_Members::baseURL() . 'roles/');
 
 				if(!$existing = RoleManager::fetch($role_id)){
 					throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'));
@@ -160,12 +210,11 @@
 			}
 
 			// Add in custom assets
-			Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/members/assets/members.roles.css', 'screen', 101);
-			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.roles.js', 104);
+ 			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.roles.js', 104);
 
 			// Append any Page Alerts from the form's
-			if(isset($this->_context[2])){
-				switch($this->_context[2]){
+			if(isset($this->_context['flag'])){
+				switch($this->_context['flag']){
 					case 'saved':
 						$this->pageAlert(
 							__('Role updated at %s.', array($time->generate()))
@@ -225,7 +274,10 @@
 				}
 			}
 			$this->insertBreadcrumbs(array(
-				Widget::Anchor(__('Member Roles'), extension_members::baseURL() . 'roles/'),
+				Widget::Anchor(
+					Widget::SVGIcon('arrow') . __('Member Roles'),
+					extension_members::baseURL() . 'roles/'
+				),
 			));
 
 			$fieldset = new XMLElement('fieldset');
@@ -261,7 +313,7 @@
 							"fields[permissions][{$event_handle}][create]",
 							(string)EventPermissions::CREATE,
 							'checkbox',
-							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : NULL)
+							($permissions['create'] == EventPermissions::CREATE ? array('checked' => 'checked') : null)
 						)->generate(),
 						'Create'
 					),
@@ -275,7 +327,7 @@
 							"fields[permissions][{$event_handle}][edit]",
 							(string)EventPermissions::NO_PERMISSIONS,
 							'radio',
-							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : NULL)
+							($permissions['edit'] == EventPermissions::NO_PERMISSIONS ? array('checked' => 'checked') : null)
 						)->generate(),
 						'None'
 					)
@@ -288,7 +340,7 @@
 							"fields[permissions][{$event_handle}][edit]",
 							(string)EventPermissions::OWN_ENTRIES,
 							'radio',
-							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : NULL)
+							($permissions['edit'] == EventPermissions::OWN_ENTRIES ? array('checked' => 'checked') : null)
 						)->generate(),
 						'Own'
 					)
@@ -301,7 +353,7 @@
 							"fields[permissions][{$event_handle}][edit]",
 							(string)EventPermissions::ALL_ENTRIES,
 							'radio',
-							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : NULL)
+							($permissions['edit'] == EventPermissions::ALL_ENTRIES ? array('checked' => 'checked') : null)
 						)->generate(),
 						'All'
 					)
@@ -336,7 +388,7 @@
 
 			$table = Widget::Table(
 				$thead,
-				NULL,
+				null,
 				Widget::TableBody($aTableBody),
 				'role-permissions'
 			);
@@ -354,7 +406,10 @@
 			if(!is_array($fields['page_access'])) $fields['page_access'] = array();
 
 			$options = array();
-			$pages = PageManager::fetch(false, array('id'));
+			$pages = (new PageManager)
+				->select(['id'])
+				->execute()
+				->rows();
 			if(!empty($pages)) foreach($pages as $page) {
 				$options[] = array(
 					$page['id'],
@@ -367,15 +422,35 @@
 			$fieldset->appendChild($label);
 			$this->Form->appendChild($fieldset);
 
+			$this->Header->setAttribute('class', 'spaced-bottom');
+	        $this->Context->setAttribute('class', 'spaced-right');
+	        $this->Contents->setAttribute('class', 'centered-content');
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(
+				Widget::SVGIconContainer(
+					'save',
+					Widget::Input(
+						'action[save]',
+						__('Save Changes'),
+						'submit',
+						array('accesskey' => 's')
+					)
+				)
+			);
 
 			if(!$isNew && $existing->get('id') != Role::PUBLIC_ROLE) {
 				$button = new XMLElement('button', __('Delete'));
 				$button->setAttributeArray(array('name' => 'action[delete]', 'class' => 'button confirm delete', 'title' => __('Delete this Role'), 'type' => 'submit', 'accesskey' => 'd'));
-				$div->appendChild($button);
+				$div->appendChild(
+					Widget::SVGIconContainer(
+						'delete',
+						$button
+					)
+				);
 			}
+
+			$div->appendChild(Widget::SVGIcon('chevron'));
 
 			$this->Form->appendChild($div);
 		}
@@ -385,7 +460,12 @@
 
 			if(is_array($checked) && !empty($checked)) {
 				if(preg_match('/move::(\d+)/i', $_POST['with-selected'], $match)) {
-					$roleFields = FieldManager::fetch(null, null, 'ASC', 'sortorder', extension_Members::getFieldType('role'));
+					$roleFields = (new FieldManager)
+						->select()
+						->sort('sortorder', 'asc')
+						->type(extension_Members::getFieldType('role'))
+						->execute()
+						->rows();
 					$target_role = $match[1];
 
 					if(!$replacement = RoleManager::fetch($target_role)) return false;
@@ -394,11 +474,19 @@
 						if($role_id == $target_role) continue;
 
 						foreach($roleFields as $roleField) {
-							Symphony::Database()->query(sprintf("
-									UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d
-								",
-								$roleField->get('id'), $target_role, $role_id
-							));
+							// Symphony::Database()->query(sprintf("
+							// 		UPDATE `tbl_entries_data_%d` SET `role_id` = %d WHERE `role_id` = %d
+							// 	",
+							// 	$roleField->get('id'), $target_role, $role_id
+							// ));
+							Symphony::Database()
+								->update('tbl_entries_data_' . $roleField->get('id'))
+								->set([
+									'role_id' => $target_role,
+								])
+								->where(['role_id' => $role_id])
+								->execute()
+								->success();
 						}
 					}
 
@@ -410,7 +498,7 @@
 						foreach($checked as $role_id) {
 							RoleManager::delete($role_id);
 						}
-						redirect(extension_Members::baseURL() . '/roles/');
+						redirect(extension_Members::baseURL() . 'roles/');
 
 						break;
 
@@ -418,7 +506,7 @@
 						foreach($checked as $role_id) {
 							RoleManager::delete($role_id, null, true);
 						}
-						redirect(extension_Members::baseURL() . '/roles/');
+						redirect(extension_Members::baseURL() . 'roles/');
 
 						break;
 				}
@@ -431,16 +519,16 @@
 
 		public function __actionEdit() {
 			if(array_key_exists('delete', $_POST['action'])) {
-				return $this->__actionDelete($this->_context[1], extension_Members::baseURL() . 'roles/');
+				return $this->__actionDelete($this->_context['id'], extension_Members::baseURL() . 'roles/');
 			}
 
 			if(array_key_exists('save', $_POST['action'])) {
-				$isNew = ($this->_context[0] !== "edit");
+				$isNew = ($this->_context['action'] !== "edit");
 				$fields = $_POST['fields'];
 
 				// If we are editing, we need to make sure the current `$role_id` exists
 				if(!$isNew) {
-					if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
+					if(!$role_id = $this->_context['id']) redirect(extension_Members::baseURL() . 'roles/');
 
 					if(!$existing = RoleManager::fetch($role_id)){
 						throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'));

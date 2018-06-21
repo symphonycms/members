@@ -31,8 +31,8 @@
 		 * include. It takes a result from an Event filter and generates XML
 		 * to output with the custom events
 		 */
-		public static function buildFilterElement($name, $status, $message=NULL, array $attr=NULL){
-			$ret = new XMLElement('filter', (!$message || is_object($message) ? NULL : $message), array(
+		public static function buildFilterElement($name, $status, $message = null, array $attr = null){
+			$ret = new XMLElement('filter', (!$message || is_object($message) ? null : $message), array(
 				'name' => $name,
 				'status' => $status
 			));
@@ -169,7 +169,7 @@
 				'MembersPasswordResetFailure',
 				'/frontend/',
 				array(
-					'username' => Symphony::Database()->cleanValue($username)
+					'username' => $username
 				)
 			);
 		}

@@ -93,7 +93,7 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null){
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null){
 			$status = self::__OK__;
 
 			if(empty($data)) return array();
@@ -122,7 +122,7 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false){
 
 			$field_id = $this->get('id');
 
