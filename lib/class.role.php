@@ -132,8 +132,8 @@
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
 				// $sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
-				$p = Symphony::Database()
-					->transaction(function (Database $db) use ($permissions) {
+				Symphony::Database()
+					->transaction(function (Database $db) use ($role_id, $permissions) {
 
 						foreach($permissions as $event_handle => $p){
 							if(!array_key_exists('create', $p)) {
@@ -145,7 +145,9 @@
 										'event' => $event_handle,
 										'action' => 'create',
 										'level' => EventPermissions::NO_PERMISSIONS,
-									]);
+									])
+									->execute()
+									->success();
 							}
 
 							foreach($p as $action => $level) {
@@ -157,7 +159,9 @@
 										'event' => $event_handle,
 										'action' => $action,
 										'level' => $level,
-									]);
+									])
+									->execute()
+									->success();
 							}
 						}
 				})
