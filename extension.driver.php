@@ -278,7 +278,8 @@
 			// ");
 			return Symphony::Database()
 				->transaction(function (Database $db) {
-					$db->create('tbl_members_roles')
+					$db
+						->create('tbl_members_roles')
 						->ifNotExists()
 						->charset('utf8')
 						->collate('utf8_unicode_ci')
@@ -297,7 +298,8 @@
 						->execute()
 						->success();
 
-					$db->insert('tbl_members_roles')
+					$db
+						->insert('tbl_members_roles')
 						->values([
 							'id' => 1,
 							'name' => 'Public',
@@ -306,7 +308,8 @@
 						->execute()
 						->success();
 
-					$db->create('tbl_members_roles_event_permissions')
+					$db
+						->create('tbl_members_roles_event_permissions')
 						->ifNotExists()
 						->charset('utf8')
 						->collate('utf8_unicode_ci')
@@ -333,7 +336,8 @@
 						->execute()
 						->success();
 
-					$db->create('tbl_members_roles_forbidden_pages')
+					$db
+						->create('tbl_members_roles_forbidden_pages')
 						->ifNotExists()
 						->charset('utf8')
 						->collate('utf8_unicode_ci')

@@ -203,7 +203,7 @@
 				->select(['entry_id', 'recovery-code'])
 				->from('tbl_entries_data_' . $auth->get('id'))
 				->where(['reset' => 'yes'])
-				->where(['recovery-code' => Symphony::Database()->cleanValue($fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code']])
+				->where(['recovery-code' => $fields[$this->driver->getMemberDriver()->section->getFieldHandle('authentication')]['recovery-code']])
 				->execute()
 				->next();
 

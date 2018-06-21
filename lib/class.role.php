@@ -48,26 +48,29 @@
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
 				// $sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
-				$q = Symphony::Database()
-					->insert('tbl_members_roles_event_permissions');
 
-				foreach($permissions as $event_handle => $p){
-					foreach($p as $action => $level) {
-						// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
-						$q
-							->values([
-								'role_id' => $role_id,
-								'event' => $event_handle,
-								'action' => $action,
-								'level' => $level,
-							]);
-					}
-				}
+				Symphony::Database()
+					->transaction(function (Database $db) use ($permissions) {
+
+						foreach($permissions as $event_handle => $p){
+							foreach($p as $action => $level) {
+								// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+								$db
+									->insert('tbl_members_roles_event_permissions')
+									->values([
+										'role_id' => $role_id,
+										'event' => $event_handle,
+										'action' => $action,
+										'level' => $level,
+									]);
+							}
+						}
+
+				})
+				->execute()
+				->success();
 
 				// Symphony::Database()->query(trim($sql, ','));
-				$q
-					->execute()
-					->success();
 			}
 
 			return $role_id;
@@ -129,37 +132,39 @@
 			$permissions = $data['roles_event_permissions']['permissions'];
 			if(is_array($permissions) && !empty($permissions)){
 				// $sql = "INSERT INTO `tbl_members_roles_event_permissions` VALUES ";
-				$q = Symphony::Database()
-					->insert('tbl_members_roles_event_permissions');
+				$p = Symphony::Database()
+					->transaction(function (Database $db) use ($permissions) {
 
-				foreach($permissions as $event_handle => $p){
-					if(!array_key_exists('create', $p)) {
-						// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
-						$q
-							->values([
-								'role_id' => $role_id,
-								'event' => $event_handle,
-								'action' => 'create',
-								'level' => EventPermissions::NO_PERMISSIONS,
-							]);
-					}
+						foreach($permissions as $event_handle => $p){
+							if(!array_key_exists('create', $p)) {
+								// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, 'create', EventPermissions::NO_PERMISSIONS);
+								$db
+									->insert('tbl_members_roles_event_permissions')
+									->values([
+										'role_id' => $role_id,
+										'event' => $event_handle,
+										'action' => 'create',
+										'level' => EventPermissions::NO_PERMISSIONS,
+									]);
+							}
 
-					foreach($p as $action => $level) {
-						// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
-						$q
-							->values([
-								'role_id' => $role_id,
-								'event' => $event_handle,
-								'action' => $action,
-								'level' => $level,
-							]);
-					}
-				}
+							foreach($p as $action => $level) {
+								// $sql .= sprintf("(null,%d,'%s','%s',%d),", $role_id, $event_handle, $action, $level);
+								$db
+									->insert('tbl_members_roles_event_permissions')
+									->values([
+										'role_id' => $role_id,
+										'event' => $event_handle,
+										'action' => $action,
+										'level' => $level,
+									]);
+							}
+						}
+				})
+				->execute()
+				->success();
 
 				// $p = Symphony::Database()->query(trim($sql, ','));
-				$p = $q
-					->execute()
-					->success();
 			}
 
 			return true;
@@ -190,7 +195,7 @@
 			// Symphony::Database()->delete("tbl_members_roles", " `id` = " . $role_id);
 			Symphony::Database()
 				->delete('tbl_members_roles')
-				->where(['role_id' => $role_id])
+				->where(['id' => $role_id])
 				->execute()
 				->success();
 

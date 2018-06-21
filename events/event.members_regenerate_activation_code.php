@@ -211,7 +211,7 @@
 				Symphony::Database()
 					->update('tbl_entries_data_' . $activation->get('id'))
 					->set($data)
-					->where(['entry_id' = $member_id])
+					->where(['entry_id' => $member_id])
 					->execute()
 					->success();
 			}
