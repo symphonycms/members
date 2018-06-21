@@ -306,9 +306,9 @@
 				if(!in_array($role['id'], array_keys(RoleManager::$_pool))) {
 					RoleManager::$_pool[$role['id']] = new Role($role);
 					RoleManager::$_pool[$role['id']]->setPermissions();
-				}
 
-				$result[] = RoleManager::$_pool[$role['id']];
+					$result[] = RoleManager::$_pool[$role['id']];
+				}
 			}
 
 			return $return_single ? current($result) : $result;

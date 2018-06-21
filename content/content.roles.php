@@ -13,7 +13,7 @@
 			$current_url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 			$test = explode('/', substr(str_replace($this->baseURL(), '', $current_url), 0, -1));
 
-			parent::build($context = ['action' => $test[0], 'id' => $test[1]]);
+			parent::build($context = ['action' => $test[0], 'id' => $test[1], 'flag' => $test[2]]);
 		}
 
 		public function __viewIndex() {
@@ -82,19 +82,31 @@
 				$i = 0;
 
 				foreach($roles as $role){
-					// Setup each cell
+					// NAME
+
 					$td1 = Widget::TableData(Widget::Anchor(
 						$role->get('name'), Administration::instance()->getCurrentPageURL().'edit/' . $role->get('id') . '/', null, 'content'
 					));
-					$td1->setAttribute('data-title', __('Name'));
 
 					if($role->get('id') != Role::PUBLIC_ROLE) {
 						$td1->appendChild(Widget::Input("items[{$role->get('id')}]", null, 'checkbox'));
 					}
 
+					$td1->setAttribute('data-title', __('Name'));
+
+					// DESCRIPTION
+
+					if($role->get('id') == Role::PUBLIC_ROLE) {
+						$td2 = Widget::TableData(__('This is the role assumed by the general public.'));
+					} else {
+						$td2 = Widget::TableData(__('None'), 'inactive');
+					}
+
+					$td2->setAttribute('data-title', __('Description'));
+
 					// Get the number of members for this role, as long as it's not the Public Role.
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
-						$columns = array($td1);
+						$columns = array($td1, $td2);
 
 						foreach($roleFields as $roleField) {
 							$section = (new SectionManager)
@@ -127,19 +139,19 @@
 						}
 
 						$aTableBody[] = Widget::TableRow($columns);
-					}
+					} else {
+						$emptyCells = array();
 
-					else if($role->get('id') == Role::PUBLIC_ROLE) {
-						$td2 = Widget::TableData(__('This is the role assumed by the general public.'));
-					}
+						if (!is_array(extension_Members::getSetting('section'))) {
+							$emptyCells[] = Widget::TableData(' ');
+						} else {
+							foreach (extension_Members::getSetting('section') as $section) {
+								$emptyCells[] = Widget::TableData(' ');
+							}
+						}
 
-					else {
-						$td2 = Widget::TableData(__('None'), 'inactive');
+						$aTableBody[] = Widget::TableRow(array_merge(array($td1, $td2), $emptyCells));
 					}
-					$td2->setAttribute('data-title', __('Description'));
-
-					// Add cells to a row
-					$aTableBody[] = Widget::TableRow(array($td1, $td2));
 
 					if($hasRoles && $role->get('id') != Role::PUBLIC_ROLE) {
 						$with_selected_roles[] = array(
@@ -187,10 +199,10 @@
 			$time = Widget::Time();
 
 			// Verify role exists
-			if($this->_context[0] == 'edit') {
+			if($this->_context['action'] == 'edit') {
 				$isNew = false;
 
-				if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
+				if(!$role_id = $this->_context['id']) redirect(extension_Members::baseURL() . 'roles/');
 
 				if(!$existing = RoleManager::fetch($role_id)){
 					throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'));
@@ -201,8 +213,8 @@
  			Administration::instance()->Page->addScriptToHead(URL . '/extensions/members/assets/members.roles.js', 104);
 
 			// Append any Page Alerts from the form's
-			if(isset($this->_context[2])){
-				switch($this->_context[2]){
+			if(isset($this->_context['flag'])){
+				switch($this->_context['flag']){
 					case 'saved':
 						$this->pageAlert(
 							__('Role updated at %s.', array($time->generate()))
@@ -507,16 +519,16 @@
 
 		public function __actionEdit() {
 			if(array_key_exists('delete', $_POST['action'])) {
-				return $this->__actionDelete($this->_context[1], extension_Members::baseURL() . 'roles/');
+				return $this->__actionDelete($this->_context['id'], extension_Members::baseURL() . 'roles/');
 			}
 
 			if(array_key_exists('save', $_POST['action'])) {
-				$isNew = ($this->_context[0] !== "edit");
+				$isNew = ($this->_context['action'] !== "edit");
 				$fields = $_POST['fields'];
 
 				// If we are editing, we need to make sure the current `$role_id` exists
 				if(!$isNew) {
-					if(!$role_id = $this->_context[1]) redirect(extension_Members::baseURL() . 'roles/');
+					if(!$role_id = $this->_context['id']) redirect(extension_Members::baseURL() . 'roles/');
 
 					if(!$existing = RoleManager::fetch($role_id)){
 						throw new SymphonyErrorPage(__('The role you requested to edit does not exist.'), __('Role not found'));
