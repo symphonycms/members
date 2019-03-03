@@ -531,9 +531,6 @@
 
 				return true;
 			}
-			else {
-				throw new Exception(sprintf('Setting the active Members section to %d failed.', $section_id));
-			}
 
 			return false;
 		}
