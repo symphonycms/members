@@ -527,7 +527,7 @@
 
 			if(in_array((int)$section_id, $config_sections)) {
 				extension_Members::$members_section = (int)$section_id;
-				$this->Member->setMemberSectionID(extension_Members::$member_sections[$section_id]);
+				$this->Member->setMemberSectionID(extension_Members::$member_sections[(int)$section_id]);
 
 				return true;
 			}
