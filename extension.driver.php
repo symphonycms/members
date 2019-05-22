@@ -159,7 +159,8 @@
 				array(
 					'location' 	=> __('System'),
 					'name' 		=> __('Member Roles'),
-					'link' 		=> '/roles/'
+					'link' 		=> '/roles/',
+					'limit' => 'developer'
 				)
 			);
 		}
