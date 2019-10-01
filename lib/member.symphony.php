@@ -245,7 +245,8 @@
 						$this->cookie->set('email', $data['email']);
 					}
 
-					$this->cookie->set('password', $this->getMember()->getData($this->section->getField('authentication')->get('id'), true)->password);
+					$hashedPassword = $isHashed ? $data['password'] : $this->getMember()->getData($this->section->getField('authentication')->get('id'), true)->password;
+					$this->cookie->set('password', $hashedPassword );
 
 					self::$isLoggedIn = true;
 
